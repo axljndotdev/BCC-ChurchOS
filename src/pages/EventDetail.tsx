@@ -225,7 +225,7 @@ export default function EventDetail() {
                   <button 
                     onClick={handleDelete}
                     disabled={saving}
-                    className="flex items-center gap-2 px-4 py-2 bg-white text-slate-400 rounded-xl font-bold shadow-sm border border-slate-100 hover:text-red-600 hover:bg-red-50 transition-all disabled:opacity-50"
+                    className="flex items-center gap-2 px-4 py-2 bg-white text-red-500 rounded-xl font-bold shadow-sm border border-red-50 hover:bg-red-50 transition-all disabled:opacity-50"
                   >
                     {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
                     Delete
@@ -360,7 +360,7 @@ export default function EventDetail() {
                   />
                 </div>
 
-                <div className="flex gap-4 pt-4">
+                <div className="flex flex-col md:flex-row gap-4 pt-4">
                   <button 
                     onClick={() => setIsEditing(false)}
                     disabled={saving}
@@ -369,9 +369,16 @@ export default function EventDetail() {
                     Cancel
                   </button>
                   <button 
+                    onClick={handleDelete}
+                    disabled={saving}
+                    className="flex-1 py-3 bg-red-50 text-red-600 rounded-2xl font-bold hover:bg-red-100 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Trash2 className="h-4 w-4" /> Delete Event
+                  </button>
+                  <button 
                     onClick={handleSave}
                     disabled={saving}
-                    className="flex-1 py-3 bg-maroon text-white rounded-2xl font-bold hover:bg-maroon-dark transition-colors shadow-lg shadow-maroon/20 flex items-center justify-center gap-2"
+                    className="flex-2 py-3 bg-maroon text-white rounded-2xl font-bold hover:bg-maroon-dark transition-colors shadow-lg shadow-maroon/20 flex items-center justify-center gap-2"
                   >
                     {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                     Save Changes
