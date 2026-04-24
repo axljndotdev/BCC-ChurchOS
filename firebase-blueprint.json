@@ -1,0 +1,279 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "User profile information and role-based access control.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string", "format": "uri" },
+        "role": { 
+          "type": "string", 
+          "enum": ["super_admin", "elder", "council", "ministry_leader", "member"] 
+        },
+        "status": { 
+          "type": "string", 
+          "enum": ["pending", "active", "suspended"] 
+        },
+        "membershipStatus": {
+          "type": "string",
+          "enum": ["visitor", "applicant", "official_member"]
+        },
+        "phoneNumber": { "type": "string" },
+        "username": { "type": "string" },
+        "ministry": { 
+          "type": "string",
+          "enum": [
+            "Young at Hearts", 
+            "YAH (Young Adults Huddle)", 
+            "Ignite One Youth Fellowship", 
+            "The Exemplary Husband (Sherpas)", 
+            "Circle of Women", 
+            "Superbook Kids (SBK)", 
+            "Harkel (Music Team)", 
+            "Audio Video (AV)"
+          ]
+        },
+        "isCouncilMember": { "type": "boolean" },
+        "isMinistryEditor": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "displayName", "role", "status", "membershipStatus", "isCouncilMember"]
+    },
+    "MinistryDetail": {
+      "title": "Ministry Detail",
+      "description": "Detailed content and information for a specific ministry.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "content": { "type": "string" },
+        "imageUrl": { "type": "string", "format": "uri" },
+        "meetingTime": { "type": "string" },
+        "location": { "type": "string" },
+        "leader": { "type": "string" },
+        "lastUpdated": { "type": "string", "format": "date-time" },
+        "updatedBy": { "type": "string" }
+      },
+      "required": ["name", "description", "content", "lastUpdated", "updatedBy"]
+    },
+    "MinistryEditDraft": {
+      "title": "Ministry Edit Draft",
+      "description": "A pending edit for a ministry page, awaiting review.",
+      "type": "object",
+      "properties": {
+        "ministryId": { "type": "string" },
+        "content": { "type": "string" },
+        "description": { "type": "string" },
+        "imageUrl": { "type": "string", "format": "uri" },
+        "meetingTime": { "type": "string" },
+        "location": { "type": "string" },
+        "submittedBy": { "type": "string" },
+        "submittedByName": { "type": "string" },
+        "submittedAt": { "type": "string", "format": "date-time" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "reviewedBy": { "type": "string" },
+        "reviewedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["ministryId", "content", "submittedBy", "submittedAt", "status"]
+    },
+    "MinistryEditorRequest": {
+      "title": "Ministry Editor Request",
+      "description": "A request from a member to become an editor for a specific ministry.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "ministryId": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "requestedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "userName", "ministryId", "status", "requestedAt"]
+    },
+    "Sermon": {
+      "title": "Sermon",
+      "description": "Church sermon record.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "speaker": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "videoUrl": { "type": "string", "format": "uri" },
+        "notes": { "type": "string" },
+        "scripture": { "type": "string" },
+        "thumbnail": { "type": "string", "format": "uri" }
+      },
+      "required": ["title", "speaker", "date", "videoUrl"]
+    },
+    "ChurchEvent": {
+      "title": "Church Event",
+      "description": "Upcoming church event.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "location": { "type": "string" },
+        "imageUrl": { "type": "string", "format": "uri" },
+        "rsvpCount": { "type": "number" }
+      },
+      "required": ["title", "date", "location"]
+    },
+    "PrayerRequest": {
+      "title": "Prayer Request",
+      "description": "Community prayer request.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "onBehalfOf": { "type": "string" },
+        "message": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "approved", "answered"] },
+        "date": { "type": "string", "format": "date-time" },
+        "isAnonymous": { "type": "boolean" },
+        "visibility": { "type": "string", "enum": ["public", "private"] },
+        "sensitivityNote": { "type": "string" }
+      },
+      "required": ["userId", "userName", "message", "status", "date", "isAnonymous", "visibility"]
+    },
+    "GalleryItem": {
+      "title": "Gallery Item",
+      "description": "Photo in the church gallery.",
+      "type": "object",
+      "properties": {
+        "album": { "type": "string" },
+        "imageUrl": { "type": "string", "format": "uri" },
+        "uploadedBy": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["album", "imageUrl", "uploadedBy", "createdAt"]
+    },
+    "Announcement": {
+      "title": "Announcement",
+      "description": "Church-wide announcement.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "category": { "type": "string" }
+      },
+      "required": ["title", "content", "date"]
+    },
+    "MembershipInquiry": {
+      "title": "Membership Inquiry",
+      "description": "Public interest form for membership class.",
+      "type": "object",
+      "properties": {
+        "fullName": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "phone": { "type": "string" },
+        "message": { "type": "string" },
+        "status": { "type": "string", "enum": ["new", "contacted", "scheduled"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["fullName", "email", "status", "createdAt"]
+    },
+    "WeeklyActivity": {
+      "title": "Weekly Activity",
+      "description": "Recurring weekly church activity.",
+      "type": "object",
+      "properties": {
+        "day": { "type": "string", "enum": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"] },
+        "time": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "location": { "type": "string" },
+        "category": { "type": "string", "enum": ["Spiritual", "Fellowship", "Service", "Other"] },
+        "order": { "type": "number" }
+      },
+      "required": ["day", "time", "title", "category", "order"]
+    },
+    "DirectMessage": {
+      "title": "Direct Message",
+      "description": "A private message between two members.",
+      "type": "object",
+      "properties": {
+        "senderId": { "type": "string" },
+        "senderName": { "type": "string" },
+        "senderPhoto": { "type": "string", "format": "uri" },
+        "receiverId": { "type": "string" },
+        "receiverName": { "type": "string" },
+        "text": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "isRead": { "type": "boolean" }
+      },
+      "required": ["senderId", "senderName", "receiverId", "receiverName", "text", "createdAt", "isRead"]
+    },
+    "ChatConversation": {
+      "title": "Chat Conversation",
+      "description": "Index for identifying active private conversations.",
+      "type": "object",
+      "properties": {
+        "participantIds": { "type": "array", "items": { "type": "string" } },
+        "participantNames": { "type": "array", "items": { "type": "string" } },
+        "lastMessage": { "type": "string" },
+        "lastMessageAt": { "type": "string", "format": "date-time" },
+        "lastSenderId": { "type": "string" }
+      },
+      "required": ["participantIds", "participantNames", "lastMessage", "lastMessageAt", "lastSenderId"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profiles"
+    },
+    "/sermons/{sermonId}": {
+      "schema": "Sermon",
+      "description": "Sermon records"
+    },
+    "/events/{eventId}": {
+      "schema": "ChurchEvent",
+      "description": "Church events"
+    },
+    "/prayer_requests/{requestId}": {
+      "schema": "PrayerRequest",
+      "description": "Prayer requests"
+    },
+    "/gallery/{itemId}": {
+      "schema": "GalleryItem",
+      "description": "Gallery photos"
+    },
+    "/announcements/{announcementId}": {
+      "schema": "Announcement",
+      "description": "Church announcements"
+    },
+    "/membership_inquiries/{inquiryId}": {
+      "schema": "MembershipInquiry",
+      "description": "Public membership inquiries"
+    },
+    "/ministry_details/{ministryId}": {
+      "schema": "MinistryDetail",
+      "description": "Detailed ministry information"
+    },
+    "/ministry_edits/{editId}": {
+      "schema": "MinistryEditDraft",
+      "description": "Pending ministry edits"
+    },
+    "/ministry_editor_requests/{requestId}": {
+      "schema": "MinistryEditorRequest",
+      "description": "Requests for ministry editor access"
+    },
+    "/weekly_activities/{activityId}": {
+      "schema": "WeeklyActivity",
+      "description": "Recurring weekly activities"
+    },
+    "/direct_messages/{messageId}": {
+      "schema": "DirectMessage",
+      "description": "Private direct messages"
+    },
+    "/conversations/{conversationId}": {
+      "schema": "ChatConversation",
+      "description": "Private conversation summaries"
+    }
+  }
+}

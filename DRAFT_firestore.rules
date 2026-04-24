@@ -1,0 +1,386 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && (
+        request.auth.token.email == 'wapdev24@gmail.com' ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+         (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'super_admin' || 
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'church_admin'))
+      );
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+    
+    function isCouncil() {
+      return isAuthenticated() && 
+        ((exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+          (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isCouncilMember == true || 
+           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('title', 'Member') in ['Elder', 'Deacon', 'Deaconess', 'Pastor'])) || 
+         isAdmin());
+    }
+    
+    function isMinistryLeader() {
+      return isAuthenticated() && 
+        ((exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+          getUserData().role == 'ministry_leader') || 
+         isAdmin());
+    }
+
+    function isMinistryEditor() {
+      return isAuthenticated() && 
+        ((exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+          getUserData().get('isMinistryEditor', false) == true) || 
+         isAdmin());
+    }
+
+    function isBlogEditor() {
+      return isAuthenticated() && 
+        ((exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+          getUserData().get('isBlogEditor', false) == true) || 
+         isAdmin());
+    }
+
+    function isValidEmail(email) {
+      return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    function isValidUrl(url) {
+      return url is string && (
+        url.matches("^https://.*") || 
+        url.matches("^http://.*") || 
+        url.matches("^data:image/.*")
+      );
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+    
+    function isValidUser(data, userId) {
+      return data.keys().hasAll(['uid', 'displayName', 'role', 'title', 'status', 'membershipStatus', 'isCouncilMember', 'createdAt']) &&
+             data.uid == userId &&
+             data.displayName is string && data.displayName.size() > 0 && data.displayName.size() < 100 &&
+             data.role in ['super_admin', 'church_admin', 'ministry_leader', 'member'] &&
+             data.title in ['Pastor', 'Elder', 'Deacon', 'Deaconess', 'Member', 'Guest'] &&
+             data.status in ['pending', 'active', 'suspended'] &&
+             data.membershipStatus in ['visitor', 'applicant', 'official_member'] &&
+             data.isCouncilMember is bool &&
+             data.createdAt is timestamp &&
+             (!('isMinistryEditor' in data) || data.isMinistryEditor is bool) &&
+             (!('isBlogEditor' in data) || data.isBlogEditor is bool) &&
+             (!('email' in data) || data.email == null || isValidEmail(data.email)) &&
+             (!('photoURL' in data) || data.photoURL == null || data.photoURL == "" || isValidUrl(data.photoURL)) &&
+             (!('phoneNumber' in data) || data.phoneNumber == null || data.phoneNumber is string) &&
+             (!('username' in data) || data.username == null || data.username is string) &&
+             (!('wantsMembershipClass' in data) || data.wantsMembershipClass is bool);
+    }
+
+    function isValidSermon(data) {
+      return data.keys().hasAll(['title', 'speaker', 'date', 'videoUrl']) &&
+             data.title is string && data.title.size() > 0 &&
+             data.speaker is string &&
+             data.date is timestamp &&
+             (!('videoUrl' in data) || isValidUrl(data.videoUrl));
+    }
+
+    function isValidEvent(data) {
+      return data.keys().hasAll(['title', 'date', 'location']) &&
+             data.title is string && data.title.size() > 0 &&
+             data.date is timestamp &&
+             data.location is string &&
+             (!('slug' in data) || data.slug is string) &&
+             (!('content' in data) || data.content is string);
+    }
+
+    function isValidAnnouncement(data) {
+      return data.keys().hasAll(['title', 'content', 'date']) &&
+             data.title is string && data.title.size() > 0 && data.title.size() < 200 &&
+             data.content is string && data.content.size() > 0 && data.content.size() < 5000 &&
+             data.date is timestamp;
+    }
+
+    function isValidPrayerRequest(data) {
+      return data.keys().hasAll(['userName', 'message', 'status', 'date', 'isAnonymous', 'visibility']) &&
+             data.userName is string && data.userName.size() > 0 && data.userName.size() < 100 &&
+             data.message is string && data.message.size() > 0 && data.message.size() < 2000 &&
+             data.status in ['pending', 'approved', 'answered'] &&
+             data.date is timestamp &&
+             data.isAnonymous is bool &&
+             data.visibility in ['public', 'private'] &&
+             (!('userId' in data) || data.userId is string) &&
+             (!('onBehalfOf' in data) || data.onBehalfOf is string) &&
+             (!('sensitivityNote' in data) || data.sensitivityNote is string);
+    }
+
+    function isValidMembershipInquiry(data) {
+      return data.keys().hasAll(['fullName', 'email', 'status', 'createdAt']) &&
+             data.fullName is string && data.fullName.size() > 0 && data.fullName.size() < 100 &&
+             isValidEmail(data.email) &&
+             data.status in ['new', 'contacted', 'scheduled'] &&
+             data.createdAt is timestamp &&
+             (!('phone' in data) || data.phone is string) &&
+             (!('message' in data) || data.message is string);
+    }
+
+    function isValidMinistryDetail(data) {
+      return data.keys().hasAll(['name', 'description', 'content', 'lastUpdated', 'updatedBy']) &&
+             data.name is string &&
+             data.description is string && data.description.size() < 500 &&
+             data.content is string && data.content.size() < 10000 &&
+             data.lastUpdated is timestamp &&
+             data.updatedBy is string;
+    }
+
+    function isValidMinistryEditDraft(data) {
+      return data.keys().hasAll(['ministryId', 'content', 'submittedBy', 'submittedAt', 'status']) &&
+             data.ministryId is string &&
+             data.content is string && data.content.size() < 10000 &&
+             data.submittedBy is string &&
+             data.submittedAt is timestamp &&
+             data.status in ['pending', 'approved', 'rejected'];
+    }
+
+    function isValidMinistryEditorRequest(data) {
+      return data.keys().hasAll(['userId', 'userName', 'ministryId', 'status', 'requestedAt']) &&
+             data.userId is string &&
+             data.userName is string &&
+             data.ministryId is string &&
+             data.status in ['pending', 'approved', 'rejected'] &&
+             data.requestedAt is timestamp;
+    }
+
+    function isValidSystemSettings(data) {
+      return data.keys().hasAll(['isLive', 'lastUpdated', 'updatedBy']) &&
+             data.isLive is bool &&
+             data.lastUpdated is timestamp &&
+             data.updatedBy is string &&
+             (!('facebookLiveUrl' in data) || data.facebookLiveUrl == null || data.facebookLiveUrl == "" || isValidUrl(data.facebookLiveUrl)) &&
+             (!('churchName' in data) || data.churchName is string) &&
+             (!('tagline' in data) || data.tagline is string) &&
+             (!('address' in data) || data.address is string) &&
+             (!('phone' in data) || data.phone is string) &&
+             (!('email' in data) || data.email == null || isValidEmail(data.email)) &&
+             (!('facebookUrl' in data) || data.facebookUrl == null || data.facebookUrl == "" || isValidUrl(data.facebookUrl)) &&
+             (!('instagramUrl' in data) || data.instagramUrl == null || data.instagramUrl == "" || isValidUrl(data.instagramUrl)) &&
+             (!('youtubeUrl' in data) || data.youtubeUrl == null || data.youtubeUrl == "" || isValidUrl(data.youtubeUrl)) &&
+             (!('twitterUrl' in data) || data.twitterUrl == null || data.twitterUrl == "" || isValidUrl(data.twitterUrl)) &&
+             (!('welcomeTitle' in data) || data.welcomeTitle is string) &&
+             (!('welcomeSubtitle' in data) || data.welcomeSubtitle is string) &&
+             (!('heroImageUrl' in data) || data.heroImageUrl == null || data.heroImageUrl == "" || isValidUrl(data.heroImageUrl)) &&
+             (!('serviceTimes' in data) || data.serviceTimes is list);
+    }
+
+    function isValidBlogPost(data) {
+      return data.keys().hasAll(['title', 'slug', 'content', 'authorId', 'status', 'createdAt', 'updatedAt']) &&
+             data.title is string && data.title.size() > 0 && data.title.size() < 200 &&
+             data.slug is string && data.slug.size() > 0 && data.slug.size() < 200 &&
+             data.content is string && data.content.size() > 0 && data.content.size() < 20000 &&
+             data.authorId is string &&
+             data.authorName is string &&
+             data.status in ['draft', 'pending', 'published', 'rejected'] &&
+             data.createdAt is timestamp &&
+             data.updatedAt is timestamp &&
+             (!('publishedAt' in data) || data.publishedAt == null || data.publishedAt is timestamp) &&
+             (!('coverImage' in data) || data.coverImage == null || data.coverImage == "" || isValidUrl(data.coverImage)) &&
+             (!('excerpt' in data) || data.excerpt is string);
+    }
+
+    function isValidWeeklyActivity(data) {
+      return data.keys().hasAll(['day', 'time', 'title', 'category', 'order']) &&
+             data.day in ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] &&
+             data.time is string &&
+             data.title is string &&
+             data.category in ['Spiritual', 'Fellowship', 'Service', 'Other'] &&
+             data.order is number &&
+             (!('description' in data) || data.description is string) &&
+             (!('location' in data) || data.location is string) &&
+             (!('ministryId' in data) || data.ministryId is string);
+    }
+
+    function isValidGalleryItem(data) {
+      return data.keys().hasAll(['album', 'imageUrl', 'createdAt', 'uploadedBy']) &&
+             data.album is string && data.album.size() > 0 && data.album.size() < 100 &&
+             isValidUrl(data.imageUrl) &&
+             data.createdAt is timestamp &&
+             data.uploadedBy is string;
+    }
+
+    function isValidDirectMessage(data) {
+      return data.keys().hasAll(['senderId', 'senderName', 'receiverId', 'receiverName', 'text', 'createdAt', 'isRead']) &&
+             data.senderId is string && data.senderId == request.auth.uid &&
+             data.senderName is string &&
+             data.receiverId is string &&
+             data.receiverName is string &&
+             data.text is string && data.text.size() > 0 && data.text.size() < 5000 &&
+             data.createdAt is timestamp &&
+             data.isRead == false &&
+             (!('senderPhoto' in data) || data.senderPhoto == null || data.senderPhoto == "" || isValidUrl(data.senderPhoto));
+    }
+
+    function isValidConversation(data) {
+      return data.keys().hasAll(['participantIds', 'participantNames', 'lastMessage', 'lastMessageAt', 'lastSenderId']) &&
+             data.participantIds is list && data.participantIds.size() == 2 &&
+             request.auth.uid in data.participantIds &&
+             data.participantNames is list && data.participantNames.size() == 2 &&
+             data.lastMessage is string && data.lastMessage.size() <= 5000 &&
+             data.lastMessageAt is timestamp &&
+             data.lastSenderId == request.auth.uid;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isAuthenticated() || (resource != null && resource.data.title in ['Pastor', 'Elder', 'Deacon', 'Deaconess']);
+      allow create: if isOwner(userId) && isValidUser(request.resource.data, userId) && 
+                      (request.resource.data.role == 'member' || request.auth.token.email == 'wapdev24@gmail.com');
+      allow update: if (isAdmin() && isValidUser(request.resource.data, userId)) || 
+                      (isOwner(userId) && 
+                       request.resource.data.role == resource.data.role && 
+                       request.resource.data.isCouncilMember == resource.data.isCouncilMember &&
+                       (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['wantsMembershipClass', 'displayName', 'photoURL', 'phoneNumber', 'username']) || 
+                        isValidUser(request.resource.data, userId)));
+    }
+
+    match /sermons/{sermonId} {
+      allow read: if true;
+      allow write: if isAdmin() && isValidSermon(request.resource.data);
+
+      match /comments/{commentId} {
+        allow read: if true;
+        allow create: if isAuthenticated() && 
+                        request.resource.data.keys().hasAll(['userId', 'userName', 'message', 'createdAt']) &&
+                        request.resource.data.userId == request.auth.uid;
+        allow delete: if isAdmin() || (isAuthenticated() && request.auth.uid == resource.data.userId);
+      }
+    }
+
+    match /events/{eventId} {
+      allow read: if true;
+      allow create, update: if (isAdmin() || isMinistryLeader()) && isValidEvent(request.resource.data);
+      allow delete: if isAdmin() && isValidId(eventId);
+    }
+
+    match /announcements/{announcementId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /prayer_requests/{requestId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isValidPrayerRequest(request.resource.data) && 
+                      request.resource.data.userId == request.auth.uid;
+      allow update: if (isAdmin() && isValidPrayerRequest(request.resource.data)) || 
+                      (isAuthenticated() && resource.data.userId == request.auth.uid && isValidPrayerRequest(request.resource.data)) ||
+                      (isAuthenticated() && 
+                       request.resource.data.diff(resource.data).affectedKeys().hasOnly(['prayCount', 'prayers']) &&
+                       request.resource.data.prayCount == resource.data.prayCount + 1 &&
+                       request.resource.data.prayers.hasAll(resource.data.prayers) &&
+                       request.resource.data.prayers.size() == resource.data.prayers.size() + 1);
+      allow delete: if isAdmin() || (isAuthenticated() && request.auth.uid == resource.data.userId);
+
+      match /comments/{commentId} {
+        allow read: if isAuthenticated();
+        allow create: if isAuthenticated() && 
+                        request.resource.data.keys().hasAll(['userId', 'userName', 'message', 'createdAt']) &&
+                        request.resource.data.userId == request.auth.uid;
+        allow delete: if isAdmin() || (isAuthenticated() && request.auth.uid == resource.data.userId);
+      }
+    }
+
+    match /gallery/{itemId} {
+      allow read: if true;
+      allow write: if (isAdmin() || isMinistryLeader()) && isValidGalleryItem(request.resource.data);
+    }
+
+    match /membership_inquiries/{inquiryId} {
+      allow read: if isAdmin();
+      allow create: if isValidMembershipInquiry(request.resource.data);
+      allow update: if isAdmin() && isValidMembershipInquiry(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /ministry_details/{ministryId} {
+      allow read: if true;
+      allow write: if isCouncil() && isValidMinistryDetail(request.resource.data);
+    }
+
+    match /ministry_edits/{editId} {
+      allow read: if isCouncil() || (isAuthenticated() && request.auth.uid == resource.data.submittedBy);
+      allow create: if (isCouncil() || isMinistryEditor()) && isValidMinistryEditDraft(request.resource.data) && 
+                      request.resource.data.submittedBy == request.auth.uid;
+      allow update: if isCouncil() && isValidMinistryEditDraft(request.resource.data);
+      allow delete: if isCouncil();
+    }
+
+    match /ministry_editor_requests/{requestId} {
+      allow read: if isCouncil() || (isAuthenticated() && request.auth.uid == resource.data.userId);
+      allow create: if isAuthenticated() && isValidMinistryEditorRequest(request.resource.data) && 
+                      request.resource.data.userId == request.auth.uid;
+      allow update: if isCouncil() && isValidMinistryEditorRequest(request.resource.data);
+      allow delete: if isCouncil();
+    }
+
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin() && isValidSystemSettings(request.resource.data);
+    }
+
+    match /blogs/{blogId} {
+      allow read: if true;
+      allow create: if (isCouncil() || isAdmin()) && isValidBlogPost(request.resource.data) && 
+                      request.resource.data.authorId == request.auth.uid;
+      allow update: if (isAdmin() || isCouncil() || (isAuthenticated() && request.auth.uid == resource.data.authorId)) && 
+                      isValidBlogPost(request.resource.data);
+      allow delete: if isAdmin() || isCouncil() || (isAuthenticated() && request.auth.uid == resource.data.authorId && resource.data.status == 'draft');
+
+      match /comments/{commentId} {
+        allow read: if true;
+        allow create: if isAuthenticated() && 
+                        request.resource.data.keys().hasAll(['userId', 'userName', 'content', 'createdAt']) &&
+                        request.resource.data.userId == request.auth.uid;
+        allow delete: if isAdmin() || (isAuthenticated() && request.auth.uid == resource.data.userId);
+      }
+    }
+
+    match /weekly_activities/{activityId} {
+      allow read: if true;
+      allow write: if isAdmin() && isValidWeeklyActivity(request.resource.data);
+    }
+
+    match /direct_messages/{messageId} {
+      allow read: if isAuthenticated() && (resource.data.senderId == request.auth.uid || resource.data.receiverId == request.auth.uid);
+      allow create: if isAuthenticated() && isValidDirectMessage(request.resource.data);
+    }
+
+    match /conversations/{conversationId} {
+      allow read: if isAuthenticated() && request.auth.uid in resource.data.participantIds;
+      allow write: if isAuthenticated() && isValidConversation(request.resource.data);
+    }
+  }
+}
