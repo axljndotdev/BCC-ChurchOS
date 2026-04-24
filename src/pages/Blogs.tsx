@@ -92,7 +92,7 @@ export default function Blogs() {
                   </span>
                   <span className="flex items-center gap-1.5">
                     <User className="h-3 w-3" />
-                    {post.authorName}
+                    by: {post.authorName}
                   </span>
                 </div>
                 <h2 className="text-2xl font-display font-bold text-slate-900 mb-4 group-hover:text-maroon transition-colors leading-tight">

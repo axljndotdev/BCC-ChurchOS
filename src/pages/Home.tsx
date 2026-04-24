@@ -200,7 +200,7 @@ export default function Home() {
                   {latestBlogs[0].authorName?.charAt(0) || 'B'}
                 </div>
                 <div>
-                  <p className="font-display text-xl text-slate-900">{latestBlogs[0].authorName}</p>
+                  <p className="font-display text-xl text-slate-900">by: {latestBlogs[0].authorName}</p>
                   <p className="text-xs text-slate-400 uppercase tracking-widest">{formatDate(latestBlogs[0].publishedAt || latestBlogs[0].createdAt)}</p>
                 </div>
               </div>
@@ -347,6 +347,8 @@ export default function Home() {
                   <div className="flex items-center gap-3 text-[10px] font-bold text-maroon uppercase tracking-widest">
                     <span className="h-1.5 w-1.5 bg-maroon rounded-full" />
                     {formatDate(post.publishedAt || post.createdAt)}
+                    <span className="text-slate-300">|</span>
+                    by: {post.authorName}
                   </div>
                   <h3 className="text-2xl font-display font-bold text-slate-900 group-hover:text-maroon transition-colors leading-tight">
                     {post.title}

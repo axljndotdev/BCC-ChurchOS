@@ -192,7 +192,7 @@ export default function BlogPost() {
                     <User className="h-5 w-5" />
                   </div>
                   <div>
-                    <p className="font-bold leading-none">{post.authorName}</p>
+                    <p className="font-bold leading-none">by: {post.authorName}</p>
                     <p className="text-[10px] uppercase tracking-wider text-white/60">Author</p>
                   </div>
                 </div>
