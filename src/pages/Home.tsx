@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Calendar, Video, Users, Heart, Play, Quote, MessageSquare, Clock, Globe } from 'lucide-react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { cn, formatDate } from '../lib/utils';
 import { getSermons, getSystemSettings, getEvents, getAnnouncements, getBlogPosts } from '../services/db';
 import { Sermon, SystemSettings, ChurchEvent, Announcement, BlogPost } from '../types';
@@ -22,7 +22,7 @@ export default function Home() {
           getSystemSettings(),
           getEvents(),
           getAnnouncements(),
-          getBlogPosts('published', 3)
+          getBlogPosts('published', 4)
         ]);
         
         if (sermons.length > 0) setLatestSermon(sermons[0]);
@@ -65,12 +65,22 @@ export default function Home() {
         )}
 
         <div className="absolute inset-0 z-0">
-          <img 
-            src={settings?.heroImageUrl || "https://images.unsplash.com/photo-1544427920-c49ccfb85579?auto=format&fit=crop&q=80&w=1920"} 
-            alt="Bethesda Community Church" 
-            className="w-full h-full object-cover"
-            referrerPolicy="no-referrer"
-          />
+          <AnimatePresence mode="wait">
+            {loading ? (
+              <div key="loader" className="w-full h-full bg-stone-950" />
+            ) : (
+              <motion.img 
+                key={settings?.heroImageUrl || 'default'}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 1 }}
+                src={settings?.heroImageUrl || "https://images.unsplash.com/photo-1544427920-c49ccfb85579?auto=format&fit=crop&q=80&w=1920"} 
+                alt="Bethesda Community Church" 
+                className="w-full h-full object-cover"
+                referrerPolicy="no-referrer"
+              />
+            )}
+          </AnimatePresence>
           <div className="absolute inset-0 bg-stone-900/40" />
         </div>
         
@@ -149,47 +159,49 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Latest Sermon - Minimal Editorial */}
+      {/* Latest Blog Featured - Minimal Editorial */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row items-baseline justify-between mb-16 gap-4">
           <h2 className="text-5xl font-display text-slate-900">The Word</h2>
-          <Link to="/sermons" className="text-slate-400 hover:text-maroon transition-colors flex items-center gap-2 uppercase text-xs tracking-widest font-bold">
-            Explore Archive <ArrowRight className="h-4 w-4" />
+          <Link to="/blogs" className="text-slate-400 hover:text-maroon transition-colors flex items-center gap-2 uppercase text-xs tracking-widest font-bold">
+            Read Our Blog <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
         
-        {latestSermon && (
+        {latestBlogs[0] && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
-            <div className="lg:col-span-7 relative group cursor-pointer">
+            <Link to={`/blogs/${latestBlogs[0].slug || latestBlogs[0].id}`} className="lg:col-span-7 relative group cursor-pointer block">
               <div className="aspect-[16/9] rounded-[2rem] overflow-hidden">
                 <img 
-                  src={latestSermon.thumbnail || "https://images.unsplash.com/photo-1519491050282-ce00c729c8bf?auto=format&fit=crop&q=80&w=1200"} 
-                  alt={latestSermon.title} 
+                  src={latestBlogs[0].coverImage || `https://picsum.photos/seed/${latestBlogs[0].id}/1200/675`} 
+                  alt={latestBlogs[0].title} 
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                   referrerPolicy="no-referrer"
                 />
               </div>
-              <div className="absolute inset-0 bg-slate-900/20 group-hover:bg-slate-900/40 transition-all duration-500 rounded-[2rem] flex items-center justify-center">
-                <div className="h-20 w-20 bg-white rounded-full flex items-center justify-center shadow-2xl scale-90 group-hover:scale-100 transition-transform duration-500">
-                  <Play className="h-8 w-8 text-maroon fill-current ml-1" />
+              <div className="absolute inset-0 bg-slate-900/10 group-hover:bg-slate-900/30 transition-all duration-500 rounded-[2rem] flex items-center justify-center">
+                <div className="h-20 w-20 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-2xl scale-90 group-hover:scale-100 transition-transform duration-500">
+                  <ArrowRight className="h-8 w-8 text-maroon" />
                 </div>
               </div>
-            </div>
+            </Link>
             <div className="lg:col-span-5 space-y-8">
               <div className="space-y-4">
-                <span className="text-xs font-bold text-maroon uppercase tracking-widest">Latest Message</span>
-                <h3 className="text-5xl font-display text-slate-900 leading-tight">{latestSermon.title}</h3>
+                <span className="text-xs font-bold text-maroon uppercase tracking-widest">Latest Reflection</span>
+                <Link to={`/blogs/${latestBlogs[0].slug || latestBlogs[0].id}`}>
+                  <h3 className="text-5xl font-display text-slate-900 leading-tight hover:text-maroon transition-colors line-clamp-3">{latestBlogs[0].title}</h3>
+                </Link>
                 <p className="text-slate-600 font-light leading-relaxed text-lg line-clamp-3">
-                  {latestSermon.notes || "Join us as we explore the depth of God's word in this powerful message."}
+                  {latestBlogs[0].excerpt || "Explore shared faith and community insights in our latest church reflection."}
                 </p>
               </div>
               <div className="flex items-center gap-6 pt-4">
                 <div className="h-14 w-14 rounded-full bg-slate-100 flex items-center justify-center text-maroon font-display text-xl font-bold">
-                  {latestSermon.speaker.charAt(0)}
+                  {latestBlogs[0].authorName?.charAt(0) || 'B'}
                 </div>
                 <div>
-                  <p className="font-display text-xl text-slate-900">{latestSermon.speaker}</p>
-                  <p className="text-xs text-slate-400 uppercase tracking-widest">{formatDate(latestSermon.date)}</p>
+                  <p className="font-display text-xl text-slate-900">{latestBlogs[0].authorName}</p>
+                  <p className="text-xs text-slate-400 uppercase tracking-widest">{formatDate(latestBlogs[0].publishedAt || latestBlogs[0].createdAt)}</p>
                 </div>
               </div>
             </div>
@@ -317,7 +329,7 @@ export default function Home() {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-            {latestBlogs.map((post) => (
+            {latestBlogs.slice(1).map((post) => (
               <Link 
                 key={post.id} 
                 to={`/blogs/${post.slug || post.id}`}

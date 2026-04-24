@@ -18,7 +18,8 @@ import {
   Eye,
   Type,
   FileText,
-  Tag
+  Tag,
+  User
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
@@ -41,7 +42,9 @@ export default function MemberBlogEditor() {
     content: '',
     category: 'Ministry Reflections',
     coverImage: '',
-    tags: [] as string[]
+    tags: [] as string[],
+    isMe: true,
+    customAuthor: ''
   });
 
   useEffect(() => {
@@ -50,6 +53,7 @@ export default function MemberBlogEditor() {
         try {
           const post = await getBlogPost(id);
           if (post) {
+            const isMe = post.authorId === user?.uid;
             setFormData({
               title: post.title,
               slug: post.slug,
@@ -57,7 +61,9 @@ export default function MemberBlogEditor() {
               content: post.content,
               category: post.category || 'Ministry Reflections',
               coverImage: post.coverImage || '',
-              tags: post.tags || []
+              tags: post.tags || [],
+              isMe,
+              customAuthor: isMe ? '' : post.authorName
             });
           }
         } catch (error) {
@@ -68,7 +74,7 @@ export default function MemberBlogEditor() {
       };
       fetchPost();
     }
-  }, [id]);
+  }, [id, user?.uid]);
 
   const generateSlug = (title: string) => {
     return title
@@ -142,19 +148,28 @@ export default function MemberBlogEditor() {
       return;
     }
 
+    if (!formData.isMe && !formData.customAuthor) {
+      alert('Please provide an author name');
+      return;
+    }
+
     setLoading(true);
     try {
+      const authorName = formData.isMe ? (user!.displayName || 'BCC Leader') : formData.customAuthor;
+      const { isMe, customAuthor, ...postData } = formData;
+
       if (id) {
         await updateBlogPost(id, {
-          ...formData,
+          ...postData,
+          authorName,
           status,
           updatedAt: new Date()
         });
       } else {
         await addBlogPost({
-          ...formData,
+          ...postData,
           authorId: user!.uid,
-          authorName: user!.displayName || 'BCC Leader',
+          authorName,
           status,
         });
       }
@@ -245,6 +260,49 @@ export default function MemberBlogEditor() {
                   placeholder="The Heart of Worship..."
                   className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl text-lg font-bold placeholder:text-slate-300 focus:ring-2 focus:ring-maroon/20 transition-all shadow-inner"
                 />
+              </div>
+
+              <div className="space-y-2">
+                <label className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">
+                  <User className="h-3 w-3" /> Author
+                </label>
+                <div className="flex gap-4">
+                  <button
+                    onClick={() => setFormData(prev => ({ ...prev, isMe: true }))}
+                    type="button"
+                    className={cn(
+                      "flex-1 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all border",
+                      formData.isMe 
+                        ? "bg-maroon text-white border-maroon shadow-md" 
+                        : "bg-white text-slate-400 border-slate-100 hover:bg-slate-50"
+                    )}
+                  >
+                    ME ({user?.displayName || 'Leader'})
+                  </button>
+                  <button
+                    onClick={() => setFormData(prev => ({ ...prev, isMe: false }))}
+                    type="button"
+                    className={cn(
+                      "flex-1 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all border",
+                      !formData.isMe 
+                        ? "bg-maroon text-white border-maroon shadow-md" 
+                        : "bg-white text-slate-400 border-slate-100 hover:bg-slate-50"
+                    )}
+                  >
+                    Other
+                  </button>
+                </div>
+                {!formData.isMe && (
+                  <motion.input 
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    type="text"
+                    value={formData.customAuthor}
+                    onChange={e => setFormData(prev => ({ ...prev, customAuthor: e.target.value }))}
+                    placeholder="Enter author's name..."
+                    className="w-full px-6 py-3 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-maroon/20 transition-all mt-2"
+                  />
+                )}
               </div>
 
               <div className="space-y-2">
