@@ -156,9 +156,48 @@ export default function BlogPost() {
     );
   }
 
+  const shareOnFacebook = () => {
+    const url = window.location.href;
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+  };
+
+  const shareOnTwitter = () => {
+    const url = window.location.href;
+    const text = `Check out this article: ${post.title}`;
+    window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`, '_blank');
+  };
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(window.location.href);
+    alert('Link copied to clipboard!');
+  };
+
+  const formatContent = (content: string) => {
+    if (!content) return '';
+    
+    // If it already has markdown formatting (headers, bold, lists), just return as is
+    if (content.includes('#') || content.includes('**') || content.includes('* ') || content.includes('>')) {
+      return content;
+    }
+
+    // Otherwise, try to "intelligently" format it
+    return content
+      .split('\n')
+      .filter(p => p.trim() !== '')
+      .map(p => {
+        const trimmed = p.trim();
+        // Bold the first sentence if it's substantial
+        const sentences = trimmed.split('. ');
+        if (sentences.length > 1 && sentences[0].length < 100) {
+          return `**${sentences[0]}.** ${sentences.slice(1).join('. ')}`;
+        }
+        return trimmed;
+      })
+      .join('\n\n');
+  };
+
   return (
     <div className="min-h-screen bg-white">
-      {/* Article Header */}
       <header className="relative w-full h-[60vh] overflow-hidden">
         <img 
           src={post.coverImage || `https://picsum.photos/seed/${post.id}/1920/1080`}
@@ -207,12 +246,12 @@ export default function BlogPost() {
       </header>
 
       {/* Content */}
-      <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20 pb-40">
         <div className="flex flex-col lg:flex-row gap-16">
           {/* Main Body */}
-          <div className="flex-1 prose prose-slate prose-lg max-w-none prose-headings:font-display prose-headings:font-bold prose-a:text-maroon prose-maroon">
+          <div className="flex-1 prose prose-slate prose-lg max-w-none prose-headings:font-display prose-headings:font-bold prose-p:leading-relaxed prose-p:mb-8 prose-strong:text-maroon">
             <div className="markdown-body">
-              <Markdown>{post.content}</Markdown>
+              <Markdown>{formatContent(post.content)}</Markdown>
             </div>
             
             {/* Tags */}
@@ -233,13 +272,25 @@ export default function BlogPost() {
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest lg:rotate-180 lg:[writing-mode:vertical-lr] mb-2">
                 Share This
               </span>
-              <button className="h-12 w-12 rounded-full border border-slate-100 flex items-center justify-center text-slate-400 hover:text-maroon hover:border-maroon/20 hover:bg-maroon/5 transition-all">
+              <button 
+                onClick={shareOnFacebook}
+                className="h-12 w-12 rounded-full border border-slate-100 flex items-center justify-center text-slate-400 hover:text-maroon hover:border-maroon/20 hover:bg-maroon/5 transition-all"
+                title="Share on Facebook"
+              >
                 <Facebook className="h-5 w-5" />
               </button>
-              <button className="h-12 w-12 rounded-full border border-slate-100 flex items-center justify-center text-slate-400 hover:text-maroon hover:border-maroon/20 hover:bg-maroon/5 transition-all">
+              <button 
+                onClick={shareOnTwitter}
+                className="h-12 w-12 rounded-full border border-slate-100 flex items-center justify-center text-slate-400 hover:text-maroon hover:border-maroon/20 hover:bg-maroon/5 transition-all"
+                title="Share on Twitter"
+              >
                 <Twitter className="h-5 w-5" />
               </button>
-              <button className="h-12 w-12 rounded-full border border-slate-100 flex items-center justify-center text-slate-400 hover:text-maroon hover:border-maroon/20 hover:bg-maroon/5 transition-all">
+              <button 
+                onClick={copyToClipboard}
+                className="h-12 w-12 rounded-full border border-slate-100 flex items-center justify-center text-slate-400 hover:text-maroon hover:border-maroon/20 hover:bg-maroon/5 transition-all"
+                title="Copy Link"
+              >
                 <LinkIcon className="h-5 w-5" />
               </button>
             </div>
@@ -248,26 +299,6 @@ export default function BlogPost() {
 
         <BlogComments postId={post.id} />
       </article>
-
-      {/* Newsletter / CTA */}
-      <section className="bg-slate-50 py-24">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-3xl font-display font-bold text-slate-900 mb-4">Stay Connected</h2>
-          <p className="text-slate-500 mb-8 max-w-md mx-auto">
-            Get more reflections and church updates delivered to your inbox weekly.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-            <input 
-              type="email" 
-              placeholder="Your email address" 
-              className="flex-1 px-6 py-4 rounded-2xl bg-white border border-slate-200 outline-none focus:ring-2 focus:ring-maroon/20 focus:border-maroon transition-all"
-            />
-            <button className="px-8 py-4 bg-slate-900 text-white rounded-2xl font-bold hover:bg-slate-800 transition-all">
-              Subscribe
-            </button>
-          </div>
-        </div>
-      </section>
     </div>
   );
 }

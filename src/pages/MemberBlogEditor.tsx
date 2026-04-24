@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, useParams } from 'react-router-dom';
 import { 
@@ -19,7 +19,9 @@ import {
   Type,
   FileText,
   Tag,
-  User
+  User,
+  History,
+  CheckCircle2
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
@@ -34,6 +36,10 @@ export default function MemberBlogEditor() {
   const [compressing, setCompressing] = useState(false);
   const [fetching, setFetching] = useState(!!id);
   const [preview, setPreview] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [showRestorePrompt, setShowRestorePrompt] = useState(false);
+  const initialLoadRef = useRef(true);
   
   const [formData, setFormData] = useState({
     title: '',
@@ -47,6 +53,63 @@ export default function MemberBlogEditor() {
     customAuthor: ''
   });
 
+  const getDraftKey = () => `bcc_blog_draft_${id || 'new'}_${user?.uid}`;
+
+  // Check for local draft on mount
+  useEffect(() => {
+    const draft = localStorage.getItem(getDraftKey());
+    if (draft) {
+      setShowRestorePrompt(true);
+    }
+  }, [id, user?.uid]);
+
+  // Handle browser close/refresh
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isDirty) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [isDirty]);
+
+  // Auto-save logic
+  useEffect(() => {
+    if (initialLoadRef.current) {
+      initialLoadRef.current = false;
+      return;
+    }
+
+    setIsDirty(true);
+    const timeoutId = setTimeout(() => {
+      localStorage.setItem(getDraftKey(), JSON.stringify(formData));
+      setLastSaved(new Date());
+    }, 2000);
+
+    return () => clearTimeout(timeoutId);
+  }, [formData]);
+
+  const restoreDraft = () => {
+    const draft = localStorage.getItem(getDraftKey());
+    if (draft) {
+      try {
+        const parsed = JSON.parse(draft);
+        setFormData(parsed);
+        setIsDirty(false);
+        setShowRestorePrompt(false);
+      } catch (e) {
+        console.error("Failed to parse draft", e);
+      }
+    }
+  };
+
+  const discardDraft = () => {
+    localStorage.removeItem(getDraftKey());
+    setShowRestorePrompt(false);
+  };
+
   useEffect(() => {
     if (id) {
       const fetchPost = async () => {
@@ -54,7 +117,7 @@ export default function MemberBlogEditor() {
           const post = await getBlogPost(id);
           if (post) {
             const isMe = post.authorId === user?.uid;
-            setFormData({
+            const data = {
               title: post.title,
               slug: post.slug,
               excerpt: post.excerpt,
@@ -64,7 +127,13 @@ export default function MemberBlogEditor() {
               tags: post.tags || [],
               isMe,
               customAuthor: isMe ? '' : post.authorName
-            });
+            };
+            setFormData(data);
+            // Reset dirty state after initial fetch
+            setTimeout(() => {
+              setIsDirty(false);
+              initialLoadRef.current = true; // Block the next effect run
+            }, 100);
           }
         } catch (error) {
           console.error('Error fetching blog for edit:', error);
@@ -173,11 +242,25 @@ export default function MemberBlogEditor() {
           status,
         });
       }
+      
+      // Clear draft on successful save
+      localStorage.removeItem(getDraftKey());
+      setIsDirty(false);
       navigate('/member/dashboard');
     } catch (error) {
       console.error('Error saving blog:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleBack = () => {
+    if (isDirty) {
+      if (window.confirm('You have unsaved changes. Are you sure you want to exit? Your progress is saved locally as a draft.')) {
+        navigate(-1);
+      }
+    } else {
+      navigate(-1);
     }
   };
 
@@ -194,15 +277,23 @@ export default function MemberBlogEditor() {
       <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
         <div className="flex items-center gap-4">
           <button 
-            onClick={() => navigate(-1)}
+            onClick={handleBack}
             className="p-3 bg-white border border-slate-200 rounded-2xl text-slate-400 hover:text-maroon transition-all"
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div>
-            <h1 className="text-3xl font-display font-bold text-slate-900">
-              {id ? 'Edit Article' : 'Compose Story'}
-            </h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-3xl font-display font-bold text-slate-900">
+                {id ? 'Edit Article' : 'Compose Story'}
+              </h1>
+              {lastSaved && !loading && (
+                <div className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-500 uppercase tracking-widest bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100">
+                  <CheckCircle2 className="h-3 w-3" />
+                  Auto-saved {lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </div>
+              )}
+            </div>
             <p className="text-slate-500 font-light italic">
               Share your heart with the church family.
             </p>
@@ -227,6 +318,42 @@ export default function MemberBlogEditor() {
           </button>
         </div>
       </header>
+
+      {/* Restore Draft Prompt */}
+      <AnimatePresence>
+        {showRestorePrompt && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="bg-maroon text-white p-6 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl shadow-maroon/20 border border-maroon-dark/10"
+          >
+            <div className="flex items-center gap-4">
+              <div className="h-12 w-12 bg-white/20 rounded-2xl flex items-center justify-center shrink-0">
+                <History className="h-6 w-6" />
+              </div>
+              <div>
+                <h3 className="font-bold text-lg">Unsaved draft found</h3>
+                <p className="text-sm text-white/80">Would you like to restore your last session's progress?</p>
+              </div>
+            </div>
+            <div className="flex gap-3 w-full md:w-auto">
+              <button 
+                onClick={restoreDraft}
+                className="flex-1 md:flex-none px-6 py-3 bg-white text-maroon rounded-xl text-sm font-bold shadow-lg hover:bg-slate-100 transition-all"
+              >
+                Restore Progress
+              </button>
+              <button 
+                onClick={discardDraft}
+                className="flex-1 md:flex-none px-6 py-3 bg-white/10 text-white border border-white/20 rounded-xl text-sm font-bold hover:bg-white/20 transition-all"
+              >
+                Discard
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {preview ? (
         <div className="bg-white p-12 rounded-[3.5rem] shadow-xl border border-slate-100 prose prose-slate max-w-none prose-headings:font-display">
