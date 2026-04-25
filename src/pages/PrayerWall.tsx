@@ -96,6 +96,7 @@ export default function PrayerWall() {
   const [message, setMessage] = useState('');
   const [targetType, setTargetType] = useState<'myself' | 'others'>('myself');
   const [onBehalfOf, setOnBehalfOf] = useState('');
+  const [guestName, setGuestName] = useState('');
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [visibility, setVisibility] = useState<'public' | 'private'>('public');
   const [sensitivityNote, setSensitivityNote] = useState('');
@@ -120,30 +121,33 @@ export default function PrayerWall() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!message.trim() || !user || !profile) return;
+    if (!message.trim()) return;
 
     try {
       setSubmitting(true);
       
-      await addPrayerRequest({
-        userId: user.uid,
-        userName: profile.displayName,
+      const requestData = {
+        userId: user?.uid || 'guest',
+        userName: user ? (profile?.displayName || 'Member') : (guestName || 'Guest'),
         onBehalfOf: targetType === 'others' ? onBehalfOf : undefined,
         message,
-        isAnonymous,
+        isAnonymous: user ? isAnonymous : !guestName, 
         visibility,
         sensitivityNote: sensitivityNote || undefined
-      });
+      };
+
+      await addPrayerRequest(requestData);
 
       setMessage('');
       setOnBehalfOf('');
+      setGuestName('');
       setSensitivityNote('');
       
       alert(visibility === 'private' 
         ? 'Your prayer request has been sent privately to our leadership. Thank you for sharing.' 
         : 'Prayer request submitted for approval.');
       
-      fetchRequests();
+      if (user) fetchRequests();
     } catch (error) {
       console.error('Error submitting prayer request:', error);
     } finally {
@@ -180,69 +184,57 @@ export default function PrayerWall() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Submit Request */}
         <div className="lg:col-span-1">
-          {!user ? (
-            <div className="bg-slate-50 p-8 rounded-3xl border border-dashed border-slate-300 text-center sticky top-24">
-              <ShieldCheck className="h-12 w-12 text-slate-300 mx-auto mb-4" />
-              <h3 className="font-display font-bold text-slate-900 mb-2">Member Access Only</h3>
-              <p className="text-sm text-slate-500 mb-6">Please log in to your account to share prayer requests or view the prayer wall.</p>
-              <button 
-                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                className="text-maroon font-bold text-sm hover:underline"
-              >
-                Go to login
-              </button>
-            </div>
-          ) : (
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 sticky top-24">
-              <h2 className="text-xl font-display font-bold text-slate-900 mb-6 flex items-center gap-2">
-                <Send className="h-5 w-5 text-maroon" />
-                Submit a Request
-              </h2>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Target Type */}
-                <div className="space-y-3">
-                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">I am praying for...</label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setTargetType('myself')}
-                      className={cn(
-                        "py-2 px-3 rounded-xl text-xs font-bold transition-all border",
-                        targetType === 'myself' ? "bg-maroon text-white border-maroon shadow-md" : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
-                      )}
-                    >
-                      Myself
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setTargetType('others')}
-                      className={cn(
-                        "py-2 px-3 rounded-xl text-xs font-bold transition-all border",
-                        targetType === 'others' ? "bg-maroon text-white border-maroon shadow-md" : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
-                      )}
-                    >
-                      A Friend / Family
-                    </button>
-                  </div>
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 sticky top-24">
+            <h2 className="text-xl font-display font-bold text-slate-900 mb-6 flex items-center gap-2">
+              <Send className="h-5 w-5 text-maroon" />
+              Submit a Request
+            </h2>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Target Type */}
+              <div className="space-y-3">
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">I am praying for...</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setTargetType('myself')}
+                    className={cn(
+                      "py-2 px-3 rounded-xl text-xs font-bold transition-all border",
+                      targetType === 'myself' ? "bg-maroon text-white border-maroon shadow-md" : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
+                    )}
+                  >
+                    Myself
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setTargetType('others')}
+                    className={cn(
+                      "py-2 px-3 rounded-xl text-xs font-bold transition-all border",
+                      targetType === 'others' ? "bg-maroon text-white border-maroon shadow-md" : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
+                    )}
+                  >
+                    A Friend / Family
+                  </button>
                 </div>
+              </div>
 
-                {targetType === 'others' && (
-                  <div className="space-y-3">
-                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Their Name (Optional)</label>
-                    <input
-                      type="text"
-                      className="w-full p-3 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-maroon/20 focus:border-maroon bg-slate-50/50"
-                      placeholder="Who are we praying for?"
-                      value={onBehalfOf}
-                      onChange={(e) => setOnBehalfOf(e.target.value)}
-                    />
-                  </div>
-                )}
-
-                {/* Name & Anonymity */}
+              {targetType === 'others' && (
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">My Identity</label>
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Their Name (Optional)</label>
+                  <input
+                    type="text"
+                    className="w-full p-3 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-maroon/20 focus:border-maroon bg-slate-50/50"
+                    placeholder="Who are we praying for?"
+                    value={onBehalfOf}
+                    onChange={(e) => setOnBehalfOf(e.target.value)}
+                  />
+                </div>
+              )}
+
+              {/* Name & Anonymity */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">My Identity</label>
+                  {user && (
                     <label className="flex items-center gap-2 text-[10px] font-bold text-slate-500 cursor-pointer uppercase tracking-wider">
                       <input 
                         type="checkbox" 
@@ -252,107 +244,120 @@ export default function PrayerWall() {
                       />
                       Post Anonymously
                     </label>
-                  </div>
-                  {!isAnonymous && (
+                  )}
+                </div>
+                {user ? (
+                  !isAnonymous && (
                     <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
                       <p className="text-sm font-medium text-slate-600">{profile?.displayName}</p>
                     </div>
-                  )}
-                </div>
-
-                {/* Visibility Choice */}
-                <div className="space-y-4">
-                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Visibility</label>
-                  <div className="grid grid-cols-1 gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setVisibility('public')}
-                      className={cn(
-                        "flex items-center gap-4 p-4 rounded-2xl border-2 text-left transition-all",
-                        visibility === 'public' 
-                          ? "border-maroon bg-maroon/5 shadow-sm" 
-                          : "border-slate-100 hover:bg-slate-50"
-                      )}
-                    >
-                      <div className={cn(
-                        "h-10 w-10 rounded-full flex items-center justify-center shrink-0",
-                        visibility === 'public' ? "bg-maroon text-white" : "bg-slate-100 text-slate-400"
-                      )}>
-                        <Globe className="h-5 w-5" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-bold text-slate-900">Public (Prayer Wall)</p>
-                        <p className="text-[10px] text-slate-500 uppercase tracking-tight">Visible to BCC members for encouragement</p>
-                      </div>
-                      {visibility === 'public' && <CheckCircle2 className="h-5 w-5 text-maroon" />}
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setVisibility('private')}
-                      className={cn(
-                        "flex items-center gap-4 p-4 rounded-2xl border-2 text-left transition-all",
-                        visibility === 'private' 
-                          ? "border-maroon bg-maroon/5 shadow-sm" 
-                          : "border-slate-100 hover:bg-slate-50"
-                      )}
-                    >
-                      <div className={cn(
-                        "h-10 w-10 rounded-full flex items-center justify-center shrink-0",
-                        visibility === 'private' ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-400"
-                      )}>
-                        <ShieldCheck className="h-5 w-5" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-bold text-slate-900">Private (Leadership Only)</p>
-                        <p className="text-[10px] text-slate-400 uppercase tracking-tight">Only Pastors & Elders will receive this</p>
-                      </div>
-                      {visibility === 'private' && <CheckCircle2 className="h-5 w-5 text-maroon" />}
-                    </button>
+                  )
+                ) : (
+                  <div className="space-y-2">
+                    <input
+                      type="text"
+                      className="w-full p-3 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-maroon/20 focus:border-maroon bg-slate-50/50"
+                      placeholder="Your Name (Optional)"
+                      value={guestName}
+                      onChange={(e) => setGuestName(e.target.value)}
+                    />
+                    <p className="text-[10px] text-slate-400 italic">Leave blank if you wish to remain anonymous</p>
                   </div>
-                </div>
+                )}
+              </div>
 
-                {/* Prayer Request */}
-                <div className="space-y-3">
-                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Prayer Request</label>
-                  <textarea
-                    className="w-full p-4 border border-slate-200 rounded-xl focus:ring-2 focus:ring-maroon focus:border-transparent outline-none transition-all min-h-[120px] text-sm bg-slate-50/50"
-                    placeholder="How can we pray for you (or them) today?"
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    disabled={submitting}
-                  />
-                </div>
+              {/* Visibility Choice */}
+              <div className="space-y-4">
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Visibility</label>
+                <div className="grid grid-cols-1 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setVisibility('public')}
+                    className={cn(
+                      "flex items-center gap-4 p-4 rounded-2xl border-2 text-left transition-all",
+                      visibility === 'public' 
+                        ? "border-maroon bg-maroon/5 shadow-sm" 
+                        : "border-slate-100 hover:bg-slate-50"
+                    )}
+                  >
+                    <div className={cn(
+                      "h-10 w-10 rounded-full flex items-center justify-center shrink-0",
+                      visibility === 'public' ? "bg-maroon text-white" : "bg-slate-100 text-slate-400"
+                    )}>
+                      <Globe className="h-5 w-5" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-bold text-slate-900">Public (Prayer Wall)</p>
+                      <p className="text-[10px] text-slate-500 uppercase tracking-tight">Visible to BCC members for encouragement</p>
+                    </div>
+                    {visibility === 'public' && <CheckCircle2 className="h-5 w-5 text-maroon" />}
+                  </button>
 
-                {/* Sensitivity Note */}
-                <div className="space-y-3">
-                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Sensitivity Note (Optional)</label>
-                  <textarea
-                    className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-maroon focus:border-transparent outline-none transition-all min-h-[80px] text-sm bg-slate-50/50"
-                    placeholder="Any specific instructions for leadership? (e.g., 'Please keep this quiet' or 'Share with council')"
-                    value={sensitivityNote}
-                    onChange={(e) => setSensitivityNote(e.target.value)}
-                    disabled={submitting}
-                  />
+                  <button
+                    type="button"
+                    onClick={() => setVisibility('private')}
+                    className={cn(
+                      "flex items-center gap-4 p-4 rounded-2xl border-2 text-left transition-all",
+                      visibility === 'private' 
+                        ? "border-maroon bg-maroon/5 shadow-sm" 
+                        : "border-slate-100 hover:bg-slate-50"
+                    )}
+                  >
+                    <div className={cn(
+                      "h-10 w-10 rounded-full flex items-center justify-center shrink-0",
+                      visibility === 'private' ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-400"
+                    )}>
+                      <ShieldCheck className="h-5 w-5" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-bold text-slate-900">Private (Leadership Only)</p>
+                      <p className="text-[10px] text-slate-400 uppercase tracking-tight">Only Pastors & Elders will receive this</p>
+                    </div>
+                    {visibility === 'private' && <CheckCircle2 className="h-5 w-5 text-maroon" />}
+                  </button>
                 </div>
+              </div>
 
-                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                  <p className="text-[10px] text-slate-500 leading-relaxed italic flex items-start gap-2">
-                    <ShieldCheck className="h-4 w-4 text-maroon shrink-0" />
-                    Your prayers are safely handled by leadership. Only approved public requests will appear on the wall.
-                  </p>
-                </div>
+              {/* Prayer Request */}
+              <div className="space-y-3">
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Prayer Request</label>
+                <textarea
+                  className="w-full p-4 border border-slate-200 rounded-xl focus:ring-2 focus:ring-maroon focus:border-transparent outline-none transition-all min-h-[120px] text-sm bg-slate-50/50"
+                  placeholder="How can we pray for you today?"
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  disabled={submitting}
+                />
+              </div>
 
-                <button
-                  type="submit"
-                  disabled={submitting || !message.trim()}
-                  className="w-full py-4 bg-maroon text-white rounded-2xl font-bold hover:bg-maroon-dark transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-maroon/20"
-                >
-                  {submitting ? 'Submitting...' : visibility === 'private' ? 'Send Privately' : 'Post Request'}
-                </button>
-              </form>
-            </div>
-          )}
+              {/* Sensitivity Note */}
+              <div className="space-y-3">
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Sensitivity Note (Optional)</label>
+                <textarea
+                  className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-maroon focus:border-transparent outline-none transition-all min-h-[80px] text-sm bg-slate-50/50"
+                  placeholder="Any specific instructions for leadership?"
+                  value={sensitivityNote}
+                  onChange={(e) => setSensitivityNote(e.target.value)}
+                  disabled={submitting}
+                />
+              </div>
+
+              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                <p className="text-[10px] text-slate-500 leading-relaxed italic flex items-start gap-2">
+                  <ShieldCheck className="h-4 w-4 text-maroon shrink-0" />
+                  Your prayers are safely handled by leadership. Only approved public requests will appear on the wall.
+                </p>
+              </div>
+
+              <button
+                type="submit"
+                disabled={submitting || !message.trim()}
+                className="w-full py-4 bg-maroon text-white rounded-2xl font-bold hover:bg-maroon-dark transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-maroon/20"
+              >
+                {submitting ? 'Submitting...' : visibility === 'private' ? 'Send Privately' : 'Post Request'}
+              </button>
+            </form>
+          </div>
         </div>
 
         {/* Requests List */}

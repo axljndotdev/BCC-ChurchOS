@@ -17,7 +17,7 @@ import { useAuth } from '../contexts/AuthContext';
 const menuItems = [
   { name: 'Dashboard', href: '/member/dashboard', icon: LayoutDashboard },
   { name: 'Messages', href: '/member/messages', icon: Mail },
-  { name: 'Prayer Wall', href: '/member/prayer', icon: Heart },
+  { name: 'Prayer Wall', href: '/prayer', icon: Heart },
   { name: 'Events', href: '/member/events', icon: Calendar },
   { name: 'Directory', href: '/member/directory', icon: Users },
   { name: 'Resources', href: '/member/resources', icon: BookOpen },

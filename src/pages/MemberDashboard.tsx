@@ -197,7 +197,7 @@ export default function MemberDashboard() {
           <h2 className="text-xl font-bold text-slate-900">Quick Actions</h2>
           <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
             {[
-              { label: 'Submit Prayer Request', href: '/member/prayer', icon: MessageSquare },
+              { label: 'Submit Prayer Request', href: '/prayer', icon: MessageSquare },
               { label: 'Watch Live', href: '/live', icon: Video },
               { label: 'Profile Settings', href: '/member/profile', icon: User },
               { label: 'Upcoming Events', href: '/member/events', icon: Calendar },

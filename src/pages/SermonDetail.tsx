@@ -203,7 +203,7 @@ export default function SermonDetail() {
                   Inspired by the message? Share a prayer request or pray for others.
                 </p>
                 <Link 
-                  to="/member/prayer" 
+                  to="/prayer" 
                   className="inline-flex items-center gap-2 text-maroon font-bold bg-white px-6 py-3 rounded-xl hover:bg-slate-100 transition-all text-sm"
                 >
                   Go to Prayer Wall <ArrowRight className="h-4 w-4" />

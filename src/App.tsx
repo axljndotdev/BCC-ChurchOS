@@ -88,6 +88,7 @@ function AppContent() {
           <Route path="/blogs" element={<Blogs />} />
           <Route path="/blogs/:slug" element={<BlogPost />} />
           <Route path="/activities" element={<WeeklyActivities />} />
+          <Route path="/prayer" element={<PrayerWall />} />
           <Route path="/pending-approval" element={<PendingApproval />} />
         </Route>
 
@@ -97,7 +98,6 @@ function AppContent() {
             <Route path="dashboard" element={<MemberDashboard />} />
             <Route path="profile" element={<MemberProfile />} />
             <Route path="messages" element={<MemberMessages />} />
-            <Route path="prayer" element={<PrayerWall />} />
             <Route path="blog/new" element={<MemberBlogEditor />} />
             <Route path="blog/edit/:id" element={<MemberBlogEditor />} />
             <Route path="events" element={<Events />} />

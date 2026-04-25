@@ -121,10 +121,10 @@ export default function Home() {
       <section className="max-w-4xl mx-auto px-4 text-center">
         <Quote className="h-12 w-12 text-maroon/20 mx-auto mb-8" />
         <h2 className="text-4xl md:text-5xl font-display italic text-slate-800 mb-8 leading-tight">
-          "In this place, you are seen, you are known, and you are loved."
+          "In Bethesda, we grow together in the Lord."
         </h2>
         <div className="w-20 h-px bg-maroon mx-auto mb-8" />
-        <p className="text-slate-500 font-light tracking-wide uppercase text-sm">Pastor John Doe</p>
+        <p className="text-slate-500 font-light tracking-wide uppercase text-sm">Pastor Fritz</p>
       </section>
 
       {/* Service Times - Warm Organic */}
@@ -340,7 +340,7 @@ export default function Home() {
               <Link to="/contact" className="w-full sm:w-auto px-10 py-4 bg-white text-slate-900 rounded-full font-medium hover:bg-slate-100 transition-all">
                 I'm New Here
               </Link>
-              <Link to="/member/prayer" className="w-full sm:w-auto px-10 py-4 border border-white/40 text-white rounded-full font-medium hover:bg-white/10 transition-all flex items-center justify-center gap-2">
+              <Link to="/prayer" className="w-full sm:w-auto px-10 py-4 border border-white/40 text-white rounded-full font-medium hover:bg-white/10 transition-all flex items-center justify-center gap-2">
                 <Heart className="h-4 w-4" /> Request Prayer
               </Link>
             </div>

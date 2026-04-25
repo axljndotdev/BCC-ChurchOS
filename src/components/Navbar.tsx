@@ -3,7 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { 
   Menu, X, User, LogOut, LayoutDashboard, ShieldCheck, 
   ChevronDown, BookOpen, Users, Info, MessageSquare, 
-  Calendar, Video, Image, Mic2, Newspaper, AlertTriangle 
+  Calendar, Video, Image, Mic2, Newspaper, AlertTriangle, Heart
 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { cn } from '../lib/utils';
@@ -59,6 +59,7 @@ export default function Navbar() {
       items: [
         { name: 'Upcoming Events', href: '/events', icon: Calendar, desc: 'Join our gatherings' },
         { name: 'Membership', href: '/membership', icon: BookOpen, desc: 'Apply for official membership' },
+        { name: 'Prayer Requests', href: '/prayer', icon: Heart, desc: 'How can we pray for you?' },
         { name: 'Contact Us', href: '/contact', icon: MessageSquare, desc: 'Get in touch with us' },
       ]
     }
