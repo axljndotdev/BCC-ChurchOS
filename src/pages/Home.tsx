@@ -318,51 +318,6 @@ export default function Home() {
         </section>
       )}
 
-      {/* Blog/Reflections Section */}
-      {latestBlogs.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row items-baseline justify-between mb-16 gap-4">
-            <h2 className="text-5xl font-display text-slate-900">Reflections</h2>
-            <Link to="/blogs" className="text-slate-400 hover:text-maroon transition-colors flex items-center gap-2 uppercase text-xs tracking-widest font-bold">
-              Read Our Blog <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-            {latestBlogs.slice(1).map((post) => (
-              <Link 
-                key={post.id} 
-                to={`/blogs/${post.slug || post.id}`}
-                className="group space-y-6"
-              >
-                <div className="aspect-[4/3] rounded-[2rem] overflow-hidden shadow-sm group-hover:shadow-xl transition-all duration-500">
-                  <img 
-                    src={post.coverImage || `https://picsum.photos/seed/${post.id}/800/600`}
-                    alt={post.title}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                    referrerPolicy="no-referrer"
-                  />
-                </div>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3 text-[10px] font-bold text-maroon uppercase tracking-widest">
-                    <span className="h-1.5 w-1.5 bg-maroon rounded-full" />
-                    {formatDate(post.publishedAt || post.createdAt)}
-                    <span className="text-slate-300">|</span>
-                    by: {post.authorName}
-                  </div>
-                  <h3 className="text-2xl font-display font-bold text-slate-900 group-hover:text-maroon transition-colors leading-tight">
-                    {post.title}
-                  </h3>
-                  <p className="text-slate-500 font-light text-sm line-clamp-2 leading-relaxed">
-                    {post.excerpt}
-                  </p>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
-
       {/* Gospel Message - Immersive */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="relative rounded-[4rem] overflow-hidden py-32 px-8 text-center">

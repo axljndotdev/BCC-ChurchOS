@@ -93,11 +93,14 @@ export default function About() {
             <div className="space-y-4">
               <div className="p-6 bg-white rounded-3xl shadow-sm border border-slate-100">
                 <h3 className="text-xl font-bold text-slate-900 mb-2">Our Mission</h3>
-                <p className="text-slate-600 font-light">To lead people into a growing relationship with Jesus Christ through authentic community and biblical teaching.</p>
+                <p className="text-slate-600 font-light">Equipping disciples making disciples.</p>
               </div>
               <div className="p-6 bg-white rounded-3xl shadow-sm border border-slate-100">
                 <h3 className="text-xl font-bold text-slate-900 mb-2">Our Vision</h3>
-                <p className="text-slate-600 font-light">To see Kabankalan City transformed by the Gospel, one life and one family at a time.</p>
+                <p className="text-slate-600 font-light">A dynamic, Spirit-filled Church, and passionate about the lost; proactive and proficient in ministry skills numbering thousands upon thousands in kingdom building, impacting our city, nation and the world through leadership development, intentional discipleship, proclaiming and practicing the full importance and authenticity of the Word who are called to live in Christ, equipped to live like Christ, and sent to live for Christ.</p>
+              </div><div className="p-6 bg-white rounded-3xl shadow-sm border border-slate-100">
+                <h3 className="text-xl font-bold text-slate-900 mb-2">Our Goal</h3>
+                <p className="text-slate-600 font-light">Raise up men and women who will love above all else the God who loves them above all else.</p>
               </div>
             </div>
           </div>
