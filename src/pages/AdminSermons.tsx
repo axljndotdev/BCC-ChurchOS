@@ -3,7 +3,8 @@ import { getSermons, addSermon } from '../services/db';
 import { deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import { Sermon } from '../types';
-import { Video, Plus, Trash2, Edit2, Search, ExternalLink, Loader2 } from 'lucide-react';
+import { Video, Plus, Trash2, Edit2, Search, ExternalLink, Loader2, Palette } from 'lucide-react';
+import { useCanva } from '../hooks/useCanva';
 import { formatDate } from '../lib/utils';
 
 export default function AdminSermons() {
@@ -81,6 +82,8 @@ export default function AdminSermons() {
     s.speaker.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const { openCanva, hasKey } = useCanva();
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -88,12 +91,21 @@ export default function AdminSermons() {
           <h1 className="text-3xl font-display font-bold text-slate-900">Sermon Management</h1>
           <p className="text-slate-500">Upload and organize your sermon archive.</p>
         </div>
-        <button 
-          onClick={() => setIsModalOpen(true)}
-          className="flex items-center justify-center gap-2 px-6 py-3 bg-maroon text-white rounded-xl font-bold hover:bg-maroon-dark transition-all scale-100 hover:scale-105 active:scale-95"
-        >
-          <Plus className="h-5 w-5" /> Add Sermon
-        </button>
+        <div className="flex gap-3">
+          <button 
+            onClick={() => openCanva('SocialMedia', (url) => setFormData(prev => ({ ...prev, thumbnail: url })))}
+            className="px-6 py-3 bg-white text-slate-700 rounded-xl text-sm font-bold border border-slate-200 hover:bg-slate-50 transition-all flex items-center gap-2"
+          >
+            <Palette className="h-4 w-4 text-blue-600" />
+            Design Thumbnail
+          </button>
+          <button 
+            onClick={() => setIsModalOpen(true)}
+            className="flex items-center justify-center gap-2 px-6 py-3 bg-maroon text-white rounded-xl font-bold hover:bg-maroon-dark transition-all scale-100 hover:scale-105 active:scale-95"
+          >
+            <Plus className="h-5 w-5" /> Add Sermon
+          </button>
+        </div>
       </div>
 
       <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">

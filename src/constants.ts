@@ -13,6 +13,10 @@ export const ROLE_INFO: Record<UserRole, { label: string; description: string }>
     label: 'Ministry Leader',
     description: 'Oversight and coordination of specific church ministries.'
   },
+  media: {
+    label: 'Media Team',
+    description: 'Management of sermons, gallery, and live broadcast.'
+  },
   member: {
     label: 'Member',
     description: 'Standard member access.'

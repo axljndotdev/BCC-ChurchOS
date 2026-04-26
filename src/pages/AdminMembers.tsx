@@ -27,7 +27,7 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import { ROLE_INFO } from '../constants';
 
-const ROLES: UserRole[] = ['super_admin', 'church_admin', 'ministry_leader', 'member'];
+const ROLES: UserRole[] = ['super_admin', 'church_admin', 'ministry_leader', 'media', 'member'];
 const TITLES: UserTitle[] = ['Pastor', 'Elder', 'Deacon', 'Deaconess', 'Member', 'Guest'];
 const STATUSES: UserStatus[] = ['pending', 'active', 'suspended'];
 const MEMBERSHIP_STATUSES: MembershipStatus[] = ['visitor', 'applicant', 'official_member'];
@@ -156,7 +156,8 @@ export default function AdminMembers() {
       name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       username.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesRole = roleFilter === 'all' || user.role === roleFilter;
+    const userRoles = Array.isArray(user.role) ? user.role : [user.role];
+    const matchesRole = roleFilter === 'all' || userRoles.includes(roleFilter as any);
     const matchesStatus = statusFilter === 'all' || user.status === statusFilter;
     const matchesMembership = membershipFilter === 'all' || user.membershipStatus === membershipFilter;
     return matchesSearch && matchesRole && matchesStatus && matchesMembership;
@@ -394,25 +395,35 @@ export default function AdminMembers() {
                       )}
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <select
-                          className="text-xs font-medium bg-slate-50 border border-slate-200 rounded-md px-2 py-1 outline-none focus:ring-2 focus:ring-maroon/20"
-                          value={user.role}
-                          disabled={updatingId === user.uid || (!isSuperAdmin && user.role === 'super_admin')}
-                          onChange={(e) => handleUpdateUser(user.uid, { role: e.target.value as UserRole })}
-                        >
-                          {ROLES.map(role => (
-                            <option key={role} value={role} disabled={role === 'super_admin' && !isSuperAdmin}>
-                              {ROLE_INFO[role].label}
-                            </option>
-                          ))}
-                        </select>
-                        <div className="group relative">
-                          <Info className="h-3 w-3 text-slate-300 cursor-help" />
-                          <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 w-48 p-2 bg-slate-900 text-white text-[10px] rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 shadow-xl">
-                            {ROLE_INFO[user.role].description}
-                          </div>
-                        </div>
+                      <div className="flex flex-wrap gap-1 max-w-[150px]">
+                        {ROLES.map(role => {
+                          const userRoles = Array.isArray(user.role) ? user.role : [user.role];
+                          const isSelected = userRoles.includes(role);
+                          if (role === 'super_admin' && !isSuperAdmin) return null;
+                          
+                          return (
+                            <button
+                              key={role}
+                              disabled={updatingId === user.uid}
+                              onClick={() => {
+                                let newRoles = isSelected 
+                                  ? userRoles.filter(r => r !== role)
+                                  : [...userRoles, role];
+                                if (newRoles.length === 0) newRoles = ['member'];
+                                handleUpdateUser(user.uid, { role: newRoles });
+                              }}
+                              className={cn(
+                                "px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider transition-all",
+                                isSelected 
+                                  ? "bg-maroon text-white shadow-sm" 
+                                  : "bg-slate-100 text-slate-400 hover:bg-slate-200"
+                              )}
+                              title={ROLE_INFO[role].description}
+                            >
+                              {ROLE_INFO[role].label.replace('super_admin', 'S.Admin').replace('church_admin', 'Admin').replace('ministry_leader', 'Leader').replace('media', 'Media').replace('member', 'Member')}
+                            </button>
+                          );
+                        })}
                       </div>
                     </td>
                     <td className="px-6 py-4">

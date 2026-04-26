@@ -139,12 +139,26 @@
       },
       "required": ["userId", "userName", "message", "status", "date", "isAnonymous", "visibility"]
     },
+    "GalleryAlbum": {
+      "title": "Gallery Album",
+      "description": "An album containing photos from a specific event or category.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "coverImageUrl": { "type": "string", "format": "uri" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "description", "createdAt", "updatedAt"]
+    },
     "GalleryItem": {
       "title": "Gallery Item",
       "description": "Photo in the church gallery.",
       "type": "object",
       "properties": {
         "album": { "type": "string" },
+        "albumId": { "type": "string" },
         "imageUrl": { "type": "string", "format": "uri" },
         "uploadedBy": { "type": "string" },
         "createdAt": { "type": "string", "format": "date-time" }
@@ -242,6 +256,10 @@
     "/gallery/{itemId}": {
       "schema": "GalleryItem",
       "description": "Gallery photos"
+    },
+    "/gallery_albums/{albumId}": {
+      "schema": "GalleryAlbum",
+      "description": "Gallery albums"
     },
     "/announcements/{announcementId}": {
       "schema": "Announcement",

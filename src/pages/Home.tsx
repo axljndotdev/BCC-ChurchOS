@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Calendar, Video, Users, Heart, Play, Quote, MessageSquare, Clock, Globe } from 'lucide-react';
+import { ArrowRight, Calendar, Video, Users, Heart, Play, Quote, MessageSquare, Clock, Globe, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn, formatDate } from '../lib/utils';
 import { getSermons, getSystemSettings, getEvents, getAnnouncements, getBlogPosts } from '../services/db';
@@ -13,6 +13,7 @@ export default function Home() {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [latestBlogs, setLatestBlogs] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedAnnouncement, setSelectedAnnouncement] = useState<Announcement | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -308,7 +309,12 @@ export default function Home() {
                       </div>
                       <h3 className="text-2xl font-display font-bold text-slate-900">{news.title}</h3>
                       <p className="text-slate-500 font-light text-sm leading-relaxed line-clamp-2">{news.content}</p>
-                      <button className="text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-maroon transition-colors">Read More</button>
+                      <button 
+                        onClick={() => setSelectedAnnouncement(news)}
+                        className="text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-maroon transition-colors cursor-pointer"
+                      >
+                        Read More
+                      </button>
                     </div>
                   ))}
                 </div>
@@ -317,6 +323,62 @@ export default function Home() {
           </div>
         </section>
       )}
+
+      {/* News Detail Modal */}
+      <AnimatePresence>
+        {selectedAnnouncement && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center px-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedAnnouncement(null)}
+              className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm"
+            />
+            <motion.div
+              layoutId={`news-${selectedAnnouncement.id}`}
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative w-full max-w-2xl bg-white rounded-[3rem] p-8 md:p-12 shadow-2xl overflow-hidden max-h-[80vh] flex flex-col"
+            >
+              <button 
+                onClick={() => setSelectedAnnouncement(null)}
+                className="absolute top-8 right-8 text-slate-400 hover:text-maroon transition-colors"
+                id="close-news-modal"
+              >
+                <X className="h-6 w-6" />
+              </button>
+              
+              <div className="overflow-y-auto pr-4 custom-scrollbar">
+                <div className="space-y-6">
+                  <div className="flex items-center gap-3 text-[10px] font-bold text-maroon uppercase tracking-widest">
+                    <span className="h-2 w-2 bg-maroon rounded-full"></span>
+                    {formatDate(selectedAnnouncement.date)}
+                  </div>
+                  <h2 className="text-4xl md:text-5xl font-display text-slate-900 leading-tight">
+                    {selectedAnnouncement.title}
+                  </h2>
+                  <div className="w-12 h-px bg-maroon/20" />
+                  <p className="text-slate-600 font-light text-lg leading-relaxed whitespace-pre-wrap">
+                    {selectedAnnouncement.content}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-12 pt-8 border-t border-slate-50 flex justify-between items-center">
+                <p className="text-[10px] font-bold text-slate-300 uppercase tracking-[0.2em]">Bethesda Community Church</p>
+                <button 
+                  onClick={() => setSelectedAnnouncement(null)}
+                  className="px-8 py-3 bg-slate-900 text-white rounded-full text-xs font-bold uppercase tracking-widest hover:bg-maroon transition-all"
+                >
+                  Close
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Gospel Message - Immersive */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

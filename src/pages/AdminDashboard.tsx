@@ -48,7 +48,7 @@ import {
 } from 'recharts';
 
 export default function AdminDashboard() {
-  const { isSuperAdmin, isAdmin, user } = useAuth();
+  const { isSuperAdmin, isAdmin, isMediaTeam, user } = useAuth();
   const [stats, setStats] = useState({
     members: 0,
     sermons: 0,
@@ -198,13 +198,28 @@ export default function AdminDashboard() {
       </header>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {cards.map((card, i) => (
-          <Link 
-            key={i} 
-            to={card.link}
-            className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 hover:shadow-md transition-all group"
-          >
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+            {(isSuperAdmin || isAdmin || isMediaTeam) && (
+              <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 hover:shadow-md transition-all group">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="p-3 bg-red-50 rounded-2xl">
+                    <Video className="h-6 w-6 text-red-600" />
+                  </div>
+                  <ArrowUpRight className="h-4 w-4 text-slate-300 group-hover:text-maroon transition-colors" />
+                </div>
+                <p className="text-3xl font-display font-bold text-slate-900">{stats.sermons}</p>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest text-left">Total Sermons</p>
+              </div>
+            )}
+            {cards.map((card, i) => (
+              <Link 
+                key={i} 
+                to={card.link}
+                className={cn(
+                  "bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 hover:shadow-md transition-all group",
+                  (!isSuperAdmin && !isAdmin && !isMediaTeam) && "hidden"
+                )}
+              >
             <div className="flex items-center justify-between mb-4">
               <div className={cn("p-3 rounded-2xl", card.bg)}>
                 <card.icon className={cn("h-6 w-6", card.color)} />

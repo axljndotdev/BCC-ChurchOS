@@ -28,6 +28,7 @@ interface AuthContextType {
   isAdmin: boolean;
   isCouncil: boolean;
   isMinistryLeader: boolean;
+  isMediaTeam: boolean;
   isConfigured: boolean;
 }
 
@@ -77,7 +78,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 email: firebaseUser.email || undefined,
                 displayName: firebaseUser.displayName || 'Member',
                 photoURL: firebaseUser.photoURL || '',
-                role: isSuperAdminUser ? 'super_admin' : 'member',
+                role: isSuperAdminUser ? ['super_admin'] : ['member'],
                 title: 'Member',
                 status: isSuperAdminUser ? 'active' : 'pending',
                 membershipStatus: isSuperAdminUser ? 'official_member' : 'visitor',
@@ -157,7 +158,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         username: username,
         displayName: name || 'Member',
         photoURL: '',
-        role: isSuperAdminUser ? 'super_admin' : 'member',
+        role: isSuperAdminUser ? ['super_admin'] : ['member'],
         title: 'Member',
         status: isSuperAdminUser ? 'active' : 'pending',
         membershipStatus: isSuperAdminUser ? 'official_member' : 'visitor',
@@ -176,7 +177,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!auth || !auth.currentUser || !profile || !db) return;
     
     const count = profile.passwordChangeCount || 0;
-    if (count >= 5 && profile.role !== 'super_admin') {
+    const userRoles = Array.isArray(profile.role) ? profile.role : [profile.role];
+    if (count >= 5 && !userRoles.includes('super_admin')) {
       throw new Error('Password change limit reached. Please contact Super Admin to reset.');
     }
 
@@ -187,7 +189,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const docRef = doc(db, 'users', profile.uid);
       await setDoc(docRef, { 
         passwordChangeCount: count + 1,
-        passwordChangeLocked: (count + 1) >= 5 && profile.role !== 'super_admin'
+        passwordChangeLocked: (count + 1) >= 5 && !profile.role.includes('super_admin')
       }, { merge: true });
     } catch (error) {
       throw error;
@@ -214,10 +216,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const isSuperAdmin = profile?.role === 'super_admin' || user?.email === 'wapdev24@gmail.com';
-  const isAdmin = isSuperAdmin || profile?.role === 'church_admin';
+  const userRoles = Array.isArray(profile?.role) ? profile?.role : (profile?.role ? [profile.role] : []);
+  const hasRole = (r: any) => userRoles.includes(r);
+
+  const isSuperAdmin = hasRole('super_admin') || user?.email === 'wapdev24@gmail.com';
+  const isAdmin = isSuperAdmin || hasRole('church_admin');
   const isCouncil = profile?.isCouncilMember || isAdmin || ['Elder', 'Deacon', 'Deaconess', 'Pastor'].includes(profile?.title || '');
-  const isMinistryLeader = profile?.role === 'ministry_leader' || isAdmin;
+  const isMinistryLeader = hasRole('ministry_leader') || isAdmin;
+  const isMediaTeam = hasRole('media') || isAdmin;
 
   return (
     <AuthContext.Provider value={{ 
@@ -234,6 +240,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isAdmin,
       isCouncil,
       isMinistryLeader,
+      isMediaTeam,
       isConfigured: isFirebaseConfigured
     }}>
       {children}

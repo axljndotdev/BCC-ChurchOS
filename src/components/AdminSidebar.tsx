@@ -55,17 +55,23 @@ interface AdminSidebarProps {
 
 export default function AdminSidebar({ onClose }: AdminSidebarProps) {
   const location = useLocation();
-  const { isSuperAdmin, isAdmin, isCouncil, isMinistryLeader } = useAuth();
+  const { isSuperAdmin, isAdmin, isCouncil, isMinistryLeader, isMediaTeam } = useAuth();
 
   const isAllowed = (itemName: string) => {
     if (isSuperAdmin || isAdmin) return true;
+    const allowedItems: string[] = ['Dashboard'];
+    
+    if (isMediaTeam) {
+      allowedItems.push('Media/Gallery', 'Sermons');
+    }
     if (isCouncil) {
-      return ['Members', 'Prayers', 'Announcements', 'Blogs', 'Dashboard'].includes(itemName);
+      allowedItems.push('Members', 'Prayers', 'Announcements', 'Blogs');
     }
     if (isMinistryLeader) {
-      return ['Ministries', 'Media/Gallery', 'Dashboard'].includes(itemName);
+      allowedItems.push('Ministries', 'Media/Gallery');
     }
-    return false;
+    
+    return allowedItems.includes(itemName);
   };
 
   return (

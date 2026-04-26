@@ -44,6 +44,7 @@ import MemberMessages from './pages/MemberMessages';
 import PrayerWall from './pages/PrayerWall';
 import MemberDirectory from './pages/MemberDirectory';
 import PendingApproval from './pages/PendingApproval';
+import MemberPrayer from './pages/MemberPrayer';
 
 // Admin Pages
 import AdminDashboard from './pages/AdminDashboard';
@@ -102,12 +103,13 @@ function AppContent() {
             <Route path="blog/edit/:id" element={<MemberBlogEditor />} />
             <Route path="events" element={<Events />} />
             <Route path="directory" element={<MemberDirectory />} />
+            <Route path="prayer" element={<MemberPrayer />} />
             <Route path="resources" element={<div className="p-8">Resources coming soon.</div>} />
           </Route>
         </Route>
 
         {/* Admin Routes */}
-        <Route path="/admin" element={<ProtectedRoute allowedRoles={['elder', 'super_admin', 'council']} />}>
+        <Route path="/admin" element={<ProtectedRoute allowedRoles={['elder', 'super_admin', 'council', 'media']} />}>
           <Route element={<AdminLayout />}>
             <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="sermons" element={<AdminSermons />} />

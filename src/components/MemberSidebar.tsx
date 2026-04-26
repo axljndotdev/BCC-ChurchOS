@@ -17,7 +17,7 @@ import { useAuth } from '../contexts/AuthContext';
 const menuItems = [
   { name: 'Dashboard', href: '/member/dashboard', icon: LayoutDashboard },
   { name: 'Messages', href: '/member/messages', icon: Mail },
-  { name: 'Prayer Wall', href: '/prayer', icon: Heart },
+  { name: 'Prayer Wall', href: '/member/prayer', icon: Heart },
   { name: 'Events', href: '/member/events', icon: Calendar },
   { name: 'Directory', href: '/member/directory', icon: Users },
   { name: 'Resources', href: '/member/resources', icon: BookOpen },
@@ -32,11 +32,13 @@ export default function MemberSidebar({ onClose }: MemberSidebarProps) {
   const { profile, isAdmin, isCouncil, isSuperAdmin } = useAuth();
 
   const getRoleLabel = () => {
+    const userRoles = Array.isArray(profile?.role) ? profile.role : (profile?.role ? [profile.role] : []);
     if (isSuperAdmin) return 'Super Admin';
     if (profile?.title && profile.title !== 'Member') return profile.title;
-    if (isAdmin) return 'Admin';
+    if (userRoles.includes('church_admin')) return 'Admin';
     if (isCouncil) return 'Council';
-    if (profile?.role === 'ministry_leader') return 'Leader';
+    if (userRoles.includes('ministry_leader')) return 'Leader';
+    if (userRoles.includes('media')) return 'Media Team';
     return 'Member';
   };
 

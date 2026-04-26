@@ -1,4 +1,4 @@
-export type UserRole = 'super_admin' | 'church_admin' | 'ministry_leader' | 'member';
+export type UserRole = 'super_admin' | 'church_admin' | 'ministry_leader' | 'media' | 'member';
 export type UserTitle = 'Pastor' | 'Elder' | 'Deacon' | 'Deaconess' | 'Member' | 'Guest';
 export type UserStatus = 'pending' | 'active' | 'suspended';
 export type MembershipStatus = 'visitor' | 'applicant' | 'official_member';
@@ -20,7 +20,7 @@ export interface UserProfile {
   username?: string;
   displayName: string;
   photoURL?: string;
-  role: UserRole;
+  role: UserRole[];
   title: UserTitle;
   status: UserStatus;
   membershipStatus: MembershipStatus;
@@ -132,6 +132,13 @@ export interface Sermon {
   thumbnail?: string;
 }
 
+export interface EventMedia {
+  type: 'photo' | 'video';
+  url: string;
+  thumbnail?: string;
+  caption?: string;
+}
+
 export interface ChurchEvent {
   id: string;
   title: string;
@@ -142,6 +149,7 @@ export interface ChurchEvent {
   endDate?: any; // Added for date selection range
   location: string;
   imageUrl: string;
+  media?: EventMedia[];
 }
 
 export interface Announcement {
@@ -177,8 +185,9 @@ export interface PrayerRequest {
   userId: string; // Required - only members can post
   userName: string;
   onBehalfOf?: string; // Optional - if posting for someone else
+  targetType?: 'myself' | 'others';
   message: string;
-  status: 'pending' | 'approved' | 'answered';
+  status: 'pending' | 'approved' | 'denied' | 'answered';
   date: any;
   prayCount?: number;
   prayers?: string[]; // array of user IDs
@@ -203,9 +212,19 @@ export interface SermonComment {
   createdAt: any;
 }
 
+export interface GalleryAlbum {
+  id: string;
+  name: string;
+  description: string;
+  coverImageUrl?: string;
+  createdAt: any;
+  updatedAt: any;
+}
+
 export interface GalleryItem {
   id: string;
-  album: string;
+  album: string; // This remains as name or ID, but I'll treat it as ID now if possible
+  albumId?: string;
   imageUrl: string;
   uploadedBy: string;
   createdAt: any;

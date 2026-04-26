@@ -304,7 +304,11 @@ export default function Navbar() {
                     </div>
                     <div>
                       <p className="text-sm font-bold text-slate-900">{profile?.displayName}</p>
-                      <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{profile?.role?.replace('_', ' ')}</p>
+                      <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                        {profile?.role && Array.isArray(profile.role) 
+                          ? profile.role.map(r => r.replace('_', ' ')).join(' / ') 
+                          : profile?.role ? (profile.role as unknown as string).replace('_', ' ') : ''}
+                      </p>
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-2">

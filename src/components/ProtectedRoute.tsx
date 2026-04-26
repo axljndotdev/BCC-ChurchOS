@@ -6,7 +6,7 @@ interface ProtectedRouteProps {
 }
 
 export default function ProtectedRoute({ allowedRoles }: ProtectedRouteProps) {
-  const { user, profile, loading, isSuperAdmin, isAdmin, isCouncil, isMinistryLeader } = useAuth();
+  const { user, profile, loading, isSuperAdmin, isAdmin, isCouncil, isMinistryLeader, isMediaTeam } = useAuth();
 
   if (loading) {
     return (
@@ -36,7 +36,9 @@ export default function ProtectedRoute({ allowedRoles }: ProtectedRouteProps) {
       const hasRoleAccess = allowedRoles.some(role => {
         if (role === 'council' && (isCouncil || isAdmin)) return true;
         if (role === 'ministry_leader' && (isMinistryLeader || isAdmin)) return true;
-        return role === profile.role;
+        if (role === 'media' && (isMediaTeam || isAdmin)) return true;
+        const userRoles = Array.isArray(profile.role) ? profile.role : [profile.role];
+        return userRoles.includes(role as any);
       });
 
       if (!hasRoleAccess) {

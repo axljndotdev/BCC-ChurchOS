@@ -22,12 +22,17 @@ service cloud.firestore {
     function getUserData() {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
     }
+
+    function hasAdminRole(userData) {
+      return (userData.role is string && userData.role in ['super_admin', 'church_admin']) ||
+             (userData.role is list && userData.role.hasAny(['super_admin', 'church_admin']));
+    }
     
     function isAdmin() {
       return isAuthenticated() && (
         request.auth.token.email == 'wapdev24@gmail.com' ||
         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['super_admin', 'church_admin'])
+         hasAdminRole(get(/databases/$(database)/documents/users/$(request.auth.uid)).data))
       );
     }
 
@@ -36,18 +41,21 @@ service cloud.firestore {
     }
     
     function isCouncil() {
-      return isAuthenticated() && 
-        ((exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-          (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isCouncilMember == true || 
-           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('title', 'Member') in ['Elder', 'Deacon', 'Deaconess', 'Pastor'])) || 
-         isAdmin());
+      return isAuthenticated() && (
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && (
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isCouncilMember == true || 
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('title', 'Member') in ['Elder', 'Deacon', 'Deaconess', 'Pastor']
+        )) || isAdmin()
+      );
     }
     
     function isMinistryLeader() {
-      return isAuthenticated() && 
-        ((exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-          getUserData().role == 'ministry_leader') || 
-         isAdmin());
+      return isAuthenticated() && (
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && (
+          (getUserData().role is string && getUserData().role == 'ministry_leader') ||
+          (getUserData().role is list && getUserData().role.hasAny(['ministry_leader']))
+        )) || isAdmin()
+      );
     }
 
     function isMinistryEditor() {
@@ -124,16 +132,18 @@ service cloud.firestore {
     }
 
     function isValidPrayerRequest(data) {
-      return data.keys().hasAll(['userName', 'message', 'status', 'date', 'isAnonymous', 'visibility']) &&
+      return data.keys().hasAll(['userName', 'message', 'status', 'date']) &&
              data.userName is string && data.userName.size() > 0 && data.userName.size() < 100 &&
              data.message is string && data.message.size() > 0 && data.message.size() < 2000 &&
              data.status in ['pending', 'approved', 'answered'] &&
              data.date is timestamp &&
-             data.isAnonymous is bool &&
-             data.visibility in ['public', 'private'] &&
+             (!('isAnonymous' in data) || data.isAnonymous is bool) &&
+             (!('visibility' in data) || data.visibility in ['public', 'private']) &&
              (!('userId' in data) || data.userId is string) &&
              (!('onBehalfOf' in data) || data.onBehalfOf is string) &&
-             (!('sensitivityNote' in data) || data.sensitivityNote is string);
+             (!('sensitivityNote' in data) || data.sensitivityNote is string) &&
+             (!('prayCount' in data) || data.prayCount is number) &&
+             (!('prayers' in data) || data.prayers is list);
     }
 
     function isValidMembershipInquiry(data) {
@@ -221,12 +231,22 @@ service cloud.firestore {
              (!('ministryId' in data) || data.ministryId is string);
     }
 
+    function isValidGalleryAlbum(data) {
+      return data.keys().hasAll(['name', 'description', 'createdAt', 'updatedAt']) &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             data.description is string && data.description.size() < 1000 &&
+             data.createdAt is timestamp &&
+             data.updatedAt is timestamp &&
+             (!('coverImageUrl' in data) || data.coverImageUrl == null || data.coverImageUrl == "" || isValidUrl(data.coverImageUrl));
+    }
+
     function isValidGalleryItem(data) {
       return data.keys().hasAll(['album', 'imageUrl', 'createdAt', 'uploadedBy']) &&
              data.album is string && data.album.size() > 0 && data.album.size() < 100 &&
              isValidUrl(data.imageUrl) &&
              data.createdAt is timestamp &&
-             data.uploadedBy is string;
+             data.uploadedBy is string &&
+             (!('albumId' in data) || data.albumId is string);
     }
 
     function isValidDirectMessage(data) {
@@ -296,13 +316,16 @@ service cloud.firestore {
       allow read: if isAuthenticated();
       allow create: if isAuthenticated() && isValidPrayerRequest(request.resource.data) && 
                       request.resource.data.userId == request.auth.uid;
-      allow update: if (isAdmin() && isValidPrayerRequest(request.resource.data)) || 
-                      (isAuthenticated() && resource.data.userId == request.auth.uid && isValidPrayerRequest(request.resource.data)) ||
+      allow update: if isValidPrayerRequest(request.resource.data) && (
+                      isAdmin() || 
+                      (resource.data.userId == request.auth.uid) ||
                       (isAuthenticated() && 
                        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['prayCount', 'prayers']) &&
-                       request.resource.data.prayCount == resource.data.prayCount + 1 &&
-                       request.resource.data.prayers.hasAll(resource.data.prayers) &&
-                       request.resource.data.prayers.size() == resource.data.prayers.size() + 1);
+                       request.resource.data.prayCount == resource.data.get('prayCount', 0) + 1 &&
+                       request.resource.data.prayers.hasAll(resource.data.get('prayers', [])) &&
+                       request.resource.data.prayers.size() == resource.data.get('prayers', []).size() + 1 &&
+                       !(request.auth.uid in resource.data.get('prayers', [])))
+                    );
       allow delete: if isAdmin() || (isAuthenticated() && request.auth.uid == resource.data.userId);
 
       match /comments/{commentId} {
@@ -316,7 +339,14 @@ service cloud.firestore {
 
     match /gallery/{itemId} {
       allow read: if true;
-      allow write: if (isAdmin() || isMinistryLeader()) && isValidGalleryItem(request.resource.data);
+      allow create, update: if (isAdmin() || isMinistryLeader()) && isValidGalleryItem(request.resource.data);
+      allow delete: if isAdmin() || isMinistryLeader();
+    }
+
+    match /gallery_albums/{albumId} {
+      allow read: if true;
+      allow create, update: if (isAdmin() || isMinistryLeader()) && isValidGalleryAlbum(request.resource.data);
+      allow delete: if isAdmin() || isMinistryLeader();
     }
 
     match /membership_inquiries/{inquiryId} {

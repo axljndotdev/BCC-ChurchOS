@@ -17,7 +17,7 @@ import {
 } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL, uploadBytesResumable } from 'firebase/storage';
 import { db, storage } from '../firebase/config';
-import { Sermon, ChurchEvent, Announcement, PrayerRequest, GalleryItem, UserProfile, UserRole, Ministry, MembershipInquiry, MinistryDetail, MinistryEditDraft, MinistryEditorRequest, SystemSettings, BlogPost, PrayerRequest as PrayerRequestType, PrayerComment, BlogComment, SermonComment, WeeklyActivity, DirectMessage, ChatConversation } from '../types';
+import { Sermon, ChurchEvent, Announcement, PrayerRequest, GalleryItem, GalleryAlbum, UserProfile, UserRole, Ministry, MembershipInquiry, MinistryDetail, MinistryEditDraft, MinistryEditorRequest, SystemSettings, BlogPost, PrayerRequest as PrayerRequestType, PrayerComment, BlogComment, SermonComment, WeeklyActivity, DirectMessage, ChatConversation } from '../types';
 
 // System Settings
 // ... (previous content)
@@ -188,13 +188,22 @@ export const addPrayerRequest = async (request: Omit<PrayerRequest, 'id' | 'stat
   });
 };
 
+const handleFirestoreError = (error: unknown, operation: string, path: string) => {
+  console.error(`Firestore Error [${operation}] on ${path}:`, error);
+  throw error;
+};
+
 export const prayForRequest = async (requestId: string, userId: string) => {
   if (!db) return null;
   const requestRef = doc(db, 'prayer_requests', requestId);
-  return await updateDoc(requestRef, {
-    prayers: arrayUnion(userId),
-    prayCount: increment(1)
-  });
+  try {
+    return await updateDoc(requestRef, {
+      prayers: arrayUnion(userId),
+      prayCount: increment(1)
+    });
+  } catch (error) {
+    handleFirestoreError(error, 'UPDATE', `prayer_requests/${requestId}`);
+  }
 };
 
 export const addPrayerComment = async (requestId: string, comment: Omit<PrayerComment, 'id' | 'createdAt'>) => {
@@ -213,14 +222,59 @@ export const getPrayerComments = async (requestId: string) => {
 };
 
 // Gallery
-export const getGalleryItems = async (album?: string) => {
+export const getGalleryAlbums = async () => {
+  if (!db) return [];
+  const q = query(collection(db, 'gallery_albums'), orderBy('createdAt', 'desc'));
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as GalleryAlbum[];
+};
+
+export const addGalleryAlbum = async (album: Omit<GalleryAlbum, 'id' | 'createdAt' | 'updatedAt'>) => {
+  if (!db) return null;
+  return await addDoc(collection(db, 'gallery_albums'), {
+    ...album,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp()
+  });
+};
+
+export const updateGalleryAlbum = async (id: string, updates: Partial<GalleryAlbum>) => {
+  if (!db) return null;
+  const docRef = doc(db, 'gallery_albums', id);
+  return await updateDoc(docRef, {
+    ...updates,
+    updatedAt: serverTimestamp()
+  });
+};
+
+export const deleteGalleryAlbum = async (id: string) => {
+  if (!db) return null;
+  const docRef = doc(db, 'gallery_albums', id);
+  return await deleteDoc(docRef);
+};
+
+export const getGalleryItems = async (albumId?: string) => {
   if (!db) return [];
   let q = query(collection(db, 'gallery'), orderBy('createdAt', 'desc'));
-  if (album) {
-    q = query(collection(db, 'gallery'), where('album', '==', album), orderBy('createdAt', 'desc'));
+  if (albumId) {
+    q = query(collection(db, 'gallery'), where('albumId', '==', albumId), orderBy('createdAt', 'desc'));
   }
   const snapshot = await getDocs(q);
   return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as GalleryItem[];
+};
+
+export const addGalleryItem = async (item: Omit<GalleryItem, 'id' | 'createdAt'>) => {
+  if (!db) return null;
+  return await addDoc(collection(db, 'gallery'), {
+    ...item,
+    createdAt: serverTimestamp()
+  });
+};
+
+export const deleteGalleryItem = async (id: string) => {
+  if (!db) return null;
+  const docRef = doc(db, 'gallery', id);
+  return await deleteDoc(docRef);
 };
 
 // Media Upload

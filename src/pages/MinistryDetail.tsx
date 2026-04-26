@@ -27,7 +27,7 @@ import { cn } from '../lib/utils';
 
 export default function MinistryDetail() {
   const { id } = useParams<{ id: string }>();
-  const { user, profile } = useAuth();
+  const { user, profile, isSuperAdmin, isAdmin, isCouncil } = useAuth();
   const navigate = useNavigate();
   
   const [ministry, setMinistry] = useState<IMinistryDetail | null>(null);
@@ -64,7 +64,7 @@ export default function MinistryDetail() {
     setMessage(null);
 
     try {
-      const isPrivileged = ['super_admin', 'elder', 'council'].includes(profile.role);
+      const isPrivileged = isSuperAdmin || isAdmin || isCouncil;
       
       if (isPrivileged) {
         // Direct update
@@ -120,9 +120,9 @@ export default function MinistryDetail() {
     );
   }
 
+  const isPrivileged = isSuperAdmin || isAdmin || isCouncil;
+
   if (!ministry && !isEditing) {
-    const isPrivileged = profile && ['super_admin', 'elder', 'council'].includes(profile.role);
-    
     if (isPrivileged) {
       return (
         <div className="max-w-4xl mx-auto px-4 py-20 text-center">
@@ -151,8 +151,8 @@ export default function MinistryDetail() {
     );
   }
 
-  const canEdit = profile && (['super_admin', 'elder', 'council'].includes(profile.role) || profile.isMinistryEditor);
-  const canRequest = profile && profile.membershipStatus === 'official_member' && !profile.isMinistryEditor && !['super_admin', 'elder', 'council'].includes(profile.role);
+  const canEdit = isPrivileged || (profile && profile.isMinistryEditor);
+  const canRequest = profile && profile.membershipStatus === 'official_member' && !profile.isMinistryEditor && !isPrivileged;
 
   return (
     <div className="pb-20">
@@ -218,7 +218,7 @@ export default function MinistryDetail() {
                     disabled={saving}
                     className="px-6 py-3 bg-white text-maroon rounded-full font-bold hover:bg-slate-100 transition-all flex items-center gap-2 shadow-xl disabled:opacity-50"
                   >
-                    {saving ? 'Saving...' : <><Save className="h-4 w-4" /> {profile?.role === 'member' ? 'Submit for Review' : 'Save Changes'}</>}
+                    {saving ? 'Saving...' : <><Save className="h-4 w-4" /> {!isPrivileged ? 'Submit for Review' : 'Save Changes'}</>}
                   </button>
                   <button 
                     onClick={() => setIsEditing(false)}
