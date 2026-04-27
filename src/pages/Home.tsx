@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Calendar, Video, Users, Heart, Play, Quote, MessageSquare, Clock, Globe, X } from 'lucide-react';
+import { ArrowRight, Calendar, Video, Users, Heart, Play, Quote, MessageSquare, Clock, Globe, X, ZoomIn, Maximize2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn, formatDate } from '../lib/utils';
 import { getSermons, getSystemSettings, getEvents, getAnnouncements, getBlogPosts } from '../services/db';
@@ -14,6 +14,7 @@ export default function Home() {
   const [latestBlogs, setLatestBlogs] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedAnnouncement, setSelectedAnnouncement] = useState<Announcement | null>(null);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -302,19 +303,26 @@ export default function Home() {
                 </div>
                 <div className="space-y-8">
                   {announcements.map((news) => (
-                    <div key={news.id} className="space-y-3">
-                      <div className="flex items-center gap-3 text-[10px] font-bold text-maroon uppercase tracking-widest">
-                        <span className="h-1 w-1 bg-maroon rounded-full"></span>
-                        {formatDate(news.date)}
+                    <div key={news.id} className="flex gap-6 group items-start">
+                      {news.imageUrl && (
+                        <div className="h-24 w-24 rounded-2xl overflow-hidden shrink-0 border border-slate-100">
+                          <img src={news.imageUrl} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                        </div>
+                      )}
+                      <div className="space-y-2 flex-1">
+                        <div className="flex items-center gap-3 text-[10px] font-bold text-maroon uppercase tracking-widest">
+                          <span className="h-1 w-1 bg-maroon rounded-full"></span>
+                          {formatDate(news.date)}
+                        </div>
+                        <h3 className="text-2xl font-display font-bold text-slate-900 group-hover:text-maroon transition-colors">{news.title}</h3>
+                        <p className="text-slate-500 font-light text-sm leading-relaxed line-clamp-2">{news.content}</p>
+                        <button 
+                          onClick={() => setSelectedAnnouncement(news)}
+                          className="text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-maroon transition-colors cursor-pointer"
+                        >
+                          Read More
+                        </button>
                       </div>
-                      <h3 className="text-2xl font-display font-bold text-slate-900">{news.title}</h3>
-                      <p className="text-slate-500 font-light text-sm leading-relaxed line-clamp-2">{news.content}</p>
-                      <button 
-                        onClick={() => setSelectedAnnouncement(news)}
-                        className="text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-maroon transition-colors cursor-pointer"
-                      >
-                        Read More
-                      </button>
                     </div>
                   ))}
                 </div>
@@ -351,7 +359,22 @@ export default function Home() {
               </button>
               
               <div className="overflow-y-auto pr-4 custom-scrollbar">
-                <div className="space-y-6">
+                <div className="space-y-6 pb-4">
+                  {selectedAnnouncement.imageUrl && (
+                    <div 
+                      className="w-full relative rounded-[2rem] overflow-hidden border border-slate-50 shadow-sm mb-8 bg-slate-50 cursor-zoom-in group/img"
+                      onClick={() => setSelectedImage(selectedAnnouncement.imageUrl!)}
+                    >
+                      <img 
+                        src={selectedAnnouncement.imageUrl} 
+                        alt="" 
+                        className="w-full h-auto max-h-[500px] object-contain mx-auto transition-transform duration-500 group-hover/img:scale-[1.02]" 
+                      />
+                      <div className="absolute inset-0 bg-slate-900/0 group-hover/img:bg-slate-900/10 transition-colors flex items-center justify-center">
+                        <Maximize2 className="h-8 w-8 text-white opacity-0 group-hover/img:opacity-100 transition-opacity drop-shadow-lg" />
+                      </div>
+                    </div>
+                  )}
                   <div className="flex items-center gap-3 text-[10px] font-bold text-maroon uppercase tracking-widest">
                     <span className="h-2 w-2 bg-maroon rounded-full"></span>
                     {formatDate(selectedAnnouncement.date)}
@@ -375,6 +398,39 @@ export default function Home() {
                   Close
                 </button>
               </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Full Screen Image Viewer */}
+      <AnimatePresence>
+        {selectedImage && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedImage(null)}
+              className="absolute inset-0 bg-slate-950/95 backdrop-blur-xl cursor-zoom-out"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="relative max-w-7xl max-h-[90vh] z-10"
+            >
+              <button 
+                onClick={() => setSelectedImage(null)}
+                className="absolute -top-12 right-0 text-white/50 hover:text-white transition-colors flex items-center gap-2 text-xs font-bold uppercase tracking-widest"
+              >
+                Close <X className="h-5 w-5" />
+              </button>
+              <img 
+                src={selectedImage} 
+                alt="Full preview" 
+                className="w-auto h-auto max-w-full max-h-[90vh] rounded-2xl shadow-2xl object-contain border border-white/10"
+              />
             </motion.div>
           </div>
         )}

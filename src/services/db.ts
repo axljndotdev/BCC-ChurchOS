@@ -151,6 +151,26 @@ export const getAnnouncements = async (limitCount = 5) => {
   return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Announcement[];
 };
 
+export const addAnnouncement = async (announcement: Omit<Announcement, 'id'>) => {
+  if (!db) return null;
+  return await addDoc(collection(db, 'announcements'), {
+    ...announcement,
+    date: serverTimestamp()
+  });
+};
+
+export const updateAnnouncement = async (id: string, updates: Partial<Announcement>) => {
+  if (!db) return null;
+  const docRef = doc(db, 'announcements', id);
+  return await updateDoc(docRef, updates);
+};
+
+export const deleteAnnouncement = async (id: string) => {
+  if (!db) return null;
+  const docRef = doc(db, 'announcements', id);
+  return await deleteDoc(docRef);
+};
+
 // Prayer Requests
 export const getPrayerRequests = async (status?: string, includePrivate = false) => {
   if (!db) return [];

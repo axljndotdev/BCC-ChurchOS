@@ -173,7 +173,8 @@
         "title": { "type": "string" },
         "content": { "type": "string" },
         "date": { "type": "string", "format": "date-time" },
-        "category": { "type": "string" }
+        "category": { "type": "string" },
+        "imageUrl": { "type": "string", "format": "uri" }
       },
       "required": ["title", "content", "date"]
     },

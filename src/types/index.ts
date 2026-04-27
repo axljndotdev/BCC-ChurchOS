@@ -158,6 +158,7 @@ export interface Announcement {
   content: string;
   date: any;
   category?: string;
+  imageUrl?: string;
 }
 
 export interface WeeklyActivity {
