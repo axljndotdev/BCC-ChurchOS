@@ -220,7 +220,7 @@ export default function Navbar() {
                 to="/login"
                 className="px-6 py-2 bg-slate-900 text-white text-sm font-bold rounded-full hover:bg-slate-800 transition-all duration-300 shadow-lg shadow-slate-900/10"
               >
-                Join Us
+                Member's Login
               </Link>
             )}
           </div>
@@ -347,7 +347,7 @@ export default function Navbar() {
                   onClick={() => setIsOpen(false)}
                   className="w-full py-4 bg-slate-900 text-white text-center font-bold rounded-2xl shadow-lg shadow-slate-900/10"
                 >
-                  Member Sign In
+                  Member's Login
                 </Link>
               )}
             </div>

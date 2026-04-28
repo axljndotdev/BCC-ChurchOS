@@ -89,7 +89,7 @@ export default function Login() {
               </motion.div>
             </div>
             <h2 className="text-4xl font-display font-bold text-slate-900 tracking-tight">
-              {isLogin ? 'Welcome Back' : 'Join the Family'}
+              {isLogin ? "Member's Login" : 'Join the Family'}
             </h2>
             <p className="mt-4 text-slate-500 font-light max-w-sm mx-auto leading-relaxed">
               {isLogin 
