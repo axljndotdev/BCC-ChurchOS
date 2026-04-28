@@ -83,6 +83,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 status: isSuperAdminUser ? 'active' : 'pending',
                 membershipStatus: isSuperAdminUser ? 'official_member' : 'visitor',
                 isCouncilMember: isSuperAdminUser,
+                passwordChangeCount: 0,
+                passwordChangeLocked: false,
                 createdAt: serverTimestamp(),
               };
               try {
@@ -143,15 +145,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signUpWithUsername = async (username: string, pass: string, name: string) => {
     if (!isFirebaseConfigured || !auth || !db) return;
     
-    // Check if username is already taken (simulated by checking if UID exists or handle via Firestore later)
-    // For now, we use unique dummy emails which Firebase enforces unique anyway
     const email = generateDummyEmail(username);
     
     try {
+      // 1. Create the Auth user
       const userRes = await createUserWithEmailAndPassword(auth, email, pass);
       
+      // 2. Prepare the profile with ALL required fields to satisfy Firestore rules
       const docRef = doc(db, 'users', userRes.user.uid);
       const isSuperAdminUser = email === 'wapdev24@gmail.com';
+      
       const newProfile: UserProfile = {
         uid: userRes.user.uid,
         email: email,
@@ -167,8 +170,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         passwordChangeLocked: false,
         createdAt: serverTimestamp(),
       };
+      
+      // 3. Set the document. If this fails, the user is still created in Auth, 
+      // but the onAuthStateChanged listener will try to recover by creating the profile too.
       await setDoc(docRef, newProfile);
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Error during signUpWithUsername:', error);
       throw error;
     }
   };

@@ -34,7 +34,7 @@ export interface UserProfile {
   address?: string;
   contactNumber?: string;
   birthDate?: any;
-  gender?: 'Male' | 'Female' | 'Other';
+  gender?: 'Male' | 'Female';
   
   // Security tracking
   passwordChangeCount?: number;

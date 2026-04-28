@@ -92,7 +92,10 @@ service cloud.firestore {
       return data.keys().hasAll(['uid', 'displayName', 'role', 'title', 'status', 'membershipStatus', 'isCouncilMember', 'createdAt']) &&
              data.uid == userId &&
              data.displayName is string && data.displayName.size() > 0 && data.displayName.size() < 100 &&
-             data.role in ['super_admin', 'church_admin', 'ministry_leader', 'member'] &&
+             (
+               (data.role is string && data.role in ['super_admin', 'church_admin', 'ministry_leader', 'member']) ||
+               (data.role is list && data.role.size() > 0 && data.role.hasAny(['super_admin', 'church_admin', 'ministry_leader', 'member']))
+             ) &&
              data.title in ['Pastor', 'Elder', 'Deacon', 'Deaconess', 'Member', 'Guest'] &&
              data.status in ['pending', 'active', 'suspended'] &&
              data.membershipStatus in ['visitor', 'applicant', 'official_member'] &&
@@ -104,6 +107,8 @@ service cloud.firestore {
              (!('photoURL' in data) || data.photoURL == null || data.photoURL == "" || isValidUrl(data.photoURL)) &&
              (!('phoneNumber' in data) || data.phoneNumber == null || data.phoneNumber is string) &&
              (!('username' in data) || data.username == null || data.username is string) &&
+             (!('passwordChangeCount' in data) || data.passwordChangeCount is number) &&
+             (!('passwordChangeLocked' in data) || data.passwordChangeLocked is bool) &&
              (!('wantsMembershipClass' in data) || data.wantsMembershipClass is bool);
     }
 
@@ -278,14 +283,18 @@ service cloud.firestore {
     // ===============================================================
 
     match /users/{userId} {
-      allow read: if isAuthenticated() || (resource != null && resource.data.title in ['Pastor', 'Elder', 'Deacon', 'Deaconess']);
+      allow read: if isAuthenticated();
       allow create: if isOwner(userId) && isValidUser(request.resource.data, userId) && 
-                      (request.resource.data.role == 'member' || request.auth.token.email == 'wapdev24@gmail.com');
+                      (
+                        (request.resource.data.role is string && request.resource.data.role == 'member') ||
+                        (request.resource.data.role is list && request.resource.data.role.size() == 1 && request.resource.data.role.hasAll(['member'])) ||
+                        request.auth.token.email == 'wapdev24@gmail.com'
+                      );
       allow update: if (isAdmin() && isValidUser(request.resource.data, userId)) || 
                       (isOwner(userId) && 
                        request.resource.data.role == resource.data.role && 
                        request.resource.data.isCouncilMember == resource.data.isCouncilMember &&
-                       (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['wantsMembershipClass', 'displayName', 'photoURL', 'phoneNumber', 'username']) || 
+                       (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['wantsMembershipClass', 'displayName', 'photoURL', 'phoneNumber', 'username', 'passwordChangeCount', 'passwordChangeLocked']) || 
                         isValidUser(request.resource.data, userId)));
       allow delete: if isAdmin();
     }
