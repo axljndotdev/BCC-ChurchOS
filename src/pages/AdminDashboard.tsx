@@ -48,7 +48,7 @@ import {
 } from 'recharts';
 
 export default function AdminDashboard() {
-  const { isSuperAdmin, isAdmin, isMediaTeam, user } = useAuth();
+  const { isSuperAdmin, isAdmin, isMediaTeam, isCouncil, user } = useAuth();
   const [stats, setStats] = useState({
     members: 0,
     sermons: 0,
@@ -67,6 +67,15 @@ export default function AdminDashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const safeFetch = async (fetcher: () => Promise<any>, defaultValue: any = []) => {
+          try {
+            return await fetcher();
+          } catch (e) {
+            console.warn(`Admin Dashboard: Soft failure in data fetch:`, e);
+            return defaultValue;
+          }
+        };
+
         const [
           users, 
           sermons, 
@@ -78,15 +87,15 @@ export default function AdminDashboard() {
           activity,
           sysSettings
         ] = await Promise.all([
-          getUsers(),
-          getSermons(100),
-          getEvents(),
-          getPrayerRequests('pending'),
-          getMembershipInquiries(),
-          getPendingMinistryEdits(),
-          getBlogPosts('pending', 50),
-          getRecentActivity(),
-          getSystemSettings()
+          safeFetch(() => getUsers()),
+          safeFetch(() => getSermons(100)),
+          safeFetch(() => getEvents()),
+          safeFetch(() => getPrayerRequests('pending')),
+          safeFetch(() => getMembershipInquiries()),
+          safeFetch(() => getPendingMinistryEdits()),
+          safeFetch(() => getBlogPosts('pending', 50)),
+          safeFetch(() => getRecentActivity()),
+          safeFetch(() => getSystemSettings(), { facebookLiveUrl: '', isLive: false })
         ]);
 
         setStats({
@@ -94,7 +103,7 @@ export default function AdminDashboard() {
           sermons: sermons.length,
           events: events.length,
           pendingPrayers: prayers.length,
-          inquiries: inquiries.filter(i => i.status === 'new').length,
+          inquiries: inquiries.filter((i: any) => i.status === 'new').length,
           pendingEdits: edits.length,
           pendingBlogs: blogs.length
         });
@@ -102,7 +111,7 @@ export default function AdminDashboard() {
         setRecentActivity(activity);
         setSettings(sysSettings || { facebookLiveUrl: '', isLive: false });
       } catch (error) {
-        console.error('Error fetching admin data:', error);
+        console.error('Critical Error fetching admin data:', error);
       } finally {
         setLoading(false);
       }
@@ -175,7 +184,7 @@ export default function AdminDashboard() {
       <header className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
         <div>
           <h1 className="text-3xl font-display font-bold text-slate-900">
-            Admin Command Center
+            {isSuperAdmin ? 'SuperAdmin Command Center' : 'Admin Command Center'}
           </h1>
           <p className="text-slate-500 font-light">
             Real-time overview of church operations and community growth.
@@ -199,7 +208,7 @@ export default function AdminDashboard() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
-            {(isSuperAdmin || isAdmin || isMediaTeam) && (
+            {(isSuperAdmin || isAdmin || isMediaTeam || isCouncil) && (
               <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 hover:shadow-md transition-all group">
                 <div className="flex items-center justify-between mb-4">
                   <div className="p-3 bg-red-50 rounded-2xl">
@@ -217,7 +226,7 @@ export default function AdminDashboard() {
                 to={card.link}
                 className={cn(
                   "bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 hover:shadow-md transition-all group",
-                  (!isSuperAdmin && !isAdmin && !isMediaTeam) && "hidden"
+                  (!isSuperAdmin && !isAdmin && !isMediaTeam && !isCouncil) && "hidden"
                 )}
               >
             <div className="flex items-center justify-between mb-4">

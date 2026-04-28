@@ -66,18 +66,22 @@ export default function Login() {
     } catch (err: any) {
       let message = err.message;
       if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
-        message = 'The ID or Secret Key you provided is incorrect.';
+        message = 'The Account ID or Secret Key you provided is incorrect. Please double-check your credentials.';
       } else if (err.code === 'auth/wrong-password') {
-        message = 'Incorrect secret key.';
+        message = 'Incorrect secret key. If you forgotten it, please contact the administrator.';
+      } else if (err.code === 'auth/invalid-email') {
+        message = 'The Account ID format is invalid. Please use a standard username or email.';
       } else if (err.code === 'auth/email-already-in-use') {
-        message = 'This identity is already claimed. If it\'s yours, please sign in instead.';
+        message = 'This Account ID is already claimed. If it\'s yours, please sign in instead.';
       } else if (err.code === 'auth/weak-password') {
         message = 'Secret key is too weak. Please use at least 6 characters.';
+      } else if (err.code === 'auth/too-many-requests') {
+        message = 'Too many failed attempts. Your access is temporarily blocked for security. Please try again later.';
       } else if (err.message?.includes('Missing or insufficient permissions')) {
-        message = 'Account created but profile initialization pending. Please try signing in.';
+        message = 'Account created but profile initialization pending. Please sign in again or wait a moment.';
       }
       setError(message || 'Our authentication portal is currently experiencing high load. Please try again.');
-      console.error(err);
+      console.error('Auth Error Details:', { code: err.code, message: err.message, full: err });
     } finally {
       setLoading(false);
     }

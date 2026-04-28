@@ -94,7 +94,7 @@ function AppContent() {
         </Route>
 
         {/* Member Routes */}
-        <Route path="/member" element={<ProtectedRoute allowedRoles={['member', 'ministry_leader', 'council', 'elder', 'super_admin']} />}>
+        <Route path="/member" element={<ProtectedRoute allowedRoles={['member', 'ministry_leader', 'council', 'elder', 'church_admin', 'super_admin']} />}>
           <Route element={<MemberLayout />}>
             <Route path="dashboard" element={<MemberDashboard />} />
             <Route path="profile" element={<MemberProfile />} />
@@ -109,7 +109,7 @@ function AppContent() {
         </Route>
 
         {/* Admin Routes */}
-        <Route path="/admin" element={<ProtectedRoute allowedRoles={['elder', 'super_admin', 'council', 'media']} />}>
+        <Route path="/admin" element={<ProtectedRoute allowedRoles={['super_admin', 'church_admin', 'media', 'council']} />}>
           <Route element={<AdminLayout />}>
             <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="sermons" element={<AdminSermons />} />

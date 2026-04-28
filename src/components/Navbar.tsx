@@ -12,7 +12,7 @@ import { getSystemSettings } from '../services/db';
 import { motion, AnimatePresence } from 'motion/react';
 
 export default function Navbar() {
-  const { user, profile, signOut, isCouncil, isAdmin, isSuperAdmin } = useAuth();
+  const { user, profile, signOut, isCouncil, isAdmin, isSuperAdmin, isMediaTeam } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [isLive, setIsLive] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
@@ -161,14 +161,14 @@ export default function Navbar() {
                 >
                   <LayoutDashboard className="h-5 w-5" />
                 </Link>
-                {(isCouncil || isAdmin || isSuperAdmin) && (
+                {(isAdmin || isSuperAdmin || isCouncil || isMediaTeam) && (
                   <Link
                     to="/admin/dashboard"
                     className={cn(
                       "p-2 rounded-xl transition-all",
                       isActive('/admin/dashboard') ? "bg-white text-blue-600 shadow-sm" : "text-slate-500 hover:text-blue-600"
                     )}
-                    title="Control Panel"
+                    title={isSuperAdmin ? "SuperAdmin Panel" : "Admin Panel"}
                   >
                     <ShieldCheck className="h-5 w-5" />
                   </Link>
@@ -320,14 +320,14 @@ export default function Navbar() {
                       <LayoutDashboard className="h-4 w-4" />
                       Portal
                     </Link>
-                    {(isCouncil || isAdmin || isSuperAdmin) && (
+                    {(isAdmin || isSuperAdmin || isCouncil || isMediaTeam) && (
                       <Link
                         to="/admin/dashboard"
                         onClick={() => setIsOpen(false)}
                         className="flex items-center justify-center gap-2 p-3 bg-slate-50 rounded-xl text-xs font-bold text-slate-600"
                       >
                         <ShieldCheck className="h-4 w-4" />
-                        Admin
+                        {isSuperAdmin ? 'SuperAdmin' : 'Admin'}
                       </Link>
                     )}
                   </div>

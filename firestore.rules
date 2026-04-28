@@ -43,7 +43,7 @@ service cloud.firestore {
     function isCouncil() {
       return isAuthenticated() && (
         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && (
-          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isCouncilMember == true || 
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('isCouncilMember', false) == true ||
           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('title', 'Member') in ['Elder', 'Deacon', 'Deaconess', 'Pastor']
         )) || isAdmin()
       );
@@ -109,7 +109,11 @@ service cloud.firestore {
              (!('username' in data) || data.username == null || data.username is string) &&
              (!('passwordChangeCount' in data) || data.passwordChangeCount is number) &&
              (!('passwordChangeLocked' in data) || data.passwordChangeLocked is bool) &&
-             (!('wantsMembershipClass' in data) || data.wantsMembershipClass is bool);
+             (!('wantsMembershipClass' in data) || data.wantsMembershipClass is bool) &&
+             (!('birthDate' in data) || data.birthDate == null || data.birthDate is timestamp) &&
+             (!('gender' in data) || data.gender == null || data.gender in ['Male', 'Female']) &&
+             (!('address' in data) || data.address == null || data.address is string) &&
+             (!('contactNumber' in data) || data.contactNumber == null || data.contactNumber is string);
     }
 
     function isValidSermon(data) {
@@ -292,16 +296,19 @@ service cloud.firestore {
                       );
       allow update: if (isAdmin() && isValidUser(request.resource.data, userId)) || 
                       (isOwner(userId) && 
+                       isValidUser(request.resource.data, userId) &&
                        request.resource.data.role == resource.data.role && 
                        request.resource.data.isCouncilMember == resource.data.isCouncilMember &&
-                       (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['wantsMembershipClass', 'displayName', 'photoURL', 'phoneNumber', 'username', 'passwordChangeCount', 'passwordChangeLocked']) || 
-                        isValidUser(request.resource.data, userId)));
+                       request.resource.data.title == resource.data.title &&
+                       request.resource.data.status == resource.data.status &&
+                       request.resource.data.membershipStatus == resource.data.membershipStatus &&
+                       request.resource.data.diff(resource.data).affectedKeys().hasOnly(['wantsMembershipClass', 'displayName', 'photoURL', 'phoneNumber', 'username', 'passwordChangeCount', 'passwordChangeLocked', 'email', 'birthDate', 'gender', 'address', 'contactNumber']));
       allow delete: if isAdmin();
     }
 
     match /sermons/{sermonId} {
       allow read: if true;
-      allow write: if isAdmin() && isValidSermon(request.resource.data);
+      allow write: if isCouncil() && isValidSermon(request.resource.data);
 
       match /comments/{commentId} {
         allow read: if true;
@@ -320,7 +327,7 @@ service cloud.firestore {
 
     match /announcements/{announcementId} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow write: if isCouncil();
     }
 
     match /prayer_requests/{requestId} {
@@ -361,9 +368,9 @@ service cloud.firestore {
     }
 
     match /membership_inquiries/{inquiryId} {
-      allow read: if isAdmin();
+      allow read: if isCouncil();
       allow create: if isValidMembershipInquiry(request.resource.data);
-      allow update: if isAdmin() && isValidMembershipInquiry(request.resource.data);
+      allow update: if isCouncil() && isValidMembershipInquiry(request.resource.data);
       allow delete: if isAdmin();
     }
 
@@ -390,7 +397,7 @@ service cloud.firestore {
 
     match /settings/{settingId} {
       allow read: if true;
-      allow write: if isAdmin() && isValidSystemSettings(request.resource.data);
+      allow write: if isCouncil() && isValidSystemSettings(request.resource.data);
     }
 
     match /blogs/{blogId} {
@@ -412,7 +419,7 @@ service cloud.firestore {
 
     match /weekly_activities/{activityId} {
       allow read: if true;
-      allow write: if isAdmin() && isValidWeeklyActivity(request.resource.data);
+      allow write: if isCouncil() && isValidWeeklyActivity(request.resource.data);
     }
 
     match /direct_messages/{messageId} {

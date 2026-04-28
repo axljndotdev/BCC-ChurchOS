@@ -45,7 +45,15 @@ export default function ProtectedRoute({ allowedRoles }: ProtectedRouteProps) {
         return <Navigate to="/member/dashboard" replace />;
       }
     }
+    
+    return <Outlet />;
   }
 
-  return <Outlet />;
+  // If we're here, user is logged in but profile hasn't loaded yet
+  // We should wait for profile or redirect if it's missing for too long
+  return (
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-maroon"></div>
+    </div>
+  );
 }

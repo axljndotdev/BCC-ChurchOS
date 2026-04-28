@@ -129,7 +129,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const generateDummyEmail = (username: string) => {
-    return `${username.toLowerCase().trim().replace(/\s+/g, '_')}@bcc.family`;
+    // Sanitize username: lowercase, trim, replace spaces and non-alphanumeric (except underscores) with underscore
+    const sanitized = username.toLowerCase().trim().replace(/[^a-z0-9_]+/g, '_').replace(/^_+|_+$/g, '');
+    return `${sanitized || 'user'}@bcc.family`;
   };
 
   const signInWithUsername = async (username: string, pass: string) => {
@@ -228,9 +230,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const isSuperAdmin = hasRole('super_admin') || user?.email === 'wapdev24@gmail.com';
   const isAdmin = isSuperAdmin || hasRole('church_admin');
-  const isCouncil = profile?.isCouncilMember || isAdmin || ['Elder', 'Deacon', 'Deaconess', 'Pastor'].includes(profile?.title || '');
-  const isMinistryLeader = hasRole('ministry_leader') || isAdmin;
-  const isMediaTeam = hasRole('media') || isAdmin;
+  const isCouncil = isSuperAdmin || isAdmin || profile?.isCouncilMember === true || ['Elder', 'Deacon', 'Deaconess', 'Pastor'].includes(profile?.title || '');
+  const isMinistryLeader = isSuperAdmin || isAdmin || hasRole('ministry_leader');
+  const isMediaTeam = isSuperAdmin || isAdmin || hasRole('media');
 
   return (
     <AuthContext.Provider value={{ 

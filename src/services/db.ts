@@ -516,11 +516,21 @@ export const rejectEditorRequest = async (requestId: string) => {
 export const getRecentActivity = async () => {
   if (!db) return [];
   
+  const fetchDocs = async (collName: string, dateField: string) => {
+    try {
+      const q = query(collection(db, collName), orderBy(dateField, 'desc'), limit(5));
+      return await getDocs(q);
+    } catch (error) {
+      console.warn(`Could not fetch recent ${collName} for activity feed:`, error);
+      return { docs: [] };
+    }
+  };
+
   const [users, sermons, prayers, inquiries] = await Promise.all([
-    getDocs(query(collection(db, 'users'), orderBy('createdAt', 'desc'), limit(5))),
-    getDocs(query(collection(db, 'sermons'), orderBy('date', 'desc'), limit(5))),
-    getDocs(query(collection(db, 'prayer_requests'), orderBy('date', 'desc'), limit(5))),
-    getDocs(query(collection(db, 'membership_inquiries'), orderBy('createdAt', 'desc'), limit(5)))
+    fetchDocs('users', 'createdAt'),
+    fetchDocs('sermons', 'date'),
+    fetchDocs('prayer_requests', 'date'),
+    fetchDocs('membership_inquiries', 'createdAt')
   ]);
 
   const activities = [
@@ -531,7 +541,7 @@ export const getRecentActivity = async () => {
   ];
 
   return activities
-    .filter(a => a.date)
+    .filter(a => a.date && typeof a.date.toMillis === 'function')
     .sort((a, b) => b.date.toMillis() - a.date.toMillis())
     .slice(0, 10);
 };

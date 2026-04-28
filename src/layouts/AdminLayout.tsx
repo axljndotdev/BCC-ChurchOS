@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import AdminSidebar from '../components/AdminSidebar';
 import { Menu, X, ArrowLeft } from 'lucide-react';
 import Logo from '../components/Logo';
@@ -10,6 +11,7 @@ export default function AdminLayout() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const { isSuperAdmin } = useAuth();
   const isDashboard = location.pathname === '/admin/dashboard';
 
   return (
@@ -45,7 +47,7 @@ export default function AdminLayout() {
             )}
             <Link to="/" className="flex items-center space-x-2">
               <Logo size="sm" />
-              <span className="text-xl font-display font-bold text-slate-900">Admin</span>
+              <span className="text-xl font-display font-bold text-slate-900">{isSuperAdmin ? 'SuperAdmin' : 'Admin'}</span>
             </Link>
           </div>
           <button 
