@@ -57,7 +57,7 @@ export default function Navbar() {
     {
       name: 'Connect',
       items: [
-        { name: 'Upcoming Events', href: '/events', icon: Calendar, desc: 'Join our gatherings' },
+        { name: 'Events', href: '/events', icon: Calendar, desc: 'Join our gatherings' },
         { name: 'Membership', href: '/membership', icon: BookOpen, desc: 'Apply for official membership' },
         { name: 'Prayer Requests', href: '/prayer', icon: Heart, desc: 'How can we pray for you?' },
         { name: 'Contact Us', href: '/contact', icon: MessageSquare, desc: 'Get in touch with us' },

@@ -147,6 +147,7 @@
         "name": { "type": "string" },
         "description": { "type": "string" },
         "coverImageUrl": { "type": "string", "format": "uri" },
+        "isFeatured": { "type": "boolean" },
         "createdAt": { "type": "string", "format": "date-time" },
         "updatedAt": { "type": "string", "format": "date-time" }
       },

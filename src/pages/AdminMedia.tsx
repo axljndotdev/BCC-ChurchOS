@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { Plus, Image as ImageIcon, Trash2, Loader2, Upload, X, ChevronLeft, Search, Filter, Palette, FolderPlus, Folder, Edit, Layers } from 'lucide-react';
+import { Plus, Image as ImageIcon, Trash2, Loader2, Upload, X, ChevronLeft, Search, Filter, Palette, FolderPlus, Folder, Edit, Layers, Star } from 'lucide-react';
 import { useCanva } from '../hooks/useCanva';
 import { 
   getGalleryItems, 
@@ -106,7 +106,7 @@ export default function AdminMedia() {
         coverImageUrl = await uploadFile(newAlbum.coverImageFile, 'albums');
       }
 
-      const { updateGalleryAlbum } = await import('../services/db');
+      const { updateGalleryAlbum, addGalleryAlbum } = await import('../services/db');
 
       if (editingAlbumId) {
         await updateGalleryAlbum(editingAlbumId, {
@@ -118,7 +118,8 @@ export default function AdminMedia() {
         await addGalleryAlbum({
           name: newAlbum.name,
           description: newAlbum.description,
-          coverImageUrl
+          coverImageUrl,
+          isFeatured: newAlbum.name.toLowerCase().includes('bcc building') // Default feature if BCC Building
         });
       }
 
@@ -131,6 +132,16 @@ export default function AdminMedia() {
       alert('Failed to save album.');
     } finally {
       setUploading(false);
+    }
+  };
+
+  const handleToggleFeatured = async (album: GalleryAlbum) => {
+    try {
+      const { updateGalleryAlbum } = await import('../services/db');
+      await updateGalleryAlbum(album.id, { isFeatured: !album.isFeatured });
+      setAlbums(prev => prev.map(a => a.id === album.id ? { ...a, isFeatured: !a.isFeatured } : a));
+    } catch (error) {
+      console.error('Error toggling featured status:', error);
     }
   };
 
@@ -377,6 +388,16 @@ export default function AdminMedia() {
                     </div>
                   )}
                   <div className="absolute top-4 right-4 flex gap-2">
+                    <button 
+                      onClick={() => handleToggleFeatured(album)}
+                      className={cn(
+                        "p-2 rounded-xl transition-colors shadow-sm backdrop-blur",
+                        album.isFeatured ? "bg-yellow-400 text-white" : "bg-white/90 text-slate-400 hover:text-yellow-500"
+                      )}
+                      title={album.isFeatured ? "Unfeature Album" : "Feature Album"}
+                    >
+                      <Star className={cn("h-4 w-4", album.isFeatured && "fill-current")} />
+                    </button>
                     <button 
                       onClick={() => {
                         setNewImage(prev => ({ ...prev, albumId: album.id }));

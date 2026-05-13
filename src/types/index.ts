@@ -218,6 +218,7 @@ export interface GalleryAlbum {
   name: string;
   description: string;
   coverImageUrl?: string;
+  isFeatured?: boolean;
   createdAt: any;
   updatedAt: any;
 }

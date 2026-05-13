@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getEvents, addEvent, uploadFile, deleteEvent } from '../services/db';
+import { getEvents, addEvent, uploadFile, deleteEvent, getEventsByYear } from '../services/db';
 import { ChurchEvent } from '../types';
 import { Calendar, Plus, Trash2, Edit2, Search, MapPin, Clock, Loader2, Image as ImageIcon, Upload, AlertCircle, Video, X, Link as LinkIcon } from 'lucide-react';
 import { formatDate, slugify, cn } from '../lib/utils';
@@ -13,6 +13,7 @@ export default function AdminEvents() {
   const { isSuperAdmin, isAdmin } = useAuth();
   const [events, setEvents] = useState<ChurchEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -41,8 +42,9 @@ export default function AdminEvents() {
   });
 
   const fetchEvents = async () => {
+    setLoading(true);
     try {
-      const data = await getEvents();
+      const data = await getEventsByYear(selectedYear);
       setEvents(data);
     } catch (error) {
       console.error('Error fetching events:', error);
@@ -53,7 +55,7 @@ export default function AdminEvents() {
 
   useEffect(() => {
     fetchEvents();
-  }, []);
+  }, [selectedYear]);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -240,8 +242,8 @@ export default function AdminEvents() {
       </div>
 
       <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
-        <div className="p-6 border-b border-slate-50">
-          <div className="relative max-w-md">
+        <div className="p-6 border-b border-slate-50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="relative max-w-md w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
             <input 
               type="text" 
@@ -250,6 +252,18 @@ export default function AdminEvents() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
+          </div>
+          <div className="flex items-center gap-2">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Year:</label>
+            <select
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+              className="px-4 py-2 bg-slate-50 border-none rounded-xl text-xs font-bold text-slate-600 outline-none focus:ring-2 focus:ring-maroon/20 cursor-pointer"
+            >
+              {[new Date().getFullYear() + 1, new Date().getFullYear(), new Date().getFullYear() - 1, new Date().getFullYear() - 2].map(y => (
+                <option key={y} value={y}>{y}</option>
+              ))}
+            </select>
           </div>
         </div>
 

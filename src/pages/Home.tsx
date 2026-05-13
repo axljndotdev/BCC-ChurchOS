@@ -251,11 +251,11 @@ export default function Home() {
       {(upcomingEvents.length > 0 || announcements.length > 0) && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-24">
-            {/* Upcoming Events */}
+            {/* Events */}
             {upcomingEvents.length > 0 && (
               <div className="space-y-12">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-4xl font-display text-slate-900">Upcoming</h2>
+                  <h2 className="text-4xl font-display text-slate-900">Events</h2>
                   <Link to="/events" className="text-xs font-bold uppercase tracking-widest text-slate-400 hover:text-maroon transition-colors">View All</Link>
                 </div>
                 <div className="space-y-6">

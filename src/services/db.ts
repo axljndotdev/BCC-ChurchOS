@@ -13,7 +13,8 @@ import {
   serverTimestamp,
   getDoc,
   arrayUnion,
-  increment
+  increment,
+  Timestamp
 } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL, uploadBytesResumable } from 'firebase/storage';
 import { db, storage } from '../firebase/config';
@@ -87,6 +88,33 @@ export const getSermon = async (id: string) => {
 export const getEvents = async () => {
   if (!db) return [];
   const q = query(collection(db, 'events'), orderBy('date', 'asc'));
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as ChurchEvent[];
+};
+
+export const getUpcomingEvents = async () => {
+  if (!db) return [];
+  const now = Timestamp.now();
+  const q = query(
+    collection(db, 'events'), 
+    where('date', '>=', now),
+    orderBy('date', 'asc')
+  );
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as ChurchEvent[];
+};
+
+export const getEventsByYear = async (year: number) => {
+  if (!db) return [];
+  const startOfYear = Timestamp.fromDate(new Date(year, 0, 1));
+  const endOfYear = Timestamp.fromDate(new Date(year, 11, 31, 23, 59, 59));
+  
+  const q = query(
+    collection(db, 'events'),
+    where('date', '>=', startOfYear),
+    where('date', '<=', endOfYear),
+    orderBy('date', 'asc')
+  );
   const snapshot = await getDocs(q);
   return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as ChurchEvent[];
 };
@@ -247,6 +275,25 @@ export const getGalleryAlbums = async () => {
   const q = query(collection(db, 'gallery_albums'), orderBy('createdAt', 'desc'));
   const snapshot = await getDocs(q);
   return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as GalleryAlbum[];
+};
+
+export const getFeaturedAlbums = async () => {
+  if (!db) return [];
+  const q = query(
+    collection(db, 'gallery_albums'), 
+    where('isFeatured', '==', true),
+    orderBy('createdAt', 'desc')
+  );
+  const snapshot = await getDocs(q);
+  const albums = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as GalleryAlbum[];
+  
+  if (albums.length === 0) {
+    const all = await getGalleryAlbums();
+    const bcc = all.find(a => a.name.toLowerCase().includes('bcc building'));
+    if (bcc) return [bcc];
+  }
+  
+  return albums;
 };
 
 export const addGalleryAlbum = async (album: Omit<GalleryAlbum, 'id' | 'createdAt' | 'updatedAt'>) => {
