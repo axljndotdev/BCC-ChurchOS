@@ -262,3 +262,20 @@ export interface ChatConversation {
   lastMessageAt: any;
   lastSenderId: string;
 }
+
+export interface ResourceItem {
+  id: string;
+  title: string;
+  description: string;
+  category: 'public' | 'members';
+  type: string;
+  size?: string;
+  url: string;
+  fileName?: string;
+  downloadCount: number;
+  uploadedBy: string;
+  uploadedByName: string;
+  createdAt: any;
+  lastUpdated?: any;
+}
+

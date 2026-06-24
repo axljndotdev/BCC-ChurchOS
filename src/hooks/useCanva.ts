@@ -31,6 +31,9 @@ export function useCanva() {
           .catch(err => console.error('Failed to initialize Canva SDK:', err));
       }
     };
+    script.onerror = (err) => {
+      console.warn('Canva SDK script failed to load (expected in offline/sandboxed environments):', err);
+    };
     document.body.appendChild(script);
 
     return () => {

@@ -242,6 +242,22 @@ service cloud.firestore {
              (!('ministryId' in data) || data.ministryId is string);
     }
 
+    function isValidResourceItem(data) {
+      return data.keys().hasAll(['title', 'description', 'category', 'type', 'url', 'uploadedBy', 'uploadedByName']) &&
+             data.title is string && data.title.size() > 0 && data.title.size() < 200 &&
+             data.description is string && data.description.size() < 2000 &&
+             data.category in ['public', 'members'] &&
+             data.type is string &&
+             data.url is string &&
+             data.uploadedBy is string &&
+             data.uploadedByName is string &&
+             (!('size' in data) || data.size is string) &&
+             (!('fileName' in data) || data.fileName is string) &&
+             (!('downloadCount' in data) || data.downloadCount is number) &&
+             (!('createdAt' in data) || data.createdAt is timestamp) &&
+             (!('lastUpdated' in data) || data.lastUpdated is timestamp);
+    }
+
     function isValidGalleryAlbum(data) {
       return data.keys().hasAll(['name', 'description', 'createdAt', 'updatedAt']) &&
              data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
@@ -287,7 +303,10 @@ service cloud.firestore {
     // ===============================================================
 
     match /users/{userId} {
-      allow read: if isAuthenticated();
+      allow read: if isAuthenticated() || 
+                    (resource != null && 
+                     'title' in resource.data && 
+                     resource.data.title in ['Elder', 'Deacon', 'Deaconess', 'Pastor']);
       allow create: if isOwner(userId) && isValidUser(request.resource.data, userId) && 
                       (
                         (request.resource.data.role is string && request.resource.data.role == 'member') ||
@@ -430,6 +449,14 @@ service cloud.firestore {
     match /conversations/{conversationId} {
       allow read: if isAuthenticated() && request.auth.uid in resource.data.participantIds;
       allow write: if isAuthenticated() && isValidConversation(request.resource.data);
+    }
+
+    match /resources/{resourceId} {
+      allow read: if isAuthenticated() || (resource != null && 'category' in resource.data && resource.data.category == 'public');
+      allow create: if isCouncil() && isValidResourceItem(request.resource.data);
+      allow update: if (isCouncil() && isValidResourceItem(request.resource.data)) ||
+                      (isAuthenticated() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['downloadCount']));
+      allow delete: if isCouncil();
     }
   }
 }

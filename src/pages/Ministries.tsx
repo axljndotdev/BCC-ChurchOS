@@ -60,6 +60,13 @@ export default function Ministries() {
       description: 'Supporting our services and online presence through technical excellence in sound and visuals.',
       icon: Video,
       image: 'https://images.unsplash.com/photo-1478737270239-2f02b77fc618?auto=format&fit=crop&q=80&w=800'
+    },
+    {
+      id: 'discipleship-groups',
+      title: 'Discipleship Groups',
+      description: 'Small groups dedicated to studying God\'s Word, prayer, and mutual spiritual accountability for mature Christian living.',
+      icon: Users,
+      image: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&q=80&w=800'
     }
   ];
 

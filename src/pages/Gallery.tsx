@@ -55,14 +55,14 @@ export default function Gallery() {
 
   const showNext = (e?: React.MouseEvent) => {
     e?.stopPropagation();
-    if (selectedImageIndex !== null) {
+    if (selectedImageIndex !== null && currentAlbumItems.length > 0) {
       setSelectedImageIndex((selectedImageIndex + 1) % currentAlbumItems.length);
     }
   };
 
   const showPrev = (e?: React.MouseEvent) => {
     e?.stopPropagation();
-    if (selectedImageIndex !== null) {
+    if (selectedImageIndex !== null && currentAlbumItems.length > 0) {
       setSelectedImageIndex((selectedImageIndex - 1 + currentAlbumItems.length) % currentAlbumItems.length);
     }
   };
@@ -282,8 +282,8 @@ export default function Gallery() {
               onClick={(e) => e.stopPropagation()}
             >
               <img
-                src={currentAlbumItems[selectedImageIndex].imageUrl}
-                alt={currentAlbumItems[selectedImageIndex].album}
+                src={currentAlbumItems[selectedImageIndex]?.imageUrl || ''}
+                alt={currentAlbumItems[selectedImageIndex]?.album || ''}
                 className="max-w-[90vw] max-h-[85vh] object-contain rounded-2xl md:rounded-[2.5rem] shadow-[0_0_100px_rgba(0,0,0,0.5)]"
                 referrerPolicy="no-referrer"
               />

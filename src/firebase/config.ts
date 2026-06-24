@@ -25,8 +25,9 @@ export const auth = isFirebaseConfigured ? getAuth(app) : null;
 // We use initializeFirestore to ensure we can specify settings if needed for connectivity
 export const db = isFirebaseConfigured ? 
   initializeFirestore(app as any, {
-    experimentalForceLongPolling: true // Force long polling to avoid WebSocket issues in some environments
-  }, (firebaseConfig as any).firestoreDatabaseId) : null;
+    experimentalForceLongPolling: true, // Force long polling to avoid WebSocket issues in some environments
+    useFetchStreams: false // Prevent chunked streams blockage through proxy servers
+  } as any, (firebaseConfig as any).firestoreDatabaseId) : null;
 
 export const storage = isFirebaseConfigured ? getStorage(app) : null;
 export const googleProvider = new GoogleAuthProvider();

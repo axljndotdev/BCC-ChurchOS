@@ -436,35 +436,6 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      {/* Gospel Message - Immersive */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="relative rounded-[4rem] overflow-hidden py-32 px-8 text-center">
-          <div className="absolute inset-0 z-0">
-            <img 
-              src="https://images.unsplash.com/photo-1501183638710-841dd1904471?auto=format&fit=crop&q=80&w=1920" 
-              alt="Gospel" 
-              className="w-full h-full object-cover"
-              referrerPolicy="no-referrer"
-            />
-            <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-[2px]" />
-          </div>
-          
-          <div className="relative z-10 max-w-3xl mx-auto">
-            <h2 className="text-5xl md:text-6xl font-display text-white mb-10 leading-tight">A New Beginning <br /><span className="italic font-light">Awaits You</span></h2>
-            <p className="text-xl text-slate-200 mb-12 font-light leading-relaxed">
-              No matter your past, God has a future filled with hope for you. Salvation is a gift of grace, freely given to all who believe.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-              <Link to="/contact" className="w-full sm:w-auto px-10 py-4 bg-white text-slate-900 rounded-full font-medium hover:bg-slate-100 transition-all">
-                I'm New Here
-              </Link>
-              <Link to="/prayer" className="w-full sm:w-auto px-10 py-4 border border-white/40 text-white rounded-full font-medium hover:bg-white/10 transition-all flex items-center justify-center gap-2">
-                <Heart className="h-4 w-4" /> Request Prayer
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
     </div>
   );
 }

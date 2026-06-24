@@ -236,6 +236,26 @@
         "lastSenderId": { "type": "string" }
       },
       "required": ["participantIds", "participantNames", "lastMessage", "lastMessageAt", "lastSenderId"]
+    },
+    "ResourceItem": {
+      "title": "Resource Item",
+      "description": "Church resources, downloadable files or links.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "category": { "type": "string", "enum": ["public", "members"] },
+        "type": { "type": "string" },
+        "size": { "type": "string" },
+        "url": { "type": "string" },
+        "fileName": { "type": "string" },
+        "downloadCount": { "type": "number" },
+        "uploadedBy": { "type": "string" },
+        "uploadedByName": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "lastUpdated": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "description", "category", "type", "url", "uploadedBy", "uploadedByName"]
     }
   },
   "firestore": {
@@ -294,6 +314,10 @@
     "/conversations/{conversationId}": {
       "schema": "ChatConversation",
       "description": "Private conversation summaries"
+    },
+    "/resources/{resourceId}": {
+      "schema": "ResourceItem",
+      "description": "Church dynamic resources"
     }
   }
 }

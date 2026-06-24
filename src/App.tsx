@@ -36,6 +36,8 @@ import AdminMedia from './pages/AdminMedia';
 import MemberBlogEditor from './pages/MemberBlogEditor';
 import AdminSettings from './pages/AdminSettings';
 import Live from './pages/Live';
+import Resources from './pages/Resources';
+import Give from './pages/Give';
 
 // Member Pages
 import MemberDashboard from './pages/MemberDashboard';
@@ -91,6 +93,8 @@ function AppContent() {
           <Route path="/activities" element={<WeeklyActivities />} />
           <Route path="/prayer" element={<PrayerWall />} />
           <Route path="/pending-approval" element={<PendingApproval />} />
+          <Route path="/resources" element={<Resources />} />
+          <Route path="/give" element={<Give />} />
         </Route>
 
         {/* Member Routes */}
@@ -104,7 +108,7 @@ function AppContent() {
             <Route path="events" element={<Events />} />
             <Route path="directory" element={<MemberDirectory />} />
             <Route path="prayer" element={<MemberPrayer />} />
-            <Route path="resources" element={<div className="p-8">Resources coming soon.</div>} />
+            <Route path="resources" element={<Resources />} />
           </Route>
         </Route>
 

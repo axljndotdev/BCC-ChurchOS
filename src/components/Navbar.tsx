@@ -2,8 +2,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { 
   Menu, X, User, LogOut, LayoutDashboard, ShieldCheck, 
-  ChevronDown, BookOpen, Users, Info, MessageSquare, 
-  Calendar, Video, Image, Mic2, Newspaper, AlertTriangle, Heart
+  BookOpen, Users, Info, Image, Video, Heart, Home
 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { cn } from '../lib/utils';
@@ -15,7 +14,6 @@ export default function Navbar() {
   const { user, profile, signOut, isCouncil, isAdmin, isSuperAdmin, isMediaTeam } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [isLive, setIsLive] = useState(false);
-  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
   const location = useLocation();
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -31,38 +29,23 @@ export default function Navbar() {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setActiveDropdown(null);
+        setShowSignOutConfirm(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const menuGroups = [
-    {
-      name: 'Our Church',
-      items: [
-        { name: 'About Us', href: '/about', icon: Info, desc: 'Our mission and history' },
-        { name: 'Ministries', href: '/ministries', icon: Users, desc: 'Groups for all ages' },
-        { name: 'Gallery', href: '/gallery', icon: Image, desc: 'BCC in pictures' },
-      ]
-    },
-    {
-      name: 'Word & Blog',
-      items: [
-        { name: 'Sermons', href: '/sermons', icon: Mic2, desc: 'Watch recent messages' },
-        { name: 'Blogs', href: '/blogs', icon: Newspaper, desc: 'Spiritual growth articles' },
-      ]
-    },
-    {
-      name: 'Connect',
-      items: [
-        { name: 'Events', href: '/events', icon: Calendar, desc: 'Join our gatherings' },
-        { name: 'Membership', href: '/membership', icon: BookOpen, desc: 'Apply for official membership' },
-        { name: 'Prayer Requests', href: '/prayer', icon: Heart, desc: 'How can we pray for you?' },
-        { name: 'Contact Us', href: '/contact', icon: MessageSquare, desc: 'Get in touch with us' },
-      ]
-    }
+  // Simplified and stream-lined flat menu as requested
+  const navItems = [
+    { name: 'Home', href: '/' },
+    { name: 'About Us', href: '/about' },
+    { name: 'Ministries', href: '/ministries' },
+    { name: 'Photos', href: '/gallery' },
+    { name: 'Resources', href: '/resources' },
+    { name: 'Blogs', href: '/blogs' },
+    { name: 'Watch Live', href: '/live', highlight: true },
+    { name: 'Give', href: '/give' }
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -71,84 +54,50 @@ export default function Navbar() {
     <nav className="bg-white border-b border-slate-100 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-20">
+          
+          {/* Logo Brand */}
           <div className="flex items-center">
-            <Link to="/" className="flex items-center space-x-3 group" onClick={() => setActiveDropdown(null)}>
+            <Link to="/" className="flex items-center space-x-3 group">
               <Logo size="md" className="group-hover:rotate-12 transition-transform duration-300" />
-              <span className="text-2xl font-display font-semibold text-slate-900 tracking-tight">BCC</span>
+              <span className="text-2xl font-display font-bold text-slate-900 tracking-tight">BCC</span>
             </Link>
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-2" ref={dropdownRef}>
-            <Link
-              to="/"
-              className={cn(
-                "px-4 py-2 rounded-xl text-sm font-bold transition-all",
-                isActive('/') ? "bg-slate-50 text-maroon" : "text-slate-600 hover:text-maroon hover:bg-slate-50"
-              )}
-            >
-              Home
-            </Link>
-
-            {menuGroups.map((group) => (
-              <div key={group.name} className="relative">
-                <button
-                  onClick={() => setActiveDropdown(activeDropdown === group.name ? null : group.name)}
+          <div className="hidden lg:flex items-center space-x-1" ref={dropdownRef}>
+            {navItems.map((item) => {
+              const active = isActive(item.href);
+              const isWatchLive = item.highlight;
+              
+              return (
+                <Link
+                  key={item.href}
+                  to={item.href}
                   className={cn(
-                    "px-4 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-1",
-                    activeDropdown === group.name ? "bg-slate-50 text-maroon" : "text-slate-600 hover:text-maroon hover:bg-slate-50"
+                    "px-3.5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2",
+                    isWatchLive 
+                      ? active 
+                        ? "bg-red-50 text-red-600 font-black" 
+                        : "text-slate-600 hover:text-red-600 hover:bg-red-50"
+                      : active 
+                        ? "bg-slate-50 text-maroon" 
+                        : "text-slate-600 hover:text-maroon hover:bg-slate-50"
                   )}
                 >
-                  {group.name}
-                  <ChevronDown className={cn("h-4 w-4 transition-transform duration-300", activeDropdown === group.name && "rotate-180")} />
-                </button>
-
-                {activeDropdown === group.name && (
-                  <div className="absolute top-full left-0 mt-2 w-72 bg-white border border-slate-100 shadow-2xl rounded-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-300">
-                    <div className="p-3 grid grid-cols-1 gap-1">
-                      {group.items.map((item) => (
-                        <Link
-                          key={item.href}
-                          to={item.href}
-                          onClick={() => setActiveDropdown(null)}
-                          className={cn(
-                            "flex items-start gap-3 p-3 rounded-xl transition-all",
-                            isActive(item.href) ? "bg-slate-50" : "hover:bg-slate-50"
-                          )}
-                        >
-                          <div className={cn("p-2 rounded-lg bg-slate-50 text-slate-400", isActive(item.href) && "bg-maroon/10 text-maroon")}>
-                            <item.icon className="h-5 w-5" />
-                          </div>
-                          <div>
-                            <p className={cn("text-sm font-bold", isActive(item.href) ? "text-maroon" : "text-slate-900")}>{item.name}</p>
-                            <p className="text-[10px] text-slate-400 mt-0.5">{item.desc}</p>
-                          </div>
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-
-            <Link
-              to="/live"
-              className={cn(
-                "px-4 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2",
-                isActive('/live') ? "bg-red-50 text-red-600 font-black" : "text-slate-600 hover:text-red-600 hover:bg-red-50"
-              )}
-            >
-              Watch Live
-              {isLive && (
-                <span className="flex h-2 w-2 relative">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-                </span>
-              )}
-            </Link>
+                  {item.name}
+                  {isWatchLive && isLive && (
+                    <span className="flex h-1.5 w-1.5 relative">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-500"></span>
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
 
             <div className="h-6 w-px bg-slate-200 mx-2" />
 
+            {/* Authenticated Member portal / login button */}
             {user ? (
               <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-2xl">
                 <Link
@@ -218,19 +167,19 @@ export default function Navbar() {
             ) : (
               <Link
                 to="/login"
-                className="px-6 py-2 bg-slate-900 text-white text-sm font-bold rounded-full hover:bg-slate-800 transition-all duration-300 shadow-lg shadow-slate-900/10"
+                className="px-5 py-2 bg-slate-900 text-white text-xs font-bold uppercase tracking-wider rounded-full hover:bg-slate-800 transition-all duration-300 shadow-lg shadow-slate-900/10"
               >
-                Member's Login
+                Login
               </Link>
             )}
           </div>
 
           {/* Mobile menu button */}
-          <div className="md:hidden flex items-center">
+          <div className="lg:hidden flex items-center">
             {isLive && !isOpen && (
-              <Link to="/live" className="mr-4 flex h-3 w-3 relative">
+              <Link to="/live" className="mr-4 flex h-2.5 w-2.5 relative">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
               </Link>
             )}
             <button
@@ -245,57 +194,39 @@ export default function Navbar() {
 
       {/* Mobile menu */}
       {isOpen && (
-        <div className="md:hidden bg-white border-t border-slate-100 max-h-[calc(100vh-5rem)] overflow-y-auto">
-          <div className="p-4 space-y-6">
-            <Link
-              to="/"
-              onClick={() => setIsOpen(false)}
-              className={cn(
-                "block px-4 py-3 rounded-2xl text-lg font-bold",
-                isActive('/') ? "bg-slate-50 text-maroon" : "text-slate-600"
-              )}
-            >
-              Home
-            </Link>
+        <div className="lg:hidden bg-white border-t border-slate-100 max-h-[calc(100vh-5rem)] overflow-y-auto">
+          <div className="p-4 space-y-4">
+            {navItems.map((item) => {
+              const active = isActive(item.href);
+              const isWatchLive = item.highlight;
+              
+              return (
+                <Link
+                  key={item.href}
+                  to={item.href}
+                  onClick={() => setIsOpen(false)}
+                  className={cn(
+                    "flex items-center justify-between px-4 py-3.5 rounded-2xl font-bold text-sm uppercase tracking-wider transition-all",
+                    isWatchLive 
+                      ? active 
+                        ? "bg-red-50 text-red-600" 
+                        : "bg-red-600 text-white shadow-lg shadow-red-600/20"
+                      : active 
+                        ? "bg-slate-50 text-maroon" 
+                        : "text-slate-600 active:bg-slate-50"
+                  )}
+                >
+                  <div className="flex items-center gap-3">
+                    <span>{item.name}</span>
+                  </div>
+                  {isWatchLive && isLive && (
+                    <span className="h-2 w-2 bg-white rounded-full animate-pulse"></span>
+                  )}
+                </Link>
+              );
+            })}
 
-            {menuGroups.map((group) => (
-              <div key={group.name} className="space-y-3">
-                <h3 className="px-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">{group.name}</h3>
-                <div className="grid grid-cols-1 gap-2">
-                  {group.items.map((item) => (
-                    <Link
-                      key={item.href}
-                      to={item.href}
-                      onClick={() => setIsOpen(false)}
-                      className={cn(
-                        "flex items-center gap-4 px-4 py-3 rounded-2xl transition-all",
-                        isActive(item.href) ? "bg-maroon/5 text-maroon" : "text-slate-600 active:bg-slate-50"
-                      )}
-                    >
-                      <item.icon className="h-5 w-5 opacity-60" />
-                      <span className="font-medium">{item.name}</span>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            ))}
-
-            <Link
-              to="/live"
-              onClick={() => setIsOpen(false)}
-              className={cn(
-                "flex items-center justify-between px-4 py-4 rounded-2xl font-bold",
-                isActive('/live') ? "bg-red-50 text-red-600" : "bg-red-600 text-white shadow-lg shadow-red-600/20"
-              )}
-            >
-              <div className="flex items-center gap-3">
-                <Video className="h-5 w-5" />
-                Live Broadcast
-              </div>
-              {isLive && <span className="h-2 w-2 bg-white rounded-full animate-pulse"></span>}
-            </Link>
-
-            <div className="pt-6 border-t border-slate-100 flex items-center justify-between">
+            <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
               {user ? (
                 <div className="space-y-4 w-full">
                   <div className="flex items-center gap-3 px-4">
