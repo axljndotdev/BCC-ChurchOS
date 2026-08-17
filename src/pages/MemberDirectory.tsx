@@ -146,45 +146,45 @@ export default function MemberDirectory() {
       {/* Message Modal */}
       <AnimatePresence>
         {selectedMember && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 md:p-6">
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => !sending && setSelectedMember(null)}
-              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" 
+              className="fixed inset-0" 
             />
             <motion.div 
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="relative bg-white rounded-[3rem] w-full max-w-md shadow-2xl overflow-hidden"
+              className="relative bg-white rounded-2xl sm:rounded-[2.5rem] w-full max-w-md shadow-2xl overflow-hidden flex flex-col max-h-[calc(100dvh-1.5rem)] sm:max-h-[calc(100dvh-3rem)] z-10 my-auto"
             >
-              <div className="p-8 space-y-6">
-                <div className="flex justify-between items-start">
-                  <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 rounded-full bg-maroon/5 flex items-center justify-center text-maroon font-bold text-xl">
-                      {selectedMember.photoURL ? (
-                        <img src={selectedMember.photoURL} alt="" className="w-full h-full rounded-full object-cover" />
-                      ) : (
-                        selectedMember.displayName.charAt(0)
-                      )}
-                    </div>
-                    <div>
-                      <h2 className="text-xl font-display font-bold text-slate-900 leading-tight">Message</h2>
-                      <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">{selectedMember.displayName}</p>
-                    </div>
+              <div className="shrink-0 px-6 py-4 sm:px-8 sm:py-5 border-b border-slate-100 bg-slate-50/70 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-maroon/5 flex items-center justify-center text-maroon font-bold text-lg sm:text-xl border border-maroon/10 shrink-0">
+                    {selectedMember.photoURL ? (
+                      <img src={selectedMember.photoURL} alt="" className="w-full h-full rounded-full object-cover" />
+                    ) : (
+                      selectedMember.displayName.charAt(0)
+                    )}
                   </div>
-                  <button 
-                    onClick={() => setSelectedMember(null)}
-                    disabled={sending}
-                    className="p-2 text-slate-300 hover:text-maroon hover:bg-slate-50 rounded-xl transition-all"
-                  >
-                    <X className="h-5 w-5" />
-                  </button>
+                  <div>
+                    <h2 className="text-lg sm:text-xl font-display font-bold text-slate-900 leading-tight">Message</h2>
+                    <p className="text-[10px] sm:text-xs text-slate-400 font-bold uppercase tracking-widest truncate max-w-[180px]">{selectedMember.displayName}</p>
+                  </div>
                 </div>
+                <button 
+                  onClick={() => setSelectedMember(null)}
+                  disabled={sending}
+                  className="p-2 text-slate-400 hover:text-maroon hover:bg-slate-100 rounded-xl transition-all disabled:opacity-50"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
 
-                <form onSubmit={handleSendMessage} className="space-y-4">
+              <form onSubmit={handleSendMessage} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+                <div className="flex-1 min-h-0 overflow-y-auto p-6 sm:p-8 space-y-4 overscroll-contain">
                   <textarea
                     autoFocus
                     required
@@ -194,16 +194,19 @@ export default function MemberDirectory() {
                     onChange={(e) => setMessageText(e.target.value)}
                     disabled={sending}
                   />
+                </div>
+
+                <div className="shrink-0 px-6 py-4 sm:px-8 sm:py-5 border-t border-slate-100 bg-slate-50/50">
                   <button
                     type="submit"
                     disabled={sending || !messageText.trim()}
-                    className="w-full py-4 bg-maroon text-white rounded-2xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-maroon/20 hover:bg-maroon-dark transition-all disabled:opacity-50"
+                    className="w-full py-3.5 bg-maroon text-white rounded-xl sm:rounded-2xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-maroon/20 hover:bg-maroon-dark transition-all disabled:opacity-50 text-sm"
                   >
                     {sending ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-4 w-4" />}
                     Send Private Message
                   </button>
-                </form>
-              </div>
+                </div>
+              </form>
             </motion.div>
           </div>
         )}

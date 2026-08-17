@@ -886,15 +886,15 @@ Copyright © 2026 Bethesda Community Church (BCC). All rights reserved.`;
       {/* Slide-over Form Dialog / Modal */}
       <AnimatePresence>
         {showModal && (
-          <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 md:p-6">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl border border-slate-100 flex flex-col max-h-[90vh]"
+              className="bg-white rounded-2xl sm:rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl border border-slate-100 flex flex-col max-h-[calc(100dvh-1.5rem)] sm:max-h-[calc(100dvh-3rem)] z-10 my-auto"
             >
               {/* Modal Header */}
-              <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+              <div className="shrink-0 px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
                 <div>
                   <h3 className="font-display font-semibold text-slate-900">
                     {editingResource ? 'Edit Church Resource' : 'Add New Church Resource'}
@@ -911,7 +911,8 @@ Copyright © 2026 Bethesda Community Church (BCC). All rights reserved.`;
               </div>
 
               {/* Modal Form */}
-              <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto flex-1">
+              <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+                <div className="p-6 space-y-4 overflow-y-auto flex-1 min-h-0 overscroll-contain">
                 {/* Title */}
                 <div>
                   <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Resource Title *</label>
@@ -1050,9 +1051,10 @@ Copyright © 2026 Bethesda Community Church (BCC). All rights reserved.`;
                     </div>
                   </div>
                 )}
+                </div>
 
                 {/* Submit & Cancel */}
-                <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
+                <div className="shrink-0 px-6 py-4 border-t border-slate-100 bg-slate-50/50 flex items-center justify-end gap-3">
                   <button
                     type="button"
                     onClick={() => setShowModal(false)}

@@ -237,39 +237,40 @@ export default function Gallery() {
 
       {/* Full-Screen Viewer Modal */}
       <AnimatePresence>
+        {/* Full-Screen Viewer Modal */}
         {selectedImageIndex !== null && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-slate-950/98 backdrop-blur-3xl flex items-center justify-center p-4"
+            className="fixed inset-0 z-[100] bg-slate-950/98 backdrop-blur-3xl flex flex-col items-center justify-center p-2 sm:p-4 md:p-6"
             onClick={closeViewer}
           >
-            <div className="absolute top-0 left-0 right-0 p-8 flex justify-between items-center z-50">
-              <div className="text-white">
-                <h3 className="text-lg font-display font-bold">{selectedAlbum?.name}</h3>
-                <p className="text-white/40 text-xs font-bold uppercase tracking-widest">{selectedImageIndex + 1} / {currentAlbumItems.length}</p>
+            <div className="absolute top-0 left-0 right-0 p-4 sm:p-6 md:p-8 flex justify-between items-center z-50 bg-gradient-to-b from-black/80 to-transparent">
+              <div className="text-white pr-4">
+                <h3 className="text-sm sm:text-base md:text-lg font-display font-bold truncate max-w-[200px] sm:max-w-md">{selectedAlbum?.name}</h3>
+                <p className="text-white/60 text-[10px] sm:text-xs font-bold uppercase tracking-widest">{selectedImageIndex + 1} / {currentAlbumItems.length}</p>
               </div>
               <button
                 onClick={closeViewer}
-                className="p-4 bg-white/5 hover:bg-white/10 text-white rounded-2xl transition-all border border-white/5"
+                className="p-2 sm:p-3 md:p-4 bg-white/10 hover:bg-white/20 text-white rounded-xl sm:rounded-2xl transition-all border border-white/10"
               >
-                <X className="h-6 w-6" />
+                <X className="h-5 w-5 sm:h-6 sm:w-6" />
               </button>
             </div>
 
             {/* Navigation Buttons */}
             <button
               onClick={showPrev}
-              className="absolute left-4 md:left-12 top-1/2 -translate-y-1/2 p-6 bg-white/5 hover:bg-white/10 text-white rounded-3xl transition-all z-50 border border-white/5 group"
+              className="absolute left-2 sm:left-4 md:left-8 top-1/2 -translate-y-1/2 p-3 sm:p-4 md:p-5 bg-black/50 hover:bg-black/70 sm:bg-white/10 sm:hover:bg-white/20 text-white rounded-2xl sm:rounded-3xl transition-all z-50 border border-white/10 group"
             >
-              <ChevronLeft className="h-8 w-8 group-hover:-translate-x-1 transition-transform" />
+              <ChevronLeft className="h-5 w-5 sm:h-7 sm:w-7 group-hover:-translate-x-1 transition-transform" />
             </button>
             <button
               onClick={showNext}
-              className="absolute right-4 md:right-12 top-1/2 -translate-y-1/2 p-6 bg-white/5 hover:bg-white/10 text-white rounded-3xl transition-all z-50 border border-white/5 group"
+              className="absolute right-2 sm:right-4 md:right-8 top-1/2 -translate-y-1/2 p-3 sm:p-4 md:p-5 bg-black/50 hover:bg-black/70 sm:bg-white/10 sm:hover:bg-white/20 text-white rounded-2xl sm:rounded-3xl transition-all z-50 border border-white/10 group"
             >
-              <ChevronRight className="h-8 w-8 group-hover:translate-x-1 transition-transform" />
+              <ChevronRight className="h-5 w-5 sm:h-7 sm:w-7 group-hover:translate-x-1 transition-transform" />
             </button>
 
             {/* Image Container */}
@@ -278,13 +279,13 @@ export default function Gallery() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
-              className="relative max-w-full max-h-screen flex items-center justify-center"
+              className="relative max-w-full max-h-[calc(100dvh-5rem)] sm:max-h-[85vh] flex items-center justify-center my-auto"
               onClick={(e) => e.stopPropagation()}
             >
               <img
                 src={currentAlbumItems[selectedImageIndex]?.imageUrl || ''}
                 alt={currentAlbumItems[selectedImageIndex]?.album || ''}
-                className="max-w-[90vw] max-h-[85vh] object-contain rounded-2xl md:rounded-[2.5rem] shadow-[0_0_100px_rgba(0,0,0,0.5)]"
+                className="max-w-[88vw] sm:max-w-[90vw] max-h-[calc(100dvh-6rem)] sm:max-h-[82vh] object-contain rounded-xl sm:rounded-2xl md:rounded-[2.5rem] shadow-[0_0_100px_rgba(0,0,0,0.5)]"
                 referrerPolicy="no-referrer"
               />
             </motion.div>

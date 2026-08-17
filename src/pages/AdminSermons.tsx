@@ -3,7 +3,7 @@ import { getSermons, addSermon } from '../services/db';
 import { deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import { Sermon } from '../types';
-import { Video, Plus, Trash2, Edit2, Search, ExternalLink, Loader2, Palette } from 'lucide-react';
+import { Video, Plus, Trash2, Edit2, Search, ExternalLink, Loader2, Palette, X } from 'lucide-react';
 import { useCanva } from '../hooks/useCanva';
 import { formatDate } from '../lib/utils';
 
@@ -197,94 +197,104 @@ export default function AdminSermons() {
 
       {/* Add Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => !submitting && setIsModalOpen(false)} />
-          <div className="relative bg-white rounded-[2.5rem] w-full max-w-2xl shadow-2xl overflow-hidden">
-            <div className="p-8 border-b border-slate-50 bg-slate-50/50">
-              <h2 className="text-2xl font-display font-bold text-slate-900">Add New Sermon</h2>
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 md:p-6">
+          <div className="fixed inset-0" onClick={() => !submitting && setIsModalOpen(false)} />
+          <div className="relative bg-white rounded-2xl sm:rounded-[2.5rem] w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[calc(100dvh-1.5rem)] sm:max-h-[calc(100dvh-3rem)] z-10 my-auto">
+            <div className="shrink-0 px-6 py-4 sm:px-8 sm:py-5 border-b border-slate-100 bg-slate-50/70 flex items-center justify-between">
+              <h2 className="text-xl sm:text-2xl font-display font-bold text-slate-900">Add New Sermon</h2>
+              <button
+                type="button"
+                onClick={() => !submitting && setIsModalOpen(false)}
+                disabled={submitting}
+                className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition-colors disabled:opacity-50"
+              >
+                <X className="h-5 w-5" />
+              </button>
             </div>
-            <form onSubmit={handleSubmit} className="p-8 space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Sermon Title</label>
-                  <input 
-                    required
-                    className="w-full px-4 py-3 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-maroon/20 outline-none"
-                    value={formData.title}
-                    onChange={e => setFormData({...formData, title: e.target.value})}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Speaker Name</label>
-                  <input 
-                    required
-                    className="w-full px-4 py-3 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-maroon/20 outline-none"
-                    value={formData.speaker}
-                    onChange={e => setFormData({...formData, speaker: e.target.value})}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Date</label>
-                  <input 
-                    required
-                    type="date"
-                    className="w-full px-4 py-3 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-maroon/20 outline-none"
-                    value={formData.date}
-                    onChange={e => setFormData({...formData, date: e.target.value})}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Scripture Reference</label>
-                  <input 
-                    className="w-full px-4 py-3 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-maroon/20 outline-none"
-                    placeholder="e.g. John 3:16"
-                    value={formData.scripture}
-                    onChange={e => setFormData({...formData, scripture: e.target.value})}
-                  />
-                </div>
-                <div className="md:col-span-2 space-y-2">
-                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Video URL (YouTube/Vimeo)</label>
-                  <input 
-                    required
-                    type="url"
-                    className="w-full px-4 py-3 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-maroon/20 outline-none"
-                    placeholder="https://..."
-                    value={formData.videoUrl}
-                    onChange={e => setFormData({...formData, videoUrl: e.target.value})}
-                  />
-                </div>
-                <div className="md:col-span-2 space-y-2">
-                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Thumbnail Image URL</label>
-                  <input 
-                    type="url"
-                    className="w-full px-4 py-3 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-maroon/20 outline-none"
-                    placeholder="https://..."
-                    value={formData.thumbnail}
-                    onChange={e => setFormData({...formData, thumbnail: e.target.value})}
-                  />
-                </div>
-                <div className="md:col-span-2 space-y-2">
-                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Notes / Description</label>
-                  <textarea 
-                    className="w-full px-4 py-3 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-maroon/20 outline-none min-h-[100px]"
-                    value={formData.notes}
-                    onChange={e => setFormData({...formData, notes: e.target.value})}
-                  />
+            <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+              <div className="flex-1 min-h-0 overflow-y-auto p-6 sm:p-8 space-y-6 overscroll-contain">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Sermon Title</label>
+                    <input 
+                      required
+                      className="w-full px-4 py-3 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-maroon/20 outline-none"
+                      value={formData.title}
+                      onChange={e => setFormData({...formData, title: e.target.value})}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Speaker Name</label>
+                    <input 
+                      required
+                      className="w-full px-4 py-3 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-maroon/20 outline-none"
+                      value={formData.speaker}
+                      onChange={e => setFormData({...formData, speaker: e.target.value})}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Date</label>
+                    <input 
+                      required
+                      type="date"
+                      className="w-full px-4 py-3 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-maroon/20 outline-none"
+                      value={formData.date}
+                      onChange={e => setFormData({...formData, date: e.target.value})}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Scripture Reference</label>
+                    <input 
+                      className="w-full px-4 py-3 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-maroon/20 outline-none"
+                      placeholder="e.g. John 3:16"
+                      value={formData.scripture}
+                      onChange={e => setFormData({...formData, scripture: e.target.value})}
+                    />
+                  </div>
+                  <div className="md:col-span-2 space-y-2">
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Video URL (YouTube/Vimeo)</label>
+                    <input 
+                      required
+                      type="url"
+                      className="w-full px-4 py-3 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-maroon/20 outline-none"
+                      placeholder="https://..."
+                      value={formData.videoUrl}
+                      onChange={e => setFormData({...formData, videoUrl: e.target.value})}
+                    />
+                  </div>
+                  <div className="md:col-span-2 space-y-2">
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Thumbnail Image URL</label>
+                    <input 
+                      type="url"
+                      className="w-full px-4 py-3 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-maroon/20 outline-none"
+                      placeholder="https://..."
+                      value={formData.thumbnail}
+                      onChange={e => setFormData({...formData, thumbnail: e.target.value})}
+                    />
+                  </div>
+                  <div className="md:col-span-2 space-y-2">
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Notes / Description</label>
+                    <textarea 
+                      className="w-full px-4 py-3 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-maroon/20 outline-none min-h-[100px]"
+                      value={formData.notes}
+                      onChange={e => setFormData({...formData, notes: e.target.value})}
+                    />
+                  </div>
                 </div>
               </div>
-              <div className="flex gap-4 pt-4">
+              <div className="shrink-0 px-6 py-4 sm:px-8 sm:py-5 border-t border-slate-100 bg-slate-50/50 flex gap-3 sm:gap-4">
                 <button 
                   type="button" 
                   onClick={() => setIsModalOpen(false)}
                   disabled={submitting}
-                  className="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold hover:bg-slate-200 transition-colors disabled:opacity-50"
+                  className="flex-1 py-3.5 bg-slate-100 text-slate-600 rounded-xl sm:rounded-2xl font-bold hover:bg-slate-200 transition-colors disabled:opacity-50 text-sm"
                 >
                   Cancel
                 </button>
                 <button 
-                  type="submit"
+                  type="submit" 
                   disabled={submitting}
-                  className="flex-1 py-4 bg-maroon text-white rounded-2xl font-bold hover:bg-maroon-dark transition-colors shadow-lg shadow-maroon/20 flex items-center justify-center gap-2"
+                  className="flex-1 py-3.5 bg-maroon text-white rounded-xl sm:rounded-2xl font-bold hover:bg-maroon-dark transition-colors shadow-lg shadow-maroon/20 flex items-center justify-center gap-2 text-sm"
                 >
                   {submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Save Sermon'}
                 </button>

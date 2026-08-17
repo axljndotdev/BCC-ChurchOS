@@ -660,117 +660,132 @@ export default function AdminSettings() {
 
         {/* Activity Modal */}
         {isModalOpen && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-            <div className="bg-white rounded-[2.5rem] w-full max-w-lg p-8 shadow-2xl relative">
-              <button 
-                onClick={() => setIsModalOpen(false)}
-                className="absolute top-6 right-6 p-2 text-slate-400 hover:text-slate-900 transition-colors"
-              >
-                <X className="h-6 w-6" />
-              </button>
-              
-              <h2 className="text-2xl font-display font-bold text-slate-900 mb-6 font-primary">
-                {editingActivity?.id ? 'Edit Activity' : 'Add New Activity'}
-              </h2>
-              
-              <form onSubmit={handleSaveActivity} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Day</label>
-                    <select 
-                      value={editingActivity?.day}
-                      onChange={(e) => setEditingActivity({...editingActivity!, day: e.target.value})}
-                      className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-maroon/20 focus:border-maroon transition-all"
-                    >
-                      {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(d => (
-                        <option key={d} value={d}>{d}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Category</label>
-                    <select 
-                      value={editingActivity?.category}
-                      onChange={(e) => setEditingActivity({...editingActivity!, category: e.target.value as any})}
-                      className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-maroon/20 focus:border-maroon transition-all"
-                    >
-                      {['Spiritual', 'Fellowship', 'Service', 'Other'].map(c => (
-                        <option key={c} value={c}>{c}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Related Ministry (Optional)</label>
-                  <select 
-                    value={editingActivity?.ministryId || ''}
-                    onChange={(e) => setEditingActivity({...editingActivity!, ministryId: e.target.value || undefined})}
-                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-maroon/20 focus:border-maroon transition-all"
-                  >
-                    <option value="">None / General</option>
-                    {AVAILABLE_MINISTRIES.map(m => (
-                      <option key={m.id} value={m.id}>{m.title}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Activity Title</label>
-                  <input 
-                    type="text" 
-                    value={editingActivity?.title}
-                    onChange={(e) => setEditingActivity({...editingActivity!, title: e.target.value})}
-                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-maroon/20 focus:border-maroon transition-all"
-                    placeholder="e.g. Mid-week Prayer"
-                    required
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Time</label>
-                    <input 
-                      type="text" 
-                      value={editingActivity?.time}
-                      onChange={(e) => setEditingActivity({...editingActivity!, time: e.target.value})}
-                      className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-maroon/20 focus:border-maroon transition-all"
-                      placeholder="e.g. 7:00 PM"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Location</label>
-                    <input 
-                      type="text" 
-                      value={editingActivity?.location}
-                      onChange={(e) => setEditingActivity({...editingActivity!, location: e.target.value})}
-                      className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-maroon/20 focus:border-maroon transition-all"
-                      placeholder="e.g. Fellowship Hall"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Description</label>
-                  <textarea 
-                    value={editingActivity?.description}
-                    onChange={(e) => setEditingActivity({...editingActivity!, description: e.target.value})}
-                    rows={3}
-                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-maroon/20 focus:border-maroon transition-all resize-none"
-                    placeholder="Brief description of the activity..."
-                  />
-                </div>
-
+          <div className="fixed inset-0 z-[100] overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 md:p-6">
+            <div className="fixed inset-0" onClick={() => !saving && setIsModalOpen(false)} />
+            <div className="relative bg-white rounded-2xl sm:rounded-[2.5rem] w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[calc(100dvh-1.5rem)] sm:max-h-[calc(100dvh-3rem)] z-10 my-auto">
+              <div className="shrink-0 px-6 py-4 sm:px-8 sm:py-5 border-b border-slate-100 bg-slate-50/70 flex items-center justify-between">
+                <h2 className="text-xl sm:text-2xl font-display font-bold text-slate-900 font-primary">
+                  {editingActivity?.id ? 'Edit Activity' : 'Add New Activity'}
+                </h2>
                 <button 
-                  type="submit"
+                  onClick={() => setIsModalOpen(false)}
                   disabled={saving}
-                  className="w-full py-4 bg-maroon text-white rounded-2xl font-bold hover:bg-maroon-dark transition-all disabled:opacity-50 flex items-center justify-center gap-2 mt-4"
+                  className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition-colors disabled:opacity-50"
                 >
-                  {saving ? <Loader2 className="h-5 w-5 animate-spin" /> : <Save className="h-5 w-5" />}
-                  Save Activity
+                  <X className="h-5 w-5" />
                 </button>
+              </div>
+              
+              <form onSubmit={handleSaveActivity} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+                <div className="flex-1 min-h-0 overflow-y-auto p-6 sm:p-8 space-y-4 overscroll-contain">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Day</label>
+                      <select 
+                        value={editingActivity?.day}
+                        onChange={(e) => setEditingActivity({...editingActivity!, day: e.target.value})}
+                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-maroon/20 focus:border-maroon transition-all"
+                      >
+                        {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(d => (
+                          <option key={d} value={d}>{d}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Category</label>
+                      <select 
+                        value={editingActivity?.category}
+                        onChange={(e) => setEditingActivity({...editingActivity!, category: e.target.value as any})}
+                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-maroon/20 focus:border-maroon transition-all"
+                      >
+                        {['Spiritual', 'Fellowship', 'Service', 'Other'].map(c => (
+                          <option key={c} value={c}>{c}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Related Ministry (Optional)</label>
+                    <select 
+                      value={editingActivity?.ministryId || ''}
+                      onChange={(e) => setEditingActivity({...editingActivity!, ministryId: e.target.value || undefined})}
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-maroon/20 focus:border-maroon transition-all"
+                    >
+                      <option value="">None / General</option>
+                      {AVAILABLE_MINISTRIES.map(m => (
+                        <option key={m.id} value={m.id}>{m.title}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Activity Title</label>
+                    <input 
+                      type="text" 
+                      value={editingActivity?.title}
+                      onChange={(e) => setEditingActivity({...editingActivity!, title: e.target.value})}
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-maroon/20 focus:border-maroon transition-all"
+                      placeholder="e.g. Mid-week Prayer"
+                      required
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Time</label>
+                      <input 
+                        type="text" 
+                        value={editingActivity?.time}
+                        onChange={(e) => setEditingActivity({...editingActivity!, time: e.target.value})}
+                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-maroon/20 focus:border-maroon transition-all"
+                        placeholder="e.g. 7:00 PM"
+                        required
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Location</label>
+                      <input 
+                        type="text" 
+                        value={editingActivity?.location}
+                        onChange={(e) => setEditingActivity({...editingActivity!, location: e.target.value})}
+                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-maroon/20 focus:border-maroon transition-all"
+                        placeholder="e.g. Fellowship Hall"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Description</label>
+                    <textarea 
+                      value={editingActivity?.description}
+                      onChange={(e) => setEditingActivity({...editingActivity!, description: e.target.value})}
+                      rows={3}
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-maroon/20 focus:border-maroon transition-all resize-none"
+                      placeholder="Brief description of the activity..."
+                    />
+                  </div>
+                </div>
+
+                <div className="shrink-0 px-6 py-4 sm:px-8 sm:py-5 border-t border-slate-100 bg-slate-50/50 flex gap-3 sm:gap-4">
+                  <button 
+                    type="button"
+                    onClick={() => setIsModalOpen(false)}
+                    disabled={saving}
+                    className="flex-1 py-3.5 bg-slate-100 text-slate-600 rounded-xl sm:rounded-2xl font-bold hover:bg-slate-200 transition-all disabled:opacity-50 text-sm"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit"
+                    disabled={saving}
+                    className="flex-1 py-3.5 bg-maroon text-white rounded-xl sm:rounded-2xl font-bold hover:bg-maroon-dark transition-all disabled:opacity-50 flex items-center justify-center gap-2 text-sm shadow-lg shadow-maroon/20"
+                  >
+                    {saving ? <Loader2 className="h-5 w-5 animate-spin" /> : <Save className="h-5 w-5" />}
+                    Save Activity
+                  </button>
+                </div>
               </form>
             </div>
           </div>

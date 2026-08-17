@@ -192,70 +192,92 @@ export default function AdminAnnouncements() {
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => !submitting && setIsModalOpen(false)} />
-          <div className="relative bg-white rounded-[2.5rem] w-full max-w-xl shadow-2xl p-8">
-            <h2 className="text-2xl font-display font-bold mb-6">{editingId ? 'Edit Announcement' : 'Post New Update'}</h2>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Title</label>
-                <input required className="w-full px-4 py-3 bg-slate-50 rounded-xl outline-none" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} />
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Category</label>
-                <select className="w-full px-4 py-3 bg-slate-50 rounded-xl outline-none" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})}>
-                  <option>General</option>
-                  <option>Service</option>
-                  <option>Ministry</option>
-                  <option>Emergency</option>
-                </select>
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Content</label>
-                <textarea required className="w-full px-4 py-3 bg-slate-50 rounded-xl outline-none min-h-[150px]" value={formData.content} onChange={e => setFormData({...formData, content: e.target.value})} />
-              </div>
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 md:p-6">
+          <div className="fixed inset-0" onClick={() => !submitting && setIsModalOpen(false)} />
+          <div className="relative bg-white rounded-2xl sm:rounded-[2.5rem] w-full max-w-xl shadow-2xl overflow-hidden flex flex-col max-h-[calc(100dvh-1.5rem)] sm:max-h-[calc(100dvh-3rem)] z-10 my-auto">
+            <div className="shrink-0 px-6 py-4 sm:px-8 sm:py-5 border-b border-slate-100 bg-slate-50/70 flex items-center justify-between">
+              <h2 className="text-xl sm:text-2xl font-display font-bold text-slate-900">{editingId ? 'Edit Announcement' : 'Post New Update'}</h2>
+              <button
+                type="button"
+                onClick={() => !submitting && setIsModalOpen(false)}
+                disabled={submitting}
+                className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition-colors disabled:opacity-50"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+              <div className="flex-1 min-h-0 overflow-y-auto p-6 sm:p-8 space-y-6 overscroll-contain">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Title</label>
+                  <input required className="w-full px-4 py-3 bg-slate-50 rounded-xl outline-none text-sm focus:ring-2 focus:ring-maroon/20" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Category</label>
+                  <select className="w-full px-4 py-3 bg-slate-50 rounded-xl outline-none text-sm focus:ring-2 focus:ring-maroon/20" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})}>
+                    <option>General</option>
+                    <option>Service</option>
+                    <option>Ministry</option>
+                    <option>Emergency</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Content</label>
+                  <textarea required className="w-full px-4 py-3 bg-slate-50 rounded-xl outline-none text-sm min-h-[150px] focus:ring-2 focus:ring-maroon/20" value={formData.content} onChange={e => setFormData({...formData, content: e.target.value})} />
+                </div>
 
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Announcement Image</label>
-                <div className="flex gap-4 items-start">
-                  {imagePreview ? (
-                    <div className="relative group h-32 w-full rounded-xl overflow-hidden bg-slate-100 border border-slate-200">
-                      <img src={imagePreview} alt="Preview" className="w-full h-full object-contain" />
-                      <button 
-                        type="button"
-                        onClick={() => { setImageFile(null); setImagePreview(''); }}
-                        className="absolute inset-0 bg-red-500/80 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
-                      >
-                        <X className="h-5 w-5" />
-                      </button>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Announcement Image</label>
+                  <div className="flex flex-col sm:flex-row gap-4 items-start">
+                    {imagePreview ? (
+                      <div className="relative group h-32 w-full sm:w-48 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
+                        <img src={imagePreview} alt="Preview" className="w-full h-full object-contain" />
+                        <button 
+                          type="button"
+                          onClick={() => { setImageFile(null); setImagePreview(''); }}
+                          className="absolute inset-0 bg-red-500/80 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                        >
+                          <X className="h-5 w-5" />
+                        </button>
+                      </div>
+                    ) : (
+                      <label className="w-full sm:flex-1 flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-200 rounded-2xl hover:border-maroon/30 transition-all cursor-pointer group bg-slate-50/50 hover:bg-slate-50">
+                        <Upload className="h-6 w-6 text-slate-300 group-hover:text-maroon/50 mb-2" />
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Upload Photo</span>
+                        <input type="file" className="hidden" accept="image/*" onChange={handleImageSelect} />
+                      </label>
+                    )}
+                    <div className="w-full sm:flex-1 space-y-2">
+                      <input 
+                        className="w-full px-4 py-2.5 bg-slate-50 rounded-xl text-xs outline-none focus:ring-2 focus:ring-maroon/20" 
+                        placeholder="Or paste image URL..."
+                        value={formData.imageUrl}
+                        onChange={e => setFormData({...formData, imageUrl: e.target.value})}
+                      />
+                      <p className="text-[9px] text-slate-400 uppercase tracking-widest px-1">Recommended: 1200x600px</p>
                     </div>
-                  ) : (
-                    <label className="flex-1 flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-200 rounded-2xl hover:border-maroon/30 transition-all cursor-pointer group">
-                      <Upload className="h-6 w-6 text-slate-300 group-hover:text-maroon/50 mb-2" />
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Upload Photo</span>
-                      <input type="file" className="hidden" accept="image/*" onChange={handleImageSelect} />
-                    </label>
-                  )}
-                  <div className="flex-1 space-y-2">
-                    <input 
-                      className="w-full px-4 py-2 bg-slate-50 rounded-xl text-[10px] outline-none" 
-                      placeholder="Or paste image URL..."
-                      value={formData.imageUrl}
-                      onChange={e => setFormData({...formData, imageUrl: e.target.value})}
-                    />
-                    <p className="text-[8px] text-slate-400 uppercase tracking-widest px-1">Recommended: 1200x600px</p>
                   </div>
                 </div>
               </div>
 
-              <button disabled={submitting} className="w-full py-4 bg-maroon text-white rounded-2xl font-bold flex items-center justify-center gap-2 disabled:opacity-50">
-                {submitting ? (
-                  <>
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                    {compressing ? 'Optimizing Photo...' : 'Saving...'}
-                  </>
-                ) : editingId ? 'Save Changes' : 'Post Announcement'}
-              </button>
+              <div className="shrink-0 px-6 py-4 sm:px-8 sm:py-5 border-t border-slate-100 bg-slate-50/50 flex gap-3 sm:gap-4">
+                <button 
+                  type="button" 
+                  onClick={() => setIsModalOpen(false)}
+                  disabled={submitting}
+                  className="flex-1 py-3.5 bg-slate-100 text-slate-600 rounded-xl sm:rounded-2xl font-bold hover:bg-slate-200 transition-colors disabled:opacity-50 text-sm"
+                >
+                  Cancel
+                </button>
+                <button disabled={submitting} type="submit" className="flex-1 py-3.5 bg-maroon text-white rounded-xl sm:rounded-2xl font-bold flex items-center justify-center gap-2 disabled:opacity-50 text-sm hover:bg-maroon-dark transition-all shadow-lg shadow-maroon/20">
+                  {submitting ? (
+                    <>
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                      {compressing ? 'Optimizing Photo...' : 'Saving...'}
+                    </>
+                  ) : editingId ? 'Save Changes' : 'Post Announcement'}
+                </button>
+              </div>
             </form>
           </div>
         </div>

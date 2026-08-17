@@ -335,65 +335,65 @@ export default function Home() {
       {/* News Detail Modal */}
       <AnimatePresence>
         {selectedAnnouncement && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center px-4">
+          <div className="fixed inset-0 z-[100] overflow-y-auto bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 md:p-6">
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setSelectedAnnouncement(null)}
-              className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm"
+              className="fixed inset-0"
             />
             <motion.div
               layoutId={`news-${selectedAnnouncement.id}`}
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative w-full max-w-2xl bg-white rounded-[3rem] p-8 md:p-12 shadow-2xl overflow-hidden max-h-[80vh] flex flex-col"
+              className="relative w-full max-w-2xl bg-white rounded-2xl sm:rounded-[3rem] shadow-2xl overflow-hidden max-h-[calc(100dvh-1.5rem)] sm:max-h-[calc(100dvh-3rem)] flex flex-col z-10 my-auto"
             >
-              <button 
-                onClick={() => setSelectedAnnouncement(null)}
-                className="absolute top-8 right-8 text-slate-400 hover:text-maroon transition-colors"
-                id="close-news-modal"
-              >
-                <X className="h-6 w-6" />
-              </button>
-              
-              <div className="overflow-y-auto pr-4 custom-scrollbar">
-                <div className="space-y-6 pb-4">
-                  {selectedAnnouncement.imageUrl && (
-                    <div 
-                      className="w-full relative rounded-[2rem] overflow-hidden border border-slate-50 shadow-sm mb-8 bg-slate-50 cursor-zoom-in group/img"
-                      onClick={() => setSelectedImage(selectedAnnouncement.imageUrl!)}
-                    >
-                      <img 
-                        src={selectedAnnouncement.imageUrl} 
-                        alt="" 
-                        className="w-full h-auto max-h-[500px] object-contain mx-auto transition-transform duration-500 group-hover/img:scale-[1.02]" 
-                      />
-                      <div className="absolute inset-0 bg-slate-900/0 group-hover/img:bg-slate-900/10 transition-colors flex items-center justify-center">
-                        <Maximize2 className="h-8 w-8 text-white opacity-0 group-hover/img:opacity-100 transition-opacity drop-shadow-lg" />
-                      </div>
-                    </div>
-                  )}
-                  <div className="flex items-center gap-3 text-[10px] font-bold text-maroon uppercase tracking-widest">
-                    <span className="h-2 w-2 bg-maroon rounded-full"></span>
-                    {formatDate(selectedAnnouncement.date)}
-                  </div>
-                  <h2 className="text-4xl md:text-5xl font-display text-slate-900 leading-tight">
-                    {selectedAnnouncement.title}
-                  </h2>
-                  <div className="w-12 h-px bg-maroon/20" />
-                  <p className="text-slate-600 font-light text-lg leading-relaxed whitespace-pre-wrap">
-                    {selectedAnnouncement.content}
-                  </p>
+              <div className="shrink-0 px-6 py-4 sm:px-8 sm:py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
+                <div className="flex items-center gap-3 text-[10px] font-bold text-maroon uppercase tracking-widest">
+                  <span className="h-2 w-2 bg-maroon rounded-full"></span>
+                  {formatDate(selectedAnnouncement.date)}
                 </div>
-              </div>
-
-              <div className="mt-12 pt-8 border-t border-slate-50 flex justify-between items-center">
-                <p className="text-[10px] font-bold text-slate-300 uppercase tracking-[0.2em]">Bethesda Community Church</p>
                 <button 
                   onClick={() => setSelectedAnnouncement(null)}
-                  className="px-8 py-3 bg-slate-900 text-white rounded-full text-xs font-bold uppercase tracking-widest hover:bg-maroon transition-all"
+                  className="p-2 text-slate-400 hover:text-maroon hover:bg-slate-100 rounded-full transition-colors"
+                  id="close-news-modal"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              
+              <div className="flex-1 min-h-0 overflow-y-auto p-6 sm:p-8 md:p-10 space-y-6 overscroll-contain">
+                {selectedAnnouncement.imageUrl && (
+                  <div 
+                    className="w-full relative rounded-2xl sm:rounded-[2rem] overflow-hidden border border-slate-100 shadow-sm mb-6 bg-slate-50 cursor-zoom-in group/img"
+                    onClick={() => setSelectedImage(selectedAnnouncement.imageUrl!)}
+                  >
+                    <img 
+                      src={selectedAnnouncement.imageUrl} 
+                      alt="" 
+                      className="w-full h-auto max-h-[400px] object-contain mx-auto transition-transform duration-500 group-hover/img:scale-[1.02]" 
+                    />
+                    <div className="absolute inset-0 bg-slate-900/0 group-hover/img:bg-slate-900/10 transition-colors flex items-center justify-center">
+                      <Maximize2 className="h-8 w-8 text-white opacity-0 group-hover/img:opacity-100 transition-opacity drop-shadow-lg" />
+                    </div>
+                  </div>
+                )}
+                <h2 className="text-2xl sm:text-4xl md:text-5xl font-display text-slate-900 leading-tight">
+                  {selectedAnnouncement.title}
+                </h2>
+                <div className="w-12 h-px bg-maroon/20" />
+                <p className="text-slate-600 font-light text-base sm:text-lg leading-relaxed whitespace-pre-wrap">
+                  {selectedAnnouncement.content}
+                </p>
+              </div>
+
+              <div className="shrink-0 px-6 py-4 sm:px-8 sm:py-5 border-t border-slate-100 bg-slate-50/50 flex justify-between items-center">
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] hidden sm:block">Bethesda Community Church</p>
+                <button 
+                  onClick={() => setSelectedAnnouncement(null)}
+                  className="px-6 sm:px-8 py-2.5 sm:py-3 bg-slate-900 text-white rounded-full text-xs font-bold uppercase tracking-widest hover:bg-maroon transition-all ml-auto sm:ml-0"
                 >
                   Close
                 </button>
@@ -406,30 +406,32 @@ export default function Home() {
       {/* Full Screen Image Viewer */}
       <AnimatePresence>
         {selectedImage && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[200] overflow-y-auto flex items-center justify-center p-3 sm:p-4 md:p-6">
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setSelectedImage(null)}
-              className="absolute inset-0 bg-slate-950/95 backdrop-blur-xl cursor-zoom-out"
+              className="fixed inset-0 bg-slate-950/95 backdrop-blur-xl cursor-zoom-out"
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
-              className="relative max-w-7xl max-h-[90vh] z-10"
+              className="relative max-w-7xl max-h-[calc(100dvh-2rem)] z-10 flex flex-col items-center my-auto"
             >
-              <button 
-                onClick={() => setSelectedImage(null)}
-                className="absolute -top-12 right-0 text-white/50 hover:text-white transition-colors flex items-center gap-2 text-xs font-bold uppercase tracking-widest"
-              >
-                Close <X className="h-5 w-5" />
-              </button>
+              <div className="w-full flex justify-end mb-2">
+                <button 
+                  onClick={() => setSelectedImage(null)}
+                  className="text-white/70 hover:text-white bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full transition-colors flex items-center gap-2 text-xs font-bold uppercase tracking-widest"
+                >
+                  Close <X className="h-4 w-4" />
+                </button>
+              </div>
               <img 
                 src={selectedImage} 
                 alt="Full preview" 
-                className="w-auto h-auto max-w-full max-h-[90vh] rounded-2xl shadow-2xl object-contain border border-white/10"
+                className="w-auto h-auto max-w-full max-h-[calc(100dvh-5rem)] rounded-2xl shadow-2xl object-contain border border-white/10"
               />
             </motion.div>
           </div>

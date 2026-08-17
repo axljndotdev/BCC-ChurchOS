@@ -454,12 +454,12 @@ export default function AdminMedia() {
       {/* Photo Upload Modal */}
       <AnimatePresence>
         {showUploadModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+          <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 md:p-6">
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+              className="fixed inset-0"
               onClick={() => !uploading && setShowUploadModal(false)}
             />
             
@@ -467,20 +467,20 @@ export default function AdminMedia() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-lg bg-white rounded-[2.5rem] shadow-2xl overflow-hidden"
+              className="relative w-full max-w-lg bg-white rounded-2xl sm:rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col max-h-[calc(100dvh-1.5rem)] sm:max-h-[calc(100dvh-3rem)] z-10 my-auto"
             >
-              <div className="p-8 border-b border-slate-50 flex items-center justify-between">
+              <div className="shrink-0 px-6 py-4 sm:px-8 sm:py-5 border-b border-slate-100 bg-slate-50/70 flex items-center justify-between">
                 <h3 className="text-xl font-display font-bold text-slate-900">Add Gallery Image</h3>
                 <button 
                   onClick={() => setShowUploadModal(false)}
                   disabled={uploading}
-                  className="p-2 text-slate-400 hover:text-slate-600 rounded-full transition-colors"
+                  className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition-colors disabled:opacity-50"
                 >
                   <X className="h-5 w-5" />
                 </button>
               </div>
 
-              <div className="p-8 space-y-6">
+              <div className="flex-1 min-h-0 overflow-y-auto p-6 sm:p-8 space-y-6 overscroll-contain">
                 {/* Album Selection */}
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Select Album</label>
@@ -488,7 +488,7 @@ export default function AdminMedia() {
                     <select 
                       value={newImage.albumId}
                       onChange={(e) => setNewImage(prev => ({ ...prev, albumId: e.target.value }))}
-                      className="flex-1 px-5 py-3 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-maroon/20 outline-none"
+                      className="flex-1 px-4 py-3 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-maroon/20 outline-none"
                     >
                       {albums.length === 0 ? (
                         <option value="">No albums created</option>
@@ -602,33 +602,33 @@ export default function AdminMedia() {
                     )}
                   </div>
                 </div>
+              </div>
 
-                <div className="flex gap-4 pt-4">
-                  <button
-                    onClick={() => setShowUploadModal(false)}
-                    disabled={uploading}
-                    className="flex-1 px-6 py-4 bg-slate-100 text-slate-600 rounded-2xl text-sm font-bold hover:bg-slate-200 transition-all"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleUpload}
-                    disabled={uploading || newImage.imageFiles.length === 0 || !newImage.albumId}
-                    className="flex-[2] px-6 py-4 bg-maroon text-white rounded-2xl text-sm font-bold hover:bg-maroon-dark transition-all shadow-lg shadow-maroon/20 flex items-center justify-center gap-2 disabled:opacity-50"
-                  >
-                    {uploading ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        Uploading Batch...
-                      </>
-                    ) : (
-                      <>
-                        <Upload className="h-4 w-4" />
-                        Add {newImage.imageFiles.length > 0 ? newImage.imageFiles.length : ''} Photos
-                      </>
-                    )}
-                  </button>
-                </div>
+              <div className="shrink-0 px-6 py-4 sm:px-8 sm:py-5 border-t border-slate-100 bg-slate-50/50 flex gap-3 sm:gap-4">
+                <button
+                  onClick={() => setShowUploadModal(false)}
+                  disabled={uploading}
+                  className="flex-1 py-3.5 bg-slate-100 text-slate-600 rounded-xl sm:rounded-2xl text-sm font-bold hover:bg-slate-200 transition-all disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleUpload}
+                  disabled={uploading || newImage.imageFiles.length === 0 || !newImage.albumId}
+                  className="flex-[2] py-3.5 bg-maroon text-white rounded-xl sm:rounded-2xl text-sm font-bold hover:bg-maroon-dark transition-all shadow-lg shadow-maroon/20 flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  {uploading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Uploading Batch...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="h-4 w-4" />
+                      Add {newImage.imageFiles.length > 0 ? newImage.imageFiles.length : ''} Photos
+                    </>
+                  )}
+                </button>
               </div>
             </motion.div>
           </div>
@@ -638,12 +638,12 @@ export default function AdminMedia() {
       {/* Album Modal */}
       <AnimatePresence>
         {showAlbumModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+          <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 md:p-6">
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+              className="fixed inset-0"
               onClick={() => !uploading && setShowAlbumModal(false)}
             />
             
@@ -651,9 +651,9 @@ export default function AdminMedia() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-lg bg-white rounded-[2.5rem] shadow-2xl overflow-hidden"
+              className="relative w-full max-w-lg bg-white rounded-2xl sm:rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col max-h-[calc(100dvh-1.5rem)] sm:max-h-[calc(100dvh-3rem)] z-10 my-auto"
             >
-              <div className="p-8 border-b border-slate-50 flex items-center justify-between">
+              <div className="shrink-0 px-6 py-4 sm:px-8 sm:py-5 border-b border-slate-100 bg-slate-50/70 flex items-center justify-between">
                 <h3 className="text-xl font-display font-bold text-slate-900">
                   {editingAlbumId ? 'Edit Album' : 'Create New Album'}
                 </h3>
@@ -663,20 +663,20 @@ export default function AdminMedia() {
                     setEditingAlbumId(null);
                   }}
                   disabled={uploading}
-                  className="p-2 text-slate-400 hover:text-slate-600 rounded-full transition-colors"
+                  className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition-colors disabled:opacity-50"
                 >
                   <X className="h-5 w-5" />
                 </button>
               </div>
 
-              <div className="p-8 space-y-6">
+              <div className="flex-1 min-h-0 overflow-y-auto p-6 sm:p-8 space-y-6 overscroll-contain">
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Album Name</label>
                   <input 
                     type="text" 
                     value={newAlbum.name}
                     onChange={(e) => setNewAlbum(prev => ({ ...prev, name: e.target.value }))}
-                    className="w-full px-5 py-3 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-maroon/20 outline-none"
+                    className="w-full px-4 py-3 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-maroon/20 outline-none"
                     placeholder="e.g. Easter Celebration 2024"
                   />
                 </div>
@@ -686,7 +686,7 @@ export default function AdminMedia() {
                   <textarea 
                     value={newAlbum.description}
                     onChange={(e) => setNewAlbum(prev => ({ ...prev, description: e.target.value }))}
-                    className="w-full px-5 py-3 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-maroon/20 outline-none min-h-[100px] resize-none"
+                    className="w-full px-4 py-3 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-maroon/20 outline-none min-h-[100px] resize-none"
                     placeholder="Brief info about this album..."
                   />
                 </div>
@@ -715,36 +715,36 @@ export default function AdminMedia() {
                     )}
                   </div>
                 </div>
+              </div>
 
-                <div className="flex gap-4 pt-4">
-                  <button
-                    onClick={() => {
-                      setShowAlbumModal(false);
-                      setEditingAlbumId(null);
-                    }}
-                    disabled={uploading}
-                    className="flex-1 px-6 py-4 bg-slate-100 text-slate-600 rounded-2xl text-sm font-bold hover:bg-slate-200 transition-all"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleCreateAlbum}
-                    disabled={uploading || !newAlbum.name.trim()}
-                    className="flex-[2] px-6 py-4 bg-maroon text-white rounded-2xl text-sm font-bold hover:bg-maroon-dark transition-all shadow-lg shadow-maroon/20 flex items-center justify-center gap-2 disabled:opacity-50"
-                  >
-                    {uploading ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        Saving...
-                      </>
-                    ) : (
-                      <>
-                        <Plus className="h-4 w-4" />
-                        {editingAlbumId ? 'Save Changes' : 'Create Album'}
-                      </>
-                    )}
-                  </button>
-                </div>
+              <div className="shrink-0 px-6 py-4 sm:px-8 sm:py-5 border-t border-slate-100 bg-slate-50/50 flex gap-3 sm:gap-4">
+                <button
+                  onClick={() => {
+                    setShowAlbumModal(false);
+                    setEditingAlbumId(null);
+                  }}
+                  disabled={uploading}
+                  className="flex-1 py-3.5 bg-slate-100 text-slate-600 rounded-xl sm:rounded-2xl text-sm font-bold hover:bg-slate-200 transition-all disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleCreateAlbum}
+                  disabled={uploading || !newAlbum.name.trim()}
+                  className="flex-[2] py-3.5 bg-maroon text-white rounded-xl sm:rounded-2xl text-sm font-bold hover:bg-maroon-dark transition-all shadow-lg shadow-maroon/20 flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  {uploading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="h-4 w-4" />
+                      {editingAlbumId ? 'Save Changes' : 'Create Album'}
+                    </>
+                  )}
+                </button>
               </div>
             </motion.div>
           </div>

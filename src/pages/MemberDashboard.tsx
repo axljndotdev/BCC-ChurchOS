@@ -224,47 +224,47 @@ export default function MemberDashboard() {
         {/* Announcement Detail Modal */}
         <AnimatePresence>
           {selectedAnnouncement && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center px-4">
+            <div className="fixed inset-0 z-[100] overflow-y-auto bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 md:p-6">
               <motion.div 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={() => setSelectedAnnouncement(null)}
-                className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm"
+                className="fixed inset-0"
               />
               <motion.div
                 initial={{ opacity: 0, scale: 0.9, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                className="relative w-full max-w-2xl bg-white rounded-[2.5rem] p-8 md:p-12 shadow-2xl overflow-hidden max-h-[80vh] flex flex-col"
+                className="relative w-full max-w-2xl bg-white rounded-2xl sm:rounded-[2.5rem] shadow-2xl overflow-hidden max-h-[calc(100dvh-1.5rem)] sm:max-h-[calc(100dvh-3rem)] flex flex-col z-10 my-auto"
               >
-                <button 
-                  onClick={() => setSelectedAnnouncement(null)}
-                  className="absolute top-8 right-8 text-slate-400 hover:text-maroon transition-colors p-2"
-                >
-                  <X className="h-6 w-6" />
-                </button>
-                
-                <div className="overflow-y-auto pr-4 custom-scrollbar">
-                  <div className="space-y-6">
-                    <div className="flex items-center gap-3 text-[10px] font-bold text-maroon uppercase tracking-widest">
-                      <span className="h-2 w-2 bg-maroon rounded-full"></span>
-                      {formatDate(selectedAnnouncement.date)}
-                    </div>
-                    <h2 className="text-3xl md:text-4xl font-display text-slate-900 leading-tight">
-                      {selectedAnnouncement.title}
-                    </h2>
-                    <div className="w-12 h-px bg-maroon/20" />
-                    <p className="text-slate-600 font-light text-lg leading-relaxed whitespace-pre-wrap">
-                      {selectedAnnouncement.content}
-                    </p>
+                <div className="shrink-0 px-6 py-4 sm:px-8 sm:py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
+                  <div className="flex items-center gap-3 text-[10px] font-bold text-maroon uppercase tracking-widest">
+                    <span className="h-2 w-2 bg-maroon rounded-full"></span>
+                    {formatDate(selectedAnnouncement.date)}
                   </div>
-                </div>
-
-                <div className="mt-8 pt-8 border-t border-slate-50 flex justify-end">
                   <button 
                     onClick={() => setSelectedAnnouncement(null)}
-                    className="px-8 py-3 bg-slate-900 text-white rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-maroon transition-all"
+                    className="p-2 text-slate-400 hover:text-maroon hover:bg-slate-100 rounded-full transition-colors"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+                
+                <div className="flex-1 min-h-0 overflow-y-auto p-6 sm:p-8 md:p-10 space-y-6 overscroll-contain">
+                  <h2 className="text-2xl sm:text-3xl md:text-4xl font-display text-slate-900 leading-tight">
+                    {selectedAnnouncement.title}
+                  </h2>
+                  <div className="w-12 h-px bg-maroon/20" />
+                  <p className="text-slate-600 font-light text-base sm:text-lg leading-relaxed whitespace-pre-wrap">
+                    {selectedAnnouncement.content}
+                  </p>
+                </div>
+
+                <div className="shrink-0 px-6 py-4 sm:px-8 sm:py-5 border-t border-slate-100 bg-slate-50/50 flex justify-end">
+                  <button 
+                    onClick={() => setSelectedAnnouncement(null)}
+                    className="px-6 sm:px-8 py-2.5 sm:py-3 bg-slate-900 text-white rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-maroon transition-all"
                   >
                     Close
                   </button>
