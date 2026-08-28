@@ -5,8 +5,11 @@ import { WeeklyActivity } from '../types';
 import { Calendar, Clock, MapPin, Loader2, Sparkles } from 'lucide-react';
 import { motion } from 'motion/react';
 import { cn } from '../lib/utils';
+import { useCMS } from '../hooks/useCMS';
+import VisualCMSBar from '../components/cms/VisualCMSBar';
 
 export default function WeeklyActivities() {
+  const { pageData } = useCMS('activities');
   const [activities, setActivities] = useState<WeeklyActivity[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -25,34 +28,48 @@ export default function WeeklyActivities() {
   }, []);
 
   const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  const heroImage = pageData?.hero?.imageUrl || "https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&q=80&w=1920";
 
   return (
-    <div className="space-y-16 pb-32">
-      <header className="relative py-24 px-4 overflow-hidden rounded-[3rem] bg-slate-900 text-center">
-        <div className="absolute inset-0 z-0">
-          <img 
-            src="https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&q=80&w=1920" 
-            alt="Weekly Activities" 
-            className="w-full h-full object-cover opacity-30"
-            referrerPolicy="no-referrer"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-slate-900" />
-        </div>
-        <div className="relative z-10 max-w-3xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <span className="inline-block px-4 py-1.5 bg-maroon/20 backdrop-blur-md text-maroon rounded-full text-[10px] font-bold uppercase tracking-[0.2em] mb-6 border border-maroon/30">
-              Community Life
-            </span>
-            <h1 className="text-5xl md:text-7xl font-display text-white mb-6">Weekly Activities</h1>
-            <p className="text-slate-300 font-light leading-relaxed">
-              Find your place in our weekly rhythms of worship, study, and fellowship.
-            </p>
-          </motion.div>
-        </div>
-      </header>
+    <div className="space-y-16 pb-32 relative">
+      {/* Super Admin Visual CMS Toolbar */}
+      <VisualCMSBar pageId="activities" pageName="Weekly Activities" />
+
+      {/* Header */}
+      {pageData?.hero?.visible !== false && (
+        <header className="relative py-24 px-4 overflow-hidden rounded-[3rem] bg-slate-900 text-center">
+          <div className="absolute inset-0 z-0">
+            <img 
+              src={heroImage} 
+              alt="Weekly Activities" 
+              className="w-full h-full object-cover opacity-30"
+              referrerPolicy="no-referrer"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent to-slate-900" />
+          </div>
+          <div className="relative z-10 max-w-3xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <span className="inline-block px-4 py-1.5 bg-maroon/20 backdrop-blur-md text-maroon rounded-full text-[10px] font-bold uppercase tracking-[0.2em] mb-6 border border-maroon/30">
+                <Sparkles className="inline h-3 w-3 mr-1" /> {pageData?.hero?.badge || 'Community Life'}
+              </span>
+              <h1 className="text-5xl md:text-7xl font-display text-white mb-6">
+                {pageData?.hero?.title || 'Weekly Activities'}
+              </h1>
+              {pageData?.hero?.subtitle && (
+                <p className="text-amber-400 font-medium mb-3 text-lg">
+                  {pageData.hero.subtitle}
+                </p>
+              )}
+              <p className="text-slate-300 font-light leading-relaxed">
+                {pageData?.hero?.description || 'Find your place in our weekly rhythms of worship, study, and fellowship.'}
+              </p>
+            </motion.div>
+          </div>
+        </header>
+      )}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {loading ? (
@@ -60,72 +77,51 @@ export default function WeeklyActivities() {
             <Loader2 className="h-8 w-8 animate-spin text-maroon" />
           </div>
         ) : activities.length === 0 ? (
-          <div className="text-center py-20 bg-slate-50 rounded-[2rem] border border-dashed border-slate-200">
-            <Sparkles className="h-12 w-12 text-slate-300 mx-auto mb-4" />
-            <h3 className="text-slate-900 font-display font-bold text-xl">Coming Soon</h3>
-            <p className="text-slate-500">We are currently updating our weekly schedule. Check back soon!</p>
+          <div className="text-center py-20 bg-white rounded-[3rem] border border-slate-100 p-12">
+            <Calendar className="h-12 w-12 text-slate-300 mx-auto mb-4" />
+            <h3 className="text-xl font-display font-bold text-slate-700 mb-2">No Activities Scheduled</h3>
+            <p className="text-slate-400 font-light text-sm max-w-md mx-auto">
+              Please check back soon for updates to our weekly calendar.
+            </p>
           </div>
         ) : (
-          <div className="space-y-24">
+          <div className="space-y-12">
             {days.map((day) => {
-              const dayActivities = activities.filter(a => a.day === day);
+              const dayActivities = activities.filter(a => a.day === day || (a as any).dayOfWeek === day);
               if (dayActivities.length === 0) return null;
 
               return (
-                <div key={day} className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-                  <div className="lg:col-span-3">
-                    <div className="sticky top-24">
-                      <h2 className="text-4xl font-display text-slate-900 mb-2">{day}</h2>
-                      <div className="w-12 h-1.5 bg-maroon rounded-full" />
-                    </div>
+                <div key={day} className="space-y-6">
+                  <div className="flex items-center gap-4">
+                    <h2 className="text-2xl font-display font-bold text-slate-900">{day}</h2>
+                    <div className="flex-1 h-px bg-slate-200" />
                   </div>
-                  <div className="lg:col-span-9 space-y-8">
-                    {dayActivities.map((activity, i) => (
-                      <motion.div 
-                        key={activity.id}
-                        initial={{ opacity: 0, x: 20 }}
-                        whileInView={{ opacity: 1, x: 0 }}
-                        transition={{ delay: i * 0.1 }}
-                        className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl hover:border-maroon/10 transition-all group"
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {dayActivities.map((act) => (
+                      <div 
+                        key={act.id}
+                        className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 hover:shadow-md transition-all flex flex-col justify-between"
                       >
-                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
-                          <div className="space-y-2">
-                             <span className={cn(
-                              "px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest border",
-                              activity.category === 'Spiritual' ? "bg-amber-50 text-amber-600 border-amber-100" :
-                              activity.category === 'Fellowship' ? "bg-blue-50 text-blue-600 border-blue-100" :
-                              activity.category === 'Service' ? "bg-green-50 text-green-600 border-green-100" :
-                              "bg-slate-50 text-slate-600 border-slate-100"
-                            )}>
-                              {activity.category}
-                            </span>
-                            <h3 className="text-2xl font-display font-bold text-slate-900 group-hover:text-maroon transition-colors">
-                              {activity.title}
-                            </h3>
-                            {activity.ministryId && (
-                              <Link 
-                                to={`/ministries/${activity.ministryId}`} 
-                                className="inline-flex items-center gap-1 text-[10px] font-bold text-maroon hover:underline uppercase tracking-widest mt-1"
-                              >
-                                View Ministry <Sparkles className="h-3 w-3" />
-                              </Link>
-                            )}
+                        <div className="space-y-4">
+                          <span className="inline-block px-3 py-1 bg-maroon/5 text-maroon rounded-full text-[10px] font-bold uppercase tracking-wider">
+                            {act.category || 'Gathering'}
+                          </span>
+                          <h3 className="text-xl font-display font-bold text-slate-900">{act.title}</h3>
+                          <p className="text-slate-500 font-light text-sm leading-relaxed">{act.description}</p>
+                        </div>
+
+                        <div className="mt-8 pt-6 border-t border-slate-50 space-y-2 text-xs text-slate-400 font-medium">
+                          <div className="flex items-center gap-2">
+                            <Clock className="h-3.5 w-3.5 text-maroon" />
+                            <span>{act.time}</span>
                           </div>
-                          <div className="flex flex-wrap items-center gap-4 text-xs font-bold text-slate-400 tracking-wider">
-                            <span className="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-full">
-                              <Clock className="h-3.5 w-3.5 text-maroon" />
-                              {activity.time}
-                            </span>
-                            <span className="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-full">
-                              <MapPin className="h-3.5 w-3.5 text-maroon" />
-                              {activity.location}
-                            </span>
+                          <div className="flex items-center gap-2">
+                            <MapPin className="h-3.5 w-3.5 text-maroon" />
+                            <span>{act.location}</span>
                           </div>
                         </div>
-                        <p className="text-slate-600 font-light leading-relaxed">
-                          {activity.description}
-                        </p>
-                      </motion.div>
+                      </div>
                     ))}
                   </div>
                 </div>

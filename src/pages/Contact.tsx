@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Mail, Phone, MapPin, Clock, Send, MessageSquare } from 'lucide-react';
+import { Mail, Phone, MapPin, Clock, Send, MessageSquare, Sparkles } from 'lucide-react';
 import { getSystemSettings } from '../services/db';
 import { SystemSettings } from '../types';
+import { useCMS } from '../hooks/useCMS';
+import VisualCMSBar from '../components/cms/VisualCMSBar';
 
 export default function Contact() {
+  const { pageData } = useCMS('contact');
   const [settings, setSettings] = useState<SystemSettings | null>(null);
 
   useEffect(() => {
@@ -19,7 +22,7 @@ export default function Contact() {
     {
       title: 'Email Us',
       value: settings?.email || 'info@bethesdachurch.org',
-      description: 'Our team will respond within 24 hours.',
+      description: 'Our pastoral team responds promptly.',
       icon: Mail
     },
     {
@@ -38,30 +41,45 @@ export default function Contact() {
   ];
 
   return (
-    <div className="pb-20">
+    <div className="pb-20 relative">
+      {/* Super Admin Visual CMS Toolbar */}
+      <VisualCMSBar pageId="contact" pageName="Contact Us" />
+
       {/* Hero Section */}
-      <section className="relative py-20 bg-maroon overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:20px_20px]"></div>
-        </div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative text-center">
-          <motion.h1 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-4xl md:text-6xl font-display font-bold text-white mb-6 tracking-tight"
-          >
-            Get in <span className="italic font-light">Touch</span>
-          </motion.h1>
-          <motion.p 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="text-xl text-white/80 max-w-2xl mx-auto font-light leading-relaxed"
-          >
-            Have a question, need prayer, or want to learn more about our community? We'd love to hear from you.
-          </motion.p>
-        </div>
-      </section>
+      {pageData?.hero?.visible !== false && (
+        <section className="relative py-20 bg-maroon overflow-hidden">
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute inset-0 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:20px_20px]"></div>
+          </div>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative text-center">
+            {pageData?.hero?.badge && (
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/10 border border-white/20 rounded-full text-[10px] font-bold text-white uppercase tracking-[0.2em] mb-6">
+                <Sparkles className="h-3.5 w-3.5" /> {pageData.hero.badge}
+              </div>
+            )}
+            <motion.h1 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-4xl md:text-6xl font-display font-bold text-white mb-6 tracking-tight"
+            >
+              {pageData?.hero?.title || 'Get in Touch'}
+            </motion.h1>
+            {pageData?.hero?.subtitle && (
+              <p className="text-lg text-amber-300 font-medium mb-3">
+                {pageData.hero.subtitle}
+              </p>
+            )}
+            <motion.p 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="text-xl text-white/80 max-w-2xl mx-auto font-light leading-relaxed"
+            >
+              {pageData?.hero?.description || "Have a question, need prayer, or want to learn more about our community? We'd love to hear from you."}
+            </motion.p>
+          </div>
+        </section>
+      )}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
@@ -98,7 +116,7 @@ export default function Contact() {
             {/* Service Times Card */}
             <div className="bg-slate-900 p-8 rounded-3xl text-white shadow-xl">
               <div className="flex items-center gap-3 mb-6">
-                <Clock className="h-6 w-6 text-maroon-light" />
+                <Clock className="h-6 w-6 text-maroon" />
                 <h3 className="text-lg font-bold">Service Times</h3>
               </div>
               <div className="space-y-4">
@@ -115,7 +133,7 @@ export default function Contact() {
                     </div>
                     <div>
                       <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Wednesday Night</p>
-                      <p className="text-sm">7:00 PM (Mid-week Prayer Meeting)</p>
+                      <p className="text-sm">6:00 PM (Mid-week Prayer Meeting)</p>
                     </div>
                   </>
                 )}
@@ -141,7 +159,7 @@ export default function Contact() {
                 <input 
                   type="text" 
                   placeholder="John"
-                  className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-maroon focus:border-transparent outline-none transition-all"
+                  className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-maroon focus:border-transparent outline-none transition-all text-sm"
                 />
               </div>
               <div className="space-y-2">
@@ -149,7 +167,7 @@ export default function Contact() {
                 <input 
                   type="text" 
                   placeholder="Doe"
-                  className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-maroon focus:border-transparent outline-none transition-all"
+                  className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-maroon focus:border-transparent outline-none transition-all text-sm"
                 />
               </div>
               <div className="sm:col-span-2 space-y-2">
@@ -157,12 +175,12 @@ export default function Contact() {
                 <input 
                   type="email" 
                   placeholder="john@example.com"
-                  className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-maroon focus:border-transparent outline-none transition-all"
+                  className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-maroon focus:border-transparent outline-none transition-all text-sm"
                 />
               </div>
               <div className="sm:col-span-2 space-y-2">
                 <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Subject</label>
-                <select className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-maroon focus:border-transparent outline-none transition-all appearance-none">
+                <select className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-maroon focus:border-transparent outline-none transition-all text-sm">
                   <option>General Inquiry</option>
                   <option>Prayer Request</option>
                   <option>Membership Question</option>
@@ -174,15 +192,15 @@ export default function Contact() {
                 <textarea 
                   rows={5}
                   placeholder="How can we help you?"
-                  className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-maroon focus:border-transparent outline-none transition-all resize-none"
+                  className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-maroon focus:border-transparent outline-none transition-all resize-none text-sm"
                 />
               </div>
               <div className="sm:col-span-2 pt-4">
                 <button 
                   type="button"
-                  className="w-full py-5 bg-maroon text-white rounded-2xl font-bold hover:bg-maroon-dark transition-all shadow-lg shadow-maroon/10 flex items-center justify-center gap-3"
+                  className="w-full py-4 bg-maroon text-white rounded-2xl font-bold hover:bg-maroon/90 transition-all shadow-lg shadow-maroon/20 flex items-center justify-center gap-3 text-xs uppercase tracking-wider"
                 >
-                  Send Message <Send className="h-5 w-5" />
+                  Send Message <Send className="h-4 w-4" />
                 </button>
               </div>
             </form>
@@ -208,9 +226,9 @@ export default function Contact() {
               href={settings?.googleMapsUrl || "https://maps.app.goo.gl/JLjCs4ZDo7nofP2o6"} 
               target="_blank" 
               rel="noopener noreferrer"
-              className="px-6 py-3 bg-white text-slate-900 rounded-2xl font-bold shadow-2xl hover:bg-slate-50 transition-all flex items-center gap-2 border border-slate-100"
+              className="px-6 py-3 bg-white text-slate-900 rounded-2xl font-bold shadow-2xl hover:bg-slate-50 transition-all flex items-center gap-2 border border-slate-100 text-xs uppercase tracking-wider"
             >
-              <MapPin className="h-5 w-5 text-maroon" />
+              <MapPin className="h-4 w-4 text-maroon" />
               Open in Google Maps
             </a>
           </div>

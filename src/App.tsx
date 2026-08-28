@@ -7,6 +7,7 @@ import {
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import FirebaseSetupGuide from './components/FirebaseSetupGuide';
+import InactivityTimeoutGuard from './components/InactivityTimeoutGuard';
 
 // Layouts
 import PublicLayout from './layouts/PublicLayout';
@@ -54,6 +55,7 @@ import AdminMembers from './pages/AdminMembers';
 import AdminSermons from './pages/AdminSermons';
 import AdminEvents from './pages/AdminEvents';
 import AdminAnnouncements from './pages/AdminAnnouncements';
+import AdminCMS from './pages/AdminCMS';
 
 function AppContent() {
   const { isConfigured, loading } = useAuth();
@@ -119,6 +121,7 @@ function AppContent() {
             <Route path="sermons" element={<AdminSermons />} />
             <Route path="events" element={<AdminEvents />} />
             <Route path="announcements" element={<AdminAnnouncements />} />
+            <Route path="cms" element={<AdminCMS />} />
             <Route path="media" element={<AdminMedia />} />
             <Route path="members" element={<AdminMembers />} />
             <Route path="ministries" element={<AdminMinistries />} />
@@ -138,7 +141,9 @@ function AppContent() {
 export default function App() {
   return (
     <AuthProvider>
-      <AppContent />
+      <InactivityTimeoutGuard>
+        <AppContent />
+      </InactivityTimeoutGuard>
     </AuthProvider>
   );
 }

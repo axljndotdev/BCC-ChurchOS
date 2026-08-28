@@ -4,11 +4,14 @@ import { SystemSettings, Sermon } from '../types';
 import { motion } from 'motion/react';
 import LiveStream from '../components/LiveStream';
 import LoadingSpinner from '../components/LoadingSpinner';
-import { Calendar, User, Clock, Share2, Facebook } from 'lucide-react';
+import { Calendar, User, Clock, Share2, Facebook, Sparkles } from 'lucide-react';
 import { formatDate } from '../lib/utils';
 import { Link } from 'react-router-dom';
+import { useCMS } from '../hooks/useCMS';
+import VisualCMSBar from '../components/cms/VisualCMSBar';
 
 export default function Live() {
+  const { pageData } = useCMS('live');
   const [settings, setSettings] = useState<SystemSettings | null>(null);
   const [recentSermons, setRecentSermons] = useState<Sermon[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,33 +43,43 @@ export default function Live() {
   }
 
   return (
-    <div className="pb-32 bg-slate-50 min-h-screen">
+    <div className="pb-32 bg-slate-50 min-h-screen relative">
+      {/* Super Admin Visual CMS Toolbar */}
+      <VisualCMSBar pageId="live" pageName="Live Broadcast Page" />
+
       {/* Immersive Header */}
-      <section className="bg-slate-900 pt-32 pb-64 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0 bg-gradient-to-br from-maroon to-transparent" />
-        </div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-          >
-            <span className="inline-flex items-center gap-2 px-4 py-1.5 bg-red-600/20 border border-red-500/50 rounded-full text-red-500 text-xs font-bold uppercase tracking-[0.2em] mb-6 shadow-2xl shadow-red-600/10">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+      {pageData?.hero?.visible !== false && (
+        <section className="bg-slate-900 pt-32 pb-64 relative overflow-hidden">
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute inset-0 bg-gradient-to-br from-maroon to-transparent" />
+          </div>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+            >
+              <span className="inline-flex items-center gap-2 px-4 py-1.5 bg-red-600/20 border border-red-500/50 rounded-full text-red-500 text-xs font-bold uppercase tracking-[0.2em] mb-6 shadow-2xl shadow-red-600/10">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                </span>
+                {pageData?.hero?.badge || 'Direct from Kabankalan'}
               </span>
-              Direct from Kabankalan
-            </span>
-            <h1 className="text-4xl md:text-6xl font-display font-bold text-white mb-6 tracking-tight">
-              Bethesda <span className="italic font-light">Online</span>
-            </h1>
-            <p className="text-slate-400 max-w-2xl mx-auto font-light leading-relaxed">
-              Join our church family for worship, prayer, and common life, no matter where you are in the world.
-            </p>
-          </motion.div>
-        </div>
-      </section>
+              <h1 className="text-4xl md:text-6xl font-display font-bold text-white mb-6 tracking-tight">
+                {pageData?.hero?.title || 'Bethesda Online'}
+              </h1>
+              {pageData?.hero?.subtitle && (
+                <p className="text-lg text-amber-400 font-medium mb-3">
+                  {pageData.hero.subtitle}
+                </p>
+              )}
+              <p className="text-slate-400 max-w-2xl mx-auto font-light leading-relaxed">
+                {pageData?.hero?.description || 'Join our church family for worship, prayer, and common life, no matter where you are in the world.'}
+              </p>
+            </motion.div>
+          </div>
+        </section>
+      )}
 
       {/* Main Broadcast Center */}
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 -mt-40 relative z-20">

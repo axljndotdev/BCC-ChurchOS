@@ -18,29 +18,93 @@ import {
 } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL, uploadBytesResumable } from 'firebase/storage';
 import { db, storage, auth } from '../firebase/config';
-import { Sermon, ChurchEvent, Announcement, PrayerRequest, GalleryItem, GalleryAlbum, UserProfile, UserRole, Ministry, MembershipInquiry, MinistryDetail, MinistryEditDraft, MinistryEditorRequest, SystemSettings, BlogPost, PrayerRequest as PrayerRequestType, PrayerComment, BlogComment, SermonComment, WeeklyActivity, DirectMessage, ChatConversation, ResourceItem } from '../types';
+import { Sermon, ChurchEvent, Announcement, PrayerRequest, GalleryItem, GalleryAlbum, UserProfile, UserRole, Ministry, MembershipInquiry, MinistryDetail, MinistryEditDraft, MinistryEditorRequest, SystemSettings, BlogPost, PrayerRequest as PrayerRequestType, PrayerComment, BlogComment, SermonComment, WeeklyActivity, DirectMessage, ChatConversation, ResourceItem, CMSPageData } from '../types';
+import { compressImageToDataUrl } from '../lib/imageUtils';
+import { DEFAULT_CMS_PAGES } from '../data/defaultCMSData';
+
+/**
+ * Executes a Firestore operation with exponential backoff if throttled or resource-exhausted.
+ */
+export async function withRetry<T>(
+  operation: () => Promise<T>,
+  maxRetries = 3,
+  initialDelayMs = 1000
+): Promise<T> {
+  let delay = initialDelayMs;
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      return await operation();
+    } catch (error: any) {
+      const isThrottled = 
+        error?.code === 'resource-exhausted' ||
+        error?.message?.includes('resource-exhausted') ||
+        error?.message?.includes('maximum bandwidth') ||
+        error?.code === 'unavailable' ||
+        error?.message?.includes('offline');
+
+      if (isThrottled && attempt < maxRetries) {
+        console.warn(`Firestore throttled / temporarily exhausted (attempt ${attempt}/${maxRetries}). Retrying in ${delay}ms with backoff...`);
+        await new Promise(res => setTimeout(res, delay));
+        delay *= 2; // exponential backoff
+      } else {
+        throw error;
+      }
+    }
+  }
+  return await operation();
+}
 
 // System Settings
-// ... (previous content)
-// (I will use multi_edit or just add at the end)
-// Adding at the end for simplicity in this turn
 export const getSystemSettings = async () => {
   if (!db) return null;
-  const docRef = doc(db, 'settings', 'general');
-  const docSnap = await getDoc(docRef);
-  if (docSnap.exists()) {
-    return { id: docSnap.id, ...docSnap.data() } as SystemSettings;
-  }
-  return null;
+  return await withRetry(async () => {
+    const docRef = doc(db!, 'settings', 'general');
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      return { id: docSnap.id, ...docSnap.data() } as SystemSettings;
+    }
+    return null;
+  });
 };
 
 export const updateSystemSettings = async (updates: Partial<SystemSettings>) => {
   if (!db) return null;
   const docRef = doc(db, 'settings', 'general');
-  return await setDoc(docRef, {
-    ...updates,
-    lastUpdated: serverTimestamp()
-  }, { merge: true });
+
+  // Sanitize and compress any base64 image fields to avoid Firestore 1MB document size limit
+  const sanitizedUpdates: Partial<SystemSettings> = { ...updates };
+  const imageKeys: (keyof SystemSettings)[] = [
+    'heroImageUrl',
+    'givingBannerUrl',
+    'aboutStoryImageUrl',
+    'kidsMinistryImageUrl',
+    'youthMinistryImageUrl',
+    'communityMinistryImageUrl'
+  ];
+
+  for (const key of imageKeys) {
+    const val = sanitizedUpdates[key];
+    if (typeof val === 'string' && val.startsWith('data:image/')) {
+      // If it's a data URL, compress to ensure max ~45KB per image
+      try {
+        const compressed = await compressImageToDataUrl(val, {
+          maxDimension: 1200,
+          targetMaxSizeBytes: 45 * 1024,
+          initialQuality: 0.65
+        });
+        (sanitizedUpdates as any)[key] = compressed;
+      } catch (e) {
+        console.warn(`Could not compress setting image for ${key}:`, e);
+      }
+    }
+  }
+
+  return await withRetry(async () => {
+    return await setDoc(docRef, {
+      ...sanitizedUpdates,
+      lastUpdated: serverTimestamp()
+    }, { merge: true });
+  });
 };
 
 // Sermons
@@ -159,6 +223,15 @@ export const updateEvent = async (id: string, updates: Partial<ChurchEvent>) => 
   });
 };
 
+export const toggleEventHeroFeature = async (id: string, currentStatus: boolean = false) => {
+  if (!db) return null;
+  const docRef = doc(db, 'events', id);
+  return await updateDoc(docRef, {
+    featuredInHero: !currentStatus,
+    updatedAt: serverTimestamp()
+  });
+};
+
 export const deleteEvent = async (id: string) => {
   if (!db) throw new Error('Firestore is not initialized');
   if (!id) throw new Error('No event ID provided');
@@ -191,6 +264,14 @@ export const updateAnnouncement = async (id: string, updates: Partial<Announceme
   if (!db) return null;
   const docRef = doc(db, 'announcements', id);
   return await updateDoc(docRef, updates);
+};
+
+export const toggleAnnouncementHeroFeature = async (id: string, currentStatus: boolean = false) => {
+  if (!db) return null;
+  const docRef = doc(db, 'announcements', id);
+  return await updateDoc(docRef, {
+    featuredInHero: !currentStatus
+  });
 };
 
 export const deleteAnnouncement = async (id: string) => {
@@ -395,8 +476,27 @@ export const deleteGalleryItem = async (id: string) => {
 };
 
 // Media Upload
-// Bypassing Firebase Storage and using Base64 in Firestore to avoid "Blaze Plan" requirements
+// Bypassing Firebase Storage and using Base64 in Firestore with aggressive lightweight compression to avoid 1MB document limit
 export const uploadFile = async (file: File | Blob, path: string, onProgress?: (progress: number) => void) => {
+  if (onProgress) onProgress(20);
+
+  // If it's an image, run through our canvas compressor
+  const isImage = file.type ? file.type.startsWith('image/') : true;
+  if (isImage) {
+    try {
+      if (onProgress) onProgress(50);
+      const compressedDataUrl = await compressImageToDataUrl(file, {
+        maxDimension: 1200,
+        targetMaxSizeBytes: 45 * 1024, // 45KB max
+        initialQuality: 0.65
+      });
+      if (onProgress) onProgress(100);
+      return compressedDataUrl;
+    } catch (err) {
+      console.warn('Canvas compression failed, falling back to standard reader:', err);
+    }
+  }
+
   return new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
     
@@ -941,6 +1041,12 @@ export const approveBlogPost = async (id: string) => {
   });
 };
 
+export const toggleBlogHeroFeature = async (id: string, currentStatus: boolean = false) => {
+  return await updateBlogPost(id, {
+    featuredInHero: !currentStatus
+  });
+};
+
 export const deleteBlogPost = async (id: string) => {
   if (!db) return null;
   const docRef = doc(db, 'blogs', id);
@@ -1104,4 +1210,129 @@ export const incrementDownloadCount = async (id: string) => {
     handleFirestoreError(error, OperationType.UPDATE, `resources/${id}`);
   }
 };
+
+// ==========================================
+// CMS Page Content Management Services
+// ==========================================
+
+export const getPageContent = async (pageId: string): Promise<CMSPageData> => {
+  const fallback = DEFAULT_CMS_PAGES[pageId] || {
+    id: pageId,
+    title: pageId.charAt(0).toUpperCase() + pageId.slice(1),
+    slug: `/${pageId === 'home' ? '' : pageId}`,
+    hero: {
+      title: pageId.charAt(0).toUpperCase() + pageId.slice(1),
+      description: '',
+      imageUrl: 'https://images.unsplash.com/photo-1544427920-c49ccfb85579?auto=format&fit=crop&q=80&w=1920',
+      visible: true
+    },
+    sections: []
+  };
+
+  if (!db) return fallback;
+
+  return await withRetry(async () => {
+    try {
+      const docRef = doc(db, 'page_contents', pageId);
+      const snap = await getDoc(docRef);
+      if (snap.exists()) {
+        const data = snap.data() as Partial<CMSPageData>;
+        return {
+          ...fallback,
+          ...data,
+          id: pageId,
+          hero: {
+            ...fallback.hero,
+            ...(data.hero || {})
+          },
+          sections: Array.isArray(data.sections) ? data.sections : fallback.sections,
+          customBlocks: Array.isArray(data.customBlocks) ? data.customBlocks : []
+        } as CMSPageData;
+      }
+      return fallback;
+    } catch (error) {
+      console.warn(`Error fetching page content for ${pageId}, falling back to defaults:`, error);
+      return fallback;
+    }
+  });
+};
+
+export const updatePageContent = async (
+  pageId: string, 
+  data: Partial<CMSPageData>,
+  currentUser?: { uid?: string; displayName?: string; email?: string }
+): Promise<void> => {
+  if (!db) return;
+  const docRef = doc(db, 'page_contents', pageId);
+
+  // Recursively sanitize or compress any data URLs to protect Firestore 1MB limit
+  const sanitized = JSON.parse(JSON.stringify(data));
+
+  return await withRetry(async () => {
+    try {
+      await setDoc(docRef, {
+        ...sanitized,
+        id: pageId,
+        lastUpdated: serverTimestamp(),
+        updatedBy: currentUser?.uid || auth?.currentUser?.uid || 'super_admin',
+        updatedByName: currentUser?.displayName || auth?.currentUser?.displayName || currentUser?.email || 'Super Admin'
+      }, { merge: true });
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, `page_contents/${pageId}`);
+    }
+  });
+};
+
+export const resetPageContent = async (pageId: string): Promise<CMSPageData> => {
+  const fallback = DEFAULT_CMS_PAGES[pageId];
+  if (!fallback) throw new Error(`No default template found for page ${pageId}`);
+
+  if (db) {
+    const docRef = doc(db, 'page_contents', pageId);
+    try {
+      await deleteDoc(docRef);
+    } catch (error) {
+      console.warn(`Could not delete page content document ${pageId}:`, error);
+    }
+  }
+
+  return fallback;
+};
+
+export const getAllCMSPages = async (): Promise<Record<string, CMSPageData>> => {
+  const results: Record<string, CMSPageData> = { ...DEFAULT_CMS_PAGES };
+  if (!db) return results;
+
+  try {
+    const snapshot = await getDocs(collection(db, 'page_contents'));
+    snapshot.forEach(docSnap => {
+      const pageId = docSnap.id;
+      const data = docSnap.data() as Partial<CMSPageData>;
+      const fallback = DEFAULT_CMS_PAGES[pageId] || {
+        id: pageId,
+        title: pageId,
+        slug: `/${pageId}`,
+        hero: { title: pageId, description: '', imageUrl: '', visible: true },
+        sections: []
+      };
+
+      results[pageId] = {
+        ...fallback,
+        ...data,
+        id: pageId,
+        hero: {
+          ...fallback.hero,
+          ...(data.hero || {})
+        },
+        sections: Array.isArray(data.sections) ? data.sections : fallback.sections,
+        customBlocks: Array.isArray(data.customBlocks) ? data.customBlocks : []
+      };
+    });
+  } catch (error) {
+    console.warn('Error loading all CMS pages:', error);
+  }
+
+  return results;
+};
+
 

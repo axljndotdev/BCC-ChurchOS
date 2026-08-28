@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getEvents, addEvent, uploadFile, deleteEvent, getEventsByYear } from '../services/db';
+import { getEvents, addEvent, uploadFile, deleteEvent, getEventsByYear, toggleEventHeroFeature } from '../services/db';
 import { ChurchEvent } from '../types';
-import { Calendar, Plus, Trash2, Edit2, Search, MapPin, Clock, Loader2, Image as ImageIcon, Upload, AlertCircle, Video, X, Link as LinkIcon } from 'lucide-react';
+import { Calendar, Plus, Trash2, Edit2, Search, MapPin, Clock, Loader2, Image as ImageIcon, Upload, AlertCircle, Video, X, Link as LinkIcon, Star, Sparkles } from 'lucide-react';
 import { formatDate, slugify, cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '../contexts/AuthContext';
@@ -29,6 +29,7 @@ export default function AdminEvents() {
     time: '09:00',
     location: '',
     imageUrl: '',
+    featuredInHero: false,
     media: [] as EventMedia[]
   });
 
@@ -174,6 +175,7 @@ export default function AdminEvents() {
         location: formData.location,
         imageUrl: formData.imageUrl || 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&q=80&w=800',
         date: eventDate,
+        featuredInHero: formData.featuredInHero,
         media: formData.media
       });
       setIsModalOpen(false);
@@ -185,6 +187,7 @@ export default function AdminEvents() {
         time: '09:00',
         location: '',
         imageUrl: '',
+        featuredInHero: false,
         media: []
       });
       fetchEvents();
@@ -193,6 +196,16 @@ export default function AdminEvents() {
       alert('Failed to add event.');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleToggleHero = async (event: ChurchEvent) => {
+    try {
+      await toggleEventHeroFeature(event.id, !!event.featuredInHero);
+      setEvents(prev => prev.map(e => e.id === event.id ? { ...e, featuredInHero: !e.featuredInHero } : e));
+    } catch (error) {
+      console.error('Error toggling hero feature:', error);
+      alert('Could not update hero tag.');
     }
   };
 
@@ -274,13 +287,14 @@ export default function AdminEvents() {
                 <th className="px-6 py-4">Event</th>
                 <th className="px-6 py-4">Date & Time</th>
                 <th className="px-6 py-4">Location</th>
+                <th className="px-6 py-4 text-center">Hero Carousel</th>
                 <th className="px-6 py-4 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
               {loading ? (
                 <tr>
-                  <td colSpan={4} className="px-6 py-12 text-center">
+                  <td colSpan={5} className="px-6 py-12 text-center">
                     <Loader2 className="h-8 w-8 animate-spin text-maroon mx-auto" />
                   </td>
                 </tr>
@@ -303,7 +317,14 @@ export default function AdminEvents() {
                         )}
                       </div>
                       <div>
-                        <p className="font-bold text-slate-900">{event.title}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="font-bold text-slate-900">{event.title}</p>
+                          {event.featuredInHero && (
+                            <span className="px-2 py-0.5 bg-amber-500/10 text-amber-600 border border-amber-500/20 text-[10px] font-bold rounded-full flex items-center gap-1">
+                              <Star className="h-3 w-3 fill-amber-500 text-amber-500" /> Hero Spotlight
+                            </span>
+                          )}
+                        </div>
                         <p className="text-xs text-slate-400 line-clamp-1">{event.description}</p>
                       </div>
                     </div>
@@ -324,6 +345,21 @@ export default function AdminEvents() {
                   </td>
                   <td className="px-6 py-4 text-sm text-slate-600">
                     <p className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {event.location}</p>
+                  </td>
+                  <td className="px-6 py-4 text-center">
+                    <button
+                      onClick={() => handleToggleHero(event)}
+                      className={cn(
+                        "px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 mx-auto",
+                        event.featuredInHero
+                          ? "bg-amber-500 text-white shadow-sm hover:bg-amber-600"
+                          : "bg-slate-100 text-slate-500 hover:bg-amber-50 hover:text-amber-600"
+                      )}
+                      title={event.featuredInHero ? "Remove from Hero Carousel" : "Tag to display on Hero Carousel"}
+                    >
+                      <Star className={cn("h-3.5 w-3.5", event.featuredInHero && "fill-current")} />
+                      {event.featuredInHero ? "Featured" : "Tag for Hero"}
+                    </button>
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-2">
@@ -348,7 +384,7 @@ export default function AdminEvents() {
               ))}
               {filteredEvents.length === 0 && !loading && (
                 <tr>
-                  <td colSpan={4} className="px-6 py-12 text-center text-slate-500 font-light italic">
+                  <td colSpan={5} className="px-6 py-12 text-center text-slate-500 font-light italic">
                     No scheduled events found.
                   </td>
                 </tr>
@@ -601,6 +637,27 @@ export default function AdminEvents() {
                       </div>
                     )}
                   </div>
+                </div>
+
+                <div className="md:col-span-2 p-4 bg-amber-50/60 rounded-2xl border border-amber-200/60 flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-600">
+                      <Star className="h-5 w-5 fill-amber-500 text-amber-500" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-slate-900">Feature in Hero Carousel</p>
+                      <p className="text-[11px] text-slate-500">Spotlight this upcoming event directly on the Home Page Hero slider</p>
+                    </div>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      className="sr-only peer"
+                      checked={formData.featuredInHero}
+                      onChange={e => setFormData({ ...formData, featuredInHero: e.target.checked })}
+                    />
+                    <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+                  </label>
                 </div>
 
                 <div className="md:col-span-2 space-y-2">

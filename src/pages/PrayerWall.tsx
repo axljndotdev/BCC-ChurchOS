@@ -5,6 +5,8 @@ import { PrayerRequest, PrayerComment } from '../types';
 import { MessageSquare, Send, CheckCircle2, Clock, Heart, Loader2, ShieldCheck, Globe, ChevronRight } from 'lucide-react';
 import { formatDate, cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
+import { useCMS } from '../hooks/useCMS';
+import VisualCMSBar from '../components/cms/VisualCMSBar';
 
 function CommentSection({ requestId }: { requestId: string }) {
   const { user, profile } = useAuth();
@@ -208,6 +210,7 @@ function PrayerCard({ request, currentUserId, onPray, index, onCommentClick }: {
 
 export default function PrayerWall() {
   const { user, profile } = useAuth();
+  const { pageData } = useCMS('prayer');
   const [requests, setRequests] = useState<PrayerRequest[]>([]);
   const [myRequests, setMyRequests] = useState<PrayerRequest[]>([]);
   const [activeTab, setActiveTab] = useState<'wall' | 'my-prayers'>('wall');
@@ -308,36 +311,53 @@ export default function PrayerWall() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 min-h-screen space-y-12 pb-32">
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-        <div>
-          <h1 className="text-4xl font-display font-bold text-slate-900 tracking-tight">Prayer Garden</h1>
-          <p className="text-slate-500 font-light max-w-xl">Share your requests and pray for others in our community. A sanctuary for our community to lift each other up.</p>
-        </div>
-        
-        {user && (
-          <div className="flex gap-2 p-1 bg-slate-100 rounded-2xl shrink-0">
-            <button
-              onClick={() => setActiveTab('wall')}
-              className={cn(
-                "px-6 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all",
-                activeTab === 'wall' ? "bg-white text-maroon shadow-sm" : "text-slate-500 hover:text-slate-700"
-              )}
-            >
-              Public Wall
-            </button>
-            <button
-              onClick={() => setActiveTab('my-prayers')}
-              className={cn(
-                "px-6 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all",
-                activeTab === 'my-prayers' ? "bg-white text-maroon shadow-sm" : "text-slate-500 hover:text-slate-700"
-              )}
-            >
-              My Requests
-            </button>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 min-h-screen space-y-12 pb-32 relative">
+      {/* Super Admin Visual CMS Toolbar */}
+      <VisualCMSBar pageId="prayer" pageName="Prayer Garden" />
+
+      {pageData?.hero?.visible !== false && (
+        <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+          <div>
+            {pageData?.hero?.badge && (
+              <span className="inline-block px-3 py-1 bg-maroon/5 text-maroon rounded-full text-[10px] font-bold uppercase tracking-wider mb-2">
+                {pageData.hero.badge}
+              </span>
+            )}
+            <h1 className="text-4xl font-display font-bold text-slate-900 tracking-tight">
+              {pageData?.hero?.title || 'Prayer Garden'}
+            </h1>
+            {pageData?.hero?.subtitle && (
+              <p className="text-amber-700 font-medium text-sm mt-1">{pageData.hero.subtitle}</p>
+            )}
+            <p className="text-slate-500 font-light max-w-xl mt-1">
+              {pageData?.hero?.description || 'Share your requests and pray for others in our community. A sanctuary for our community to lift each other up.'}
+            </p>
           </div>
-        )}
-      </header>
+          
+          {user && (
+            <div className="flex gap-2 p-1 bg-slate-100 rounded-2xl shrink-0">
+              <button
+                onClick={() => setActiveTab('wall')}
+                className={cn(
+                  "px-6 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all",
+                  activeTab === 'wall' ? "bg-white text-maroon shadow-sm" : "text-slate-500 hover:text-slate-700"
+                )}
+              >
+                Public Wall
+              </button>
+              <button
+                onClick={() => setActiveTab('my-prayers')}
+                className={cn(
+                  "px-6 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all",
+                  activeTab === 'my-prayers' ? "bg-white text-maroon shadow-sm" : "text-slate-500 hover:text-slate-700"
+                )}
+              >
+                My Requests
+              </button>
+            </div>
+          )}
+        </header>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 items-start">
         {/* Sidebar: Submit Request */}

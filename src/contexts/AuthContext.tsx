@@ -13,6 +13,7 @@ import {
 import { doc, getDoc, setDoc, serverTimestamp, onSnapshot } from 'firebase/firestore';
 import { auth, db, googleProvider, isFirebaseConfigured } from '../firebase/config';
 import { UserProfile } from '../types';
+import { withRetry } from '../services/db';
 
 interface AuthContextType {
   user: User | null;
@@ -64,14 +65,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (firebaseUser && db) {
         try {
           const docRef = doc(db, 'users', firebaseUser.uid);
-          
+          let profileCreateAttempted = false;
+
           // Set up real-time listener for profile
           unsubscribeProfile = onSnapshot(docRef, async (docSnap) => {
             if (docSnap.exists()) {
               setProfile(docSnap.data() as UserProfile);
               setLoading(false);
-            } else {
-              // Create new profile if it doesn't exist
+            } else if (!profileCreateAttempted) {
+              profileCreateAttempted = true;
+              // Create new profile once if it doesn't exist
               const isSuperAdminUser = firebaseUser.email === 'wapdev24@gmail.com';
               const newProfile: UserProfile = {
                 uid: firebaseUser.uid,
@@ -88,15 +91,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 createdAt: serverTimestamp(),
               };
               try {
-                await setDoc(docRef, newProfile);
-                // The onSnapshot will trigger again with the new data
+                await withRetry(async () => {
+                  await setDoc(docRef, newProfile, { merge: true });
+                });
               } catch (err) {
                 console.error('Error creating profile:', err);
+                // Fallback to local profile representation so user can still navigate
+                setProfile(newProfile);
                 setLoading(false);
               }
+            } else {
+              setLoading(false);
             }
           }, (error) => {
-            console.error('Profile listener error:', error);
+            console.warn('Profile listener error:', error);
             setLoading(false);
           });
         } catch (error) {

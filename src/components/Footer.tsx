@@ -74,7 +74,7 @@ export default function Footer() {
               )) : (
                 <>
                   <li><span className="font-medium">Sunday Morning:</span> 9:00 AM & 11:00 AM</li>
-                  <li><span className="font-medium">Wednesday Night:</span> 7:00 PM</li>
+                  <li><span className="font-medium">Wednesday Night:</span> 6:00 PM</li>
                 </>
               )}
             </ul>

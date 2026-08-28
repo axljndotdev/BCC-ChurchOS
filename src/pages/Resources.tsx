@@ -17,6 +17,8 @@ import {
   uploadFile 
 } from '../services/db';
 import { ResourceItem } from '../types';
+import { useCMS } from '../hooks/useCMS';
+import VisualCMSBar from '../components/cms/VisualCMSBar';
 
 interface ManualChapter {
   title: string;
@@ -27,6 +29,7 @@ interface ManualChapter {
 
 export default function Resources() {
   const { user, profile, isCouncil, isSuperAdmin, isAdmin } = useAuth();
+  const { pageData } = useCMS('resources');
   const navigate = useNavigate();
   const [activeChapter, setActiveChapter] = useState<number | null>(null);
   const [isManualExpanded, setIsManualExpanded] = useState<boolean>(false);
@@ -415,64 +418,74 @@ Copyright © 2026 Bethesda Community Church (BCC). All rights reserved.`;
   const showPrivilegedControls = isCouncil || isSuperAdmin || isAdmin;
 
   return (
-    <div className="pb-24 bg-slate-50 min-h-screen">
-      {/* Page Header */}
-      <section className="relative py-20 bg-slate-900 overflow-hidden">
-        <div className="absolute inset-0 opacity-15">
-          <img 
-            src="https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&q=80&w=1920" 
-            alt="Resources background" 
-            className="w-full h-full object-cover"
-            referrerPolicy="no-referrer"
-          />
-          <div className="absolute inset-0 bg-slate-900/50" />
-        </div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative text-center">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="inline-flex items-center gap-2 px-3 py-1 bg-maroon/20 text-red-300 border border-maroon/30 rounded-full text-xs font-semibold mb-4 tracking-wider uppercase"
-          >
-            <Sparkles className="h-3 w-3" /> BCC Spiritual Library
-          </motion.div>
-          <motion.h1 
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-4xl md:text-5xl font-display font-bold text-white mb-6 tracking-tight"
-          >
-            Equipping and <span className="italic font-light text-slate-300">Resources</span>
-          </motion.h1>
-          <motion.p 
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="text-lg text-slate-300 max-w-2xl mx-auto font-light leading-relaxed"
-          >
-            Access spiritual growth manuals, weekly bulletins, and dynamic church study guides to ground your daily life in Christ.
-          </motion.p>
+    <div className="pb-24 bg-slate-50 min-h-screen relative">
+      {/* Super Admin Visual CMS Toolbar */}
+      <VisualCMSBar pageId="resources" pageName="Resources & Study Guides" />
 
-          {/* Super Admin & Council Control Banner */}
-          {showPrivilegedControls && (
+      {/* Page Header */}
+      {pageData?.hero?.visible !== false && (
+        <section className="relative py-20 bg-slate-900 overflow-hidden">
+          <div className="absolute inset-0 opacity-15">
+            <img 
+              src={pageData?.hero?.imageUrl || "https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&q=80&w=1920"} 
+              alt="Resources background" 
+              className="w-full h-full object-cover"
+              referrerPolicy="no-referrer"
+            />
+            <div className="absolute inset-0 bg-slate-900/50" />
+          </div>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative text-center">
             <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="mt-8 inline-flex items-center gap-4 bg-white/10 backdrop-blur-md px-6 py-3 rounded-full border border-white/10"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="inline-flex items-center gap-2 px-3 py-1 bg-maroon/20 text-red-300 border border-maroon/30 rounded-full text-xs font-semibold mb-4 tracking-wider uppercase"
             >
-              <div className="text-left text-xs">
-                <p className="font-bold text-white">Privileged Controls Active</p>
-                <p className="text-slate-300 font-light text-[10px]">Add, edit, or delete dynamic downloads and links.</p>
-              </div>
-              <button
-                onClick={openAddModal}
-                className="flex items-center gap-1.5 px-4 py-2 bg-maroon text-white hover:bg-white hover:text-slate-900 rounded-full text-xs font-bold uppercase tracking-wider transition-colors shadow-lg shadow-maroon/20"
-              >
-                <Plus className="h-4 w-4" /> Add Resource
-              </button>
+              <Sparkles className="h-3 w-3" /> {pageData?.hero?.badge || 'BCC Spiritual Library'}
             </motion.div>
-          )}
-        </div>
-      </section>
+            <motion.h1 
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-4xl md:text-5xl font-display font-bold text-white mb-6 tracking-tight"
+            >
+              {pageData?.hero?.title || 'Equipping and Resources'}
+            </motion.h1>
+            {pageData?.hero?.subtitle && (
+              <p className="text-amber-400 font-medium mb-3 text-lg">
+                {pageData.hero.subtitle}
+              </p>
+            )}
+            <motion.p 
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="text-lg text-slate-300 max-w-2xl mx-auto font-light leading-relaxed"
+            >
+              {pageData?.hero?.description || 'Access spiritual growth manuals, weekly bulletins, and dynamic church study guides to ground your daily life in Christ.'}
+            </motion.p>
+
+            {/* Super Admin & Council Control Banner */}
+            {showPrivilegedControls && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="mt-8 inline-flex items-center gap-4 bg-white/10 backdrop-blur-md px-6 py-3 rounded-full border border-white/10"
+              >
+                <div className="text-left text-xs">
+                  <p className="font-bold text-white">Privileged Controls Active</p>
+                  <p className="text-slate-300 font-light text-[10px]">Add, edit, or delete dynamic downloads and links.</p>
+                </div>
+                <button
+                  onClick={openAddModal}
+                  className="flex items-center gap-1.5 px-4 py-2 bg-maroon text-white hover:bg-white hover:text-slate-900 rounded-full text-xs font-bold uppercase tracking-wider transition-colors shadow-lg shadow-maroon/20"
+                >
+                  <Plus className="h-4 w-4" /> Add Resource
+                </button>
+              </motion.div>
+            )}
+          </div>
+        </section>
+      )}
 
       {/* Message feedback */}
       {message && (

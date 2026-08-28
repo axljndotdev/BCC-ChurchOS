@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Calendar, User, Clock, ChevronRight } from 'lucide-react';
+import { Calendar, User, Clock, ChevronRight, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getBlogPosts } from '../services/db';
 import { BlogPost } from '../types';
 import { formatDate } from '../lib/utils';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { useCMS } from '../hooks/useCMS';
+import VisualCMSBar from '../components/cms/VisualCMSBar';
 
 export default function Blogs() {
+  const { pageData } = useCMS('blogs');
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -33,30 +36,47 @@ export default function Blogs() {
     );
   }
 
+  const heroImage = pageData?.hero?.imageUrl || "https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&q=80&w=1920";
+
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 relative">
+      {/* Super Admin Visual CMS Toolbar */}
+      <VisualCMSBar pageId="blogs" pageName="Blog & Reflections" />
+
       {/* Hero */}
-      <section className="relative pt-32 pb-20 overflow-hidden bg-slate-900">
-        <div className="absolute inset-0 z-0 opacity-20">
-          <img 
-            src="https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&q=80&w=1920" 
-            alt="Blog Background" 
-            className="w-full h-full object-cover"
-            referrerPolicy="no-referrer"
-          />
-        </div>
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <h1 className="text-5xl md:text-7xl font-display text-white mb-6 tracking-tight">The <span className="italic font-light">Word</span> Blog</h1>
-            <p className="text-xl text-slate-300 max-w-2xl mx-auto font-light">
-              Reflections, study notes, and updates from our church leadership and community.
-            </p>
-          </motion.div>
-        </div>
-      </section>
+      {pageData?.hero?.visible !== false && (
+        <section className="relative pt-32 pb-20 overflow-hidden bg-slate-900">
+          <div className="absolute inset-0 z-0 opacity-20">
+            <img 
+              src={heroImage} 
+              alt="Blog Background" 
+              className="w-full h-full object-cover"
+              referrerPolicy="no-referrer"
+            />
+          </div>
+          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              {pageData?.hero?.badge && (
+                <span className="inline-block px-3 py-1 bg-maroon/20 text-red-300 border border-maroon/30 rounded-full text-xs font-semibold mb-4 tracking-wider uppercase">
+                  <Sparkles className="inline h-3 w-3 mr-1" /> {pageData.hero.badge}
+                </span>
+              )}
+              <h1 className="text-5xl md:text-7xl font-display text-white mb-6 tracking-tight">
+                {pageData?.hero?.title || 'The Word Blog'}
+              </h1>
+              {pageData?.hero?.subtitle && (
+                <p className="text-amber-400 font-medium mb-3 text-lg">{pageData.hero.subtitle}</p>
+              )}
+              <p className="text-xl text-slate-300 max-w-2xl mx-auto font-light">
+                {pageData?.hero?.description || 'Reflections, study notes, and updates from our church leadership and community.'}
+              </p>
+            </motion.div>
+          </div>
+        </section>
+      )}
 
       {/* Blog List */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">

@@ -130,7 +130,8 @@ service cloud.firestore {
              data.date is timestamp &&
              data.location is string &&
              (!('slug' in data) || data.slug is string) &&
-             (!('content' in data) || data.content is string);
+             (!('content' in data) || data.content is string) &&
+             (!('featuredInHero' in data) || data.featuredInHero is bool);
     }
 
     function isValidAnnouncement(data) {
@@ -139,7 +140,8 @@ service cloud.firestore {
              data.content is string && data.content.size() > 0 && data.content.size() < 5000 &&
              data.date is timestamp &&
              (!('imageUrl' in data) || data.imageUrl == null || data.imageUrl == "" || isValidUrl(data.imageUrl)) &&
-             (!('category' in data) || data.category is string);
+             (!('category' in data) || data.category is string) &&
+             (!('featuredInHero' in data) || data.featuredInHero is bool);
     }
 
     function isValidPrayerRequest(data) {
@@ -211,7 +213,15 @@ service cloud.firestore {
              (!('twitterUrl' in data) || data.twitterUrl == null || data.twitterUrl == "" || isValidUrl(data.twitterUrl)) &&
              (!('welcomeTitle' in data) || data.welcomeTitle is string) &&
              (!('welcomeSubtitle' in data) || data.welcomeSubtitle is string) &&
+             (!('pastorQuote' in data) || data.pastorQuote is string) &&
+             (!('pastorQuoteAuthor' in data) || data.pastorQuoteAuthor is string) &&
              (!('heroImageUrl' in data) || data.heroImageUrl == null || data.heroImageUrl == "" || isValidUrl(data.heroImageUrl)) &&
+             (!('givingBannerUrl' in data) || data.givingBannerUrl == null || data.givingBannerUrl == "" || isValidUrl(data.givingBannerUrl)) &&
+             (!('aboutStoryImageUrl' in data) || data.aboutStoryImageUrl == null || data.aboutStoryImageUrl == "" || isValidUrl(data.aboutStoryImageUrl)) &&
+             (!('kidsMinistryImageUrl' in data) || data.kidsMinistryImageUrl == null || data.kidsMinistryImageUrl == "" || isValidUrl(data.kidsMinistryImageUrl)) &&
+             (!('youthMinistryImageUrl' in data) || data.youthMinistryImageUrl == null || data.youthMinistryImageUrl == "" || isValidUrl(data.youthMinistryImageUrl)) &&
+             (!('communityMinistryImageUrl' in data) || data.communityMinistryImageUrl == null || data.communityMinistryImageUrl == "" || isValidUrl(data.communityMinistryImageUrl)) &&
+             (!('inactivityTimeoutMinutes' in data) || data.inactivityTimeoutMinutes is number) &&
              (!('serviceTimes' in data) || data.serviceTimes is list);
     }
 
@@ -296,6 +306,19 @@ service cloud.firestore {
              data.lastMessage is string && data.lastMessage.size() <= 5000 &&
              data.lastMessageAt is timestamp &&
              data.lastSenderId == request.auth.uid;
+    }
+
+    function isValidPageContent(data) {
+      return data.keys().hasAll(['id', 'title', 'hero', 'sections']) &&
+             data.id is string && data.id.size() > 0 && data.id.size() <= 100 &&
+             data.title is string && data.title.size() > 0 && data.title.size() <= 200 &&
+             data.hero is map &&
+             data.sections is list &&
+             (!('customBlocks' in data) || data.customBlocks is list) &&
+             (!('slug' in data) || data.slug is string) &&
+             (!('updatedBy' in data) || data.updatedBy is string) &&
+             (!('updatedByName' in data) || data.updatedByName is string) &&
+             (!('lastUpdated' in data) || data.lastUpdated is timestamp);
     }
 
     // ===============================================================
@@ -457,6 +480,11 @@ service cloud.firestore {
       allow update: if (isCouncil() && isValidResourceItem(request.resource.data)) ||
                       (isAuthenticated() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['downloadCount']));
       allow delete: if isCouncil();
+    }
+
+    match /page_contents/{pageId} {
+      allow read: if true;
+      allow write: if isAdmin() && isValidPageContent(request.resource.data);
     }
   }
 }

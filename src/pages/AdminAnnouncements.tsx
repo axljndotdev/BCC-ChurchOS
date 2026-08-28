@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { getAnnouncements, uploadFile, addAnnouncement, updateAnnouncement, deleteAnnouncement } from '../services/db';
+import { getAnnouncements, uploadFile, addAnnouncement, updateAnnouncement, deleteAnnouncement, toggleAnnouncementHeroFeature } from '../services/db';
 import { Announcement } from '../types';
-import { Megaphone, Plus, Trash2, Edit2, Search, Loader2, Image as ImageIcon, X, Upload } from 'lucide-react';
-import { formatDate } from '../lib/utils';
+import { Megaphone, Plus, Trash2, Edit2, Search, Loader2, Image as ImageIcon, X, Upload, Star } from 'lucide-react';
+import { formatDate, cn } from '../lib/utils';
 import imageCompression from 'browser-image-compression';
 
 export default function AdminAnnouncements() {
@@ -17,7 +17,8 @@ export default function AdminAnnouncements() {
     title: '',
     content: '',
     category: 'General',
-    imageUrl: ''
+    imageUrl: '',
+    featuredInHero: false
   });
 
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -44,6 +45,16 @@ export default function AdminAnnouncements() {
     if (file) {
       setImageFile(file);
       setImagePreview(URL.createObjectURL(file));
+    }
+  };
+
+  const handleToggleHero = async (item: Announcement) => {
+    try {
+      await toggleAnnouncementHeroFeature(item.id, !!item.featuredInHero);
+      setAnnouncements(prev => prev.map(a => a.id === item.id ? { ...a, featuredInHero: !a.featuredInHero } : a));
+    } catch (error) {
+      console.error('Error toggling hero feature:', error);
+      alert('Could not update hero tag.');
     }
   };
 
@@ -86,7 +97,7 @@ export default function AdminAnnouncements() {
 
       setIsModalOpen(false);
       setEditingId(null);
-      setFormData({ title: '', content: '', category: 'General', imageUrl: '' });
+      setFormData({ title: '', content: '', category: 'General', imageUrl: '', featuredInHero: false });
       setImageFile(null);
       setImagePreview('');
       fetchAnnouncements();
@@ -105,7 +116,8 @@ export default function AdminAnnouncements() {
       title: announcement.title,
       content: announcement.content,
       category: announcement.category || 'General',
-      imageUrl: announcement.imageUrl || ''
+      imageUrl: announcement.imageUrl || '',
+      featuredInHero: !!announcement.featuredInHero
     });
     setImageFile(null);
     setImagePreview(announcement.imageUrl || '');
@@ -134,7 +146,7 @@ export default function AdminAnnouncements() {
           <h1 className="text-3xl font-display font-bold text-slate-900">News & Announcements</h1>
           <p className="text-slate-500 font-light">Post updates, news, and urgent alerts for the BCC community.</p>
         </div>
-        <button onClick={() => { setEditingId(null); setFormData({ title: '', content: '', category: 'General', imageUrl: '' }); setImagePreview(''); setIsModalOpen(true); }} className="px-6 py-3 bg-maroon text-white rounded-xl font-bold flex items-center gap-2 hover:bg-maroon-dark transition-all shadow-lg shadow-maroon/20">
+        <button onClick={() => { setEditingId(null); setFormData({ title: '', content: '', category: 'General', imageUrl: '', featuredInHero: false }); setImagePreview(''); setIsModalOpen(true); }} className="px-6 py-3 bg-maroon text-white rounded-xl font-bold flex items-center gap-2 hover:bg-maroon-dark transition-all shadow-lg shadow-maroon/20">
           <Plus className="h-5 w-5" /> New Announcement
         </button>
       </div>
@@ -170,16 +182,34 @@ export default function AdminAnnouncements() {
                       {item.category}
                     </span>
                     <span className="text-xs text-slate-400">{formatDate(item.date)}</span>
+                    {item.featuredInHero && (
+                      <span className="px-2 py-0.5 bg-amber-500/10 text-amber-600 border border-amber-500/20 text-[10px] font-bold rounded-full flex items-center gap-1">
+                        <Star className="h-3 w-3 fill-amber-500 text-amber-500" /> Hero Carousel
+                      </span>
+                    )}
                   </div>
-                  <h3 className="text-xl font-display font-bold text-slate-900 font-bold">{item.title}</h3>
+                  <h3 className="text-xl font-display font-bold text-slate-900">{item.title}</h3>
                   <p className="text-slate-600 font-light text-sm line-clamp-2">{item.content}</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <button onClick={() => handleEdit(item)} className="p-2 text-slate-300 hover:text-maroon hover:bg-maroon/5 rounded-lg transition-all">
+                <button 
+                  onClick={() => handleToggleHero(item)}
+                  className={cn(
+                    "p-2 rounded-lg transition-all flex items-center gap-1 text-xs font-bold",
+                    item.featuredInHero 
+                      ? "bg-amber-500 text-white hover:bg-amber-600 shadow-sm" 
+                      : "text-slate-400 hover:text-amber-600 hover:bg-amber-50"
+                  )}
+                  title={item.featuredInHero ? "Remove from Hero Carousel" : "Tag to display on Hero Carousel"}
+                >
+                  <Star className={cn("h-4 w-4", item.featuredInHero && "fill-current")} />
+                  <span className="hidden sm:inline text-[11px]">{item.featuredInHero ? 'Featured' : 'Hero Tag'}</span>
+                </button>
+                <button onClick={() => handleEdit(item)} className="p-2 text-slate-300 hover:text-maroon hover:bg-maroon/5 rounded-lg transition-all" title="Edit">
                   <Edit2 className="h-4 w-4" />
                 </button>
-                <button onClick={() => handleDelete(item.id)} className="p-2 text-slate-300 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
+                <button onClick={() => handleDelete(item.id)} className="p-2 text-slate-300 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all" title="Delete">
                   <Trash2 className="h-4 w-4" />
                 </button>
               </div>
@@ -221,6 +251,27 @@ export default function AdminAnnouncements() {
                     <option>Emergency</option>
                   </select>
                 </div>
+                <div className="p-4 bg-amber-50/60 rounded-2xl border border-amber-200/60 flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-600">
+                      <Star className="h-5 w-5 fill-amber-500 text-amber-500" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-slate-900">Feature in Hero Carousel</p>
+                      <p className="text-[11px] text-slate-500">Spotlight this church news update directly on the Home Page Hero slider</p>
+                    </div>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      className="sr-only peer"
+                      checked={formData.featuredInHero}
+                      onChange={e => setFormData({ ...formData, featuredInHero: e.target.checked })}
+                    />
+                    <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+                  </label>
+                </div>
+
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Content</label>
                   <textarea required className="w-full px-4 py-3 bg-slate-50 rounded-xl outline-none text-sm min-h-[150px] focus:ring-2 focus:ring-maroon/20" value={formData.content} onChange={e => setFormData({...formData, content: e.target.value})} />

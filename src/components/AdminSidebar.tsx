@@ -12,6 +12,7 @@ import {
   ArrowLeft,
   Settings,
   FileText,
+  Edit3,
   X
 } from 'lucide-react';
 import { cn } from '../lib/utils';
@@ -24,8 +25,9 @@ const adminGroups = [
     ]
   },
   {
-    name: 'Content',
+    name: 'Content & Pages',
     items: [
+      { name: 'Pages CMS', href: '/admin/cms', icon: Edit3 },
       { name: 'Sermons', href: '/admin/sermons', icon: Video },
       { name: 'Blogs', href: '/admin/blogs', icon: FileText },
       { name: 'Media/Gallery', href: '/admin/media', icon: Image },
@@ -122,7 +124,16 @@ export default function AdminSidebar({ onClose }: AdminSidebarProps) {
           })}
         </nav>
 
-        <div className="mt-8 pt-6 border-t border-slate-800">
+        <div className="mt-8 pt-6 border-t border-slate-800 space-y-2">
+          {isSuperAdmin && (
+            <div className="p-3 bg-slate-800/80 rounded-xl border border-slate-700/50 mb-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold text-amber-400 uppercase tracking-widest">Super Admin</span>
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping" />
+              </div>
+              <p className="text-[10px] text-slate-400 mt-1">2m Inactivity Timeout Active</p>
+            </div>
+          )}
           <Link
             to="/member/dashboard"
             onClick={onClose}

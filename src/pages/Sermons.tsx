@@ -2,13 +2,16 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getSermons, getSystemSettings } from '../services/db';
 import { Sermon, SystemSettings } from '../types';
-import { Play, Search, Filter, Calendar, User, Video } from 'lucide-react';
+import { Play, Search, Filter, Calendar, User, Video, Sparkles } from 'lucide-react';
 import { formatDate } from '../lib/utils';
 import { motion } from 'motion/react';
 import LoadingSpinner from '../components/LoadingSpinner';
 import LiveStream from '../components/LiveStream';
+import { useCMS } from '../hooks/useCMS';
+import VisualCMSBar from '../components/cms/VisualCMSBar';
 
 export default function Sermons() {
+  const { pageData } = useCMS('sermons');
   const [sermons, setSermons] = useState<Sermon[]>([]);
   const [settings, setSettings] = useState<SystemSettings | null>(null);
   const [loading, setLoading] = useState(true);
@@ -39,27 +42,40 @@ export default function Sermons() {
   );
 
   return (
-    <div className="pb-20">
+    <div className="pb-20 relative">
+      {/* Super Admin Visual CMS Toolbar */}
+      <VisualCMSBar pageId="sermons" pageName="Sermon Archive" />
+
       {/* Header */}
-      <section className="bg-slate-900 py-20 text-center text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.h1 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-4xl md:text-5xl font-display font-bold mb-4 tracking-tight"
-          >
-            Sermon Archive
-          </motion.h1>
-          <motion.p 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="text-slate-400 max-w-2xl mx-auto font-light"
-          >
-            Watch or listen to our past messages and grow in your faith.
-          </motion.p>
-        </div>
-      </section>
+      {pageData?.hero?.visible !== false && (
+        <section className="bg-slate-900 py-20 text-center text-white relative overflow-hidden">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            {pageData?.hero?.badge && (
+              <span className="inline-block px-3 py-1 bg-maroon/20 text-red-300 border border-maroon/30 rounded-full text-xs font-semibold mb-4 tracking-wider uppercase">
+                <Sparkles className="inline h-3 w-3 mr-1" /> {pageData.hero.badge}
+              </span>
+            )}
+            <motion.h1 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-4xl md:text-5xl font-display font-bold mb-4 tracking-tight"
+            >
+              {pageData?.hero?.title || 'Sermon Archive'}
+            </motion.h1>
+            {pageData?.hero?.subtitle && (
+              <p className="text-amber-400 font-medium mb-2">{pageData.hero.subtitle}</p>
+            )}
+            <motion.p 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="text-slate-400 max-w-2xl mx-auto font-light"
+            >
+              {pageData?.hero?.description || 'Watch or listen to our past messages and grow in your faith.'}
+            </motion.p>
+          </div>
+        </section>
+      )}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8">
         {/* Live Stream Section */}

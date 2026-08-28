@@ -5,8 +5,11 @@ import { getGalleryItems, getGalleryAlbums, getFeaturedAlbums } from '../service
 import { GalleryItem, GalleryAlbum } from '../types';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { cn } from '../lib/utils';
+import { useCMS } from '../hooks/useCMS';
+import VisualCMSBar from '../components/cms/VisualCMSBar';
 
 export default function Gallery() {
+  const { pageData } = useCMS('gallery');
   const [items, setItems] = useState<GalleryItem[]>([]);
   const [albums, setAlbums] = useState<GalleryAlbum[]>([]);
   const [featuredAlbums, setFeaturedAlbums] = useState<GalleryAlbum[]>([]);
@@ -71,323 +74,264 @@ export default function Gallery() {
   const nonFeaturedAlbums = albums.filter(a => !featuredAlbums.some(f => f.id === a.id));
 
   return (
-    <div className="pb-20">
+    <div className="pb-20 relative">
+      {/* Super Admin Visual CMS Toolbar */}
+      <VisualCMSBar pageId="gallery" pageName="Photo Gallery" />
+
       {/* Header */}
-      <section className="bg-slate-900 py-20 md:py-32 text-center text-white relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-repeat"></div>
-        </div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <AnimatePresence mode="wait">
-            {!selectedAlbumId ? (
-              <motion.div
-                key="home-header"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-              >
-                <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/5 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] mb-6 border border-white/5 backdrop-blur-sm">
-                  <Star className="h-3 w-3 text-yellow-400 fill-yellow-400" />
-                  Featured Memories
-                </div>
-                <h1 className="text-4xl md:text-7xl font-display font-bold mb-6 tracking-tight">Our Gallery</h1>
-                <p className="text-slate-400 max-w-2xl mx-auto font-light text-lg">
-                  Capturing moments of faith, fellowship, and service in our community.
-                </p>
-              </motion.div>
-            ) : (
-              <motion.div
-                key="album-header"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="flex flex-col items-center"
-              >
-                <button 
-                  onClick={() => setSelectedAlbumId(null)}
-                  className="mb-8 flex items-center gap-2 text-white/40 hover:text-white transition-all text-xs font-black uppercase tracking-widest group"
+      {pageData?.hero?.visible !== false && (
+        <section className="bg-slate-900 py-20 md:py-32 text-center text-white relative overflow-hidden">
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-repeat"></div>
+          </div>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <AnimatePresence mode="wait">
+              {!selectedAlbumId ? (
+                <motion.div
+                  key="home-header"
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
                 >
-                  <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
-                  Back to All Albums
-                </button>
-                <h1 className="text-4xl md:text-6xl font-display font-bold mb-4 tracking-tight">{selectedAlbum?.name}</h1>
-                <div className="w-20 h-1 bg-maroon rounded-full mb-6"></div>
-                <p className="text-slate-400 max-w-xl mx-auto font-light italic text-lg leading-relaxed">
-                  {selectedAlbum?.description}
-                </p>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      </section>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 md:-mt-16 relative z-20">
-        <AnimatePresence mode="wait">
-          {!selectedAlbumId ? (
-            <motion.div
-              key="albums-view"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              className="space-y-24"
-            >
-              {/* Featured Albums Section */}
-              {featuredAlbums.length > 0 && (
-                <section className="space-y-12">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-10">
-                    {featuredAlbums.map((album, index) => (
-                      <FeaturedAlbumCard 
-                        key={album.id} 
-                        album={album} 
-                        index={index} 
-                        items={items} 
-                        onSelect={() => setSelectedAlbumId(album.id)} 
-                      />
-                    ))}
+                  <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/5 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] mb-6 border border-white/5 backdrop-blur-sm">
+                    <Star className="h-3 w-3 text-yellow-400 fill-yellow-400" />
+                    {pageData?.hero?.badge || 'Featured Memories'}
                   </div>
-                </section>
+                  <h1 className="text-4xl md:text-7xl font-display font-bold mb-6 tracking-tight">
+                    {pageData?.hero?.title || 'Our Gallery'}
+                  </h1>
+                  {pageData?.hero?.subtitle && (
+                    <p className="text-amber-400 font-medium mb-3 text-lg">{pageData.hero.subtitle}</p>
+                  )}
+                  <p className="text-slate-400 max-w-2xl mx-auto font-light text-lg">
+                    {pageData?.hero?.description || 'Capturing moments of faith, fellowship, and service in our community.'}
+                  </p>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="album-header"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="flex flex-col items-center"
+                >
+                  <button 
+                    onClick={() => setSelectedAlbumId(null)}
+                    className="mb-8 flex items-center gap-2 text-white/40 hover:text-white transition-all text-xs font-black uppercase tracking-widest group"
+                  >
+                    <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
+                    Back to All Albums
+                  </button>
+                  <h1 className="text-4xl md:text-6xl font-display font-bold mb-4 tracking-tight">{selectedAlbum?.name}</h1>
+                  <div className="w-20 h-1 bg-maroon rounded-full mb-6"></div>
+                  <p className="text-slate-400 max-w-xl mx-auto font-light italic text-lg leading-relaxed">
+                    {selectedAlbum?.description}
+                  </p>
+                </motion.div>
               )}
+            </AnimatePresence>
+          </div>
+        </section>
+      )}
 
-              {/* All Albums Section */}
-              <section className="space-y-12">
-                <div className="flex items-center gap-6">
-                  <h2 className="text-sm font-black text-slate-400 uppercase tracking-[0.3em]">More Collections</h2>
-                  <div className="h-px bg-slate-100 flex-1"></div>
-                </div>
-                
-                {loading && albums.length === 0 ? (
-                  <div className="flex justify-center py-20">
-                    <LoadingSpinner size="md" />
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {nonFeaturedAlbums.map((album, index) => (
-                      <AlbumCard 
-                        key={album.id} 
-                        album={album} 
-                        index={index} 
-                        items={items} 
-                        onSelect={() => setSelectedAlbumId(album.id)}
-                      />
-                    ))}
-                  </div>
-                )}
-
-                {albums.length === 0 && !loading && (
-                  <div className="py-32 text-center bg-slate-50 rounded-[4rem] border-2 border-dashed border-slate-100">
-                    <Folder className="h-20 w-20 text-slate-200 mx-auto mb-6" />
-                    <h3 className="text-2xl font-display font-bold text-slate-900">No Albums Yet</h3>
-                    <p className="text-slate-500 font-light mt-2 max-w-sm mx-auto">
-                      Our community memories are being organized. Check back soon for beautiful moments!
-                    </p>
-                  </div>
-                )}
-              </section>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="photos-grid"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 1.05 }}
-              className="py-12"
-            >
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-                {loading && items.length === 0 ? (
-                  Array.from({ length: 8 }).map((_, i) => (
-                    <div key={i} className="aspect-square bg-slate-100 animate-pulse rounded-3xl"></div>
-                  ))
-                ) : (
-                  currentAlbumItems.map((item, index) => (
+      {/* Content Area */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12">
+        {loading ? (
+          <div className="py-20 flex justify-center">
+            <LoadingSpinner size="lg" />
+          </div>
+        ) : selectedAlbumId ? (
+          /* Album View (Photos inside album) */
+          <div>
+            {currentAlbumItems.length === 0 ? (
+              <div className="text-center py-20 bg-slate-50 rounded-[3rem] border border-dashed border-slate-200">
+                <ImageIcon className="h-12 w-12 text-slate-300 mx-auto mb-4" />
+                <p className="text-slate-500 font-medium">No photos found in this album yet.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {currentAlbumItems.map((item, index) => (
+                  <motion.div
+                    key={item.id}
+                    layoutId={`gallery-item-${item.id}`}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: index * 0.05 }}
+                    onClick={() => openViewer(index)}
+                    className="group relative aspect-square bg-slate-100 rounded-3xl overflow-hidden cursor-pointer shadow-sm hover:shadow-xl transition-all duration-300"
+                  >
+                    <img 
+                      src={item.imageUrl} 
+                      alt={item.title || 'Bethesda Gallery'} 
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      loading="lazy"
+                      referrerPolicy="no-referrer"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-6 text-white">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold uppercase tracking-wider">{item.category || 'Moments'}</span>
+                        <div className="p-2 bg-white/20 backdrop-blur-md rounded-full">
+                          <Maximize2 className="h-4 w-4" />
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          /* Albums Overview */
+          <div className="space-y-16">
+            {/* Featured Albums (Hero-style highlights) */}
+            {featuredAlbums.length > 0 && (
+              <div className="space-y-6">
+                <h2 className="text-2xl font-display font-bold text-slate-900 flex items-center gap-3">
+                  <Star className="h-5 w-5 text-maroon fill-maroon" /> Featured Highlights
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {featuredAlbums.map((album) => (
                     <motion.div
-                      key={item.id}
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: index * 0.05 }}
-                      className="relative aspect-square rounded-[2rem] overflow-hidden group cursor-pointer shadow-xl hover:shadow-2xl transition-all duration-500 border-4 border-white"
-                      onClick={() => openViewer(index)}
+                      key={album.id}
+                      onClick={() => setSelectedAlbumId(album.id)}
+                      className="group relative aspect-[16/10] rounded-[2.5rem] overflow-hidden cursor-pointer shadow-md hover:shadow-2xl transition-all duration-500"
                     >
-                      <img
-                        src={item.imageUrl}
-                        alt={item.album}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                      <img 
+                        src={album.coverImageUrl || 'https://images.unsplash.com/photo-1544427920-c49ccfb85579?auto=format&fit=crop&q=80&w=1200'} 
+                        alt={album.name} 
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                         referrerPolicy="no-referrer"
                       />
-                      <div className="absolute inset-0 bg-maroon/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                        <div className="p-4 bg-white/90 backdrop-blur rounded-2xl shadow-xl scale-90 group-hover:scale-100 transition-transform duration-500">
-                          <Maximize2 className="h-6 w-6 text-maroon" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/30 to-transparent p-8 md:p-10 flex flex-col justify-end text-white">
+                        <div className="space-y-2">
+                          <span className="inline-block px-3 py-1 bg-maroon text-white text-[10px] font-bold uppercase tracking-widest rounded-full">
+                            Featured Album
+                          </span>
+                          <h3 className="text-3xl font-display font-bold group-hover:translate-x-1 transition-transform">{album.name}</h3>
+                          <p className="text-slate-300 text-sm font-light line-clamp-2">{album.description}</p>
+                          <p className="text-xs text-white/60 font-semibold pt-2">
+                            {items.filter(i => i.albumId === album.id).length} Photos
+                          </p>
                         </div>
                       </div>
                     </motion.div>
-                  ))
-                )}
+                  ))}
+                </div>
               </div>
-              
-              {currentAlbumItems.length === 0 && !loading && (
-                <div className="py-32 text-center bg-slate-50 rounded-[4rem] border-2 border-dashed border-slate-100">
-                  <ImageIcon className="h-16 w-16 text-slate-200 mx-auto mb-4" />
-                  <h3 className="text-xl font-display font-bold text-slate-800">Album is Empty</h3>
-                  <p className="text-slate-500 font-light mt-2">No photos have been added to this collection yet.</p>
+            )}
+
+            {/* Other / Standard Albums */}
+            <div className="space-y-6">
+              <h2 className="text-2xl font-display font-bold text-slate-900 flex items-center gap-3">
+                <Folder className="h-5 w-5 text-slate-400" /> Photo Collections
+              </h2>
+              {albums.length === 0 ? (
+                <div className="text-center py-20 bg-white rounded-[3rem] border border-slate-100 p-8">
+                  <Folder className="h-12 w-12 text-slate-300 mx-auto mb-4" />
+                  <h3 className="text-lg font-bold text-slate-700">No Albums Created Yet</h3>
+                  <p className="text-slate-400 text-sm mt-1">Check back soon for event and community photos.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+                  {albums.map((album) => (
+                    <motion.div
+                      key={album.id}
+                      onClick={() => setSelectedAlbumId(album.id)}
+                      className="group bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col"
+                    >
+                      <div className="aspect-[4/3] bg-slate-100 overflow-hidden relative">
+                        <img 
+                          src={album.coverImageUrl || 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&q=80&w=800'} 
+                          alt={album.name} 
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          referrerPolicy="no-referrer"
+                        />
+                        <div className="absolute top-4 right-4 px-3 py-1 bg-black/60 backdrop-blur-md text-white text-[10px] font-bold uppercase tracking-wider rounded-full">
+                          {items.filter(i => i.albumId === album.id).length} Photos
+                        </div>
+                      </div>
+                      <div className="p-6 flex-1 flex flex-col justify-between">
+                        <div>
+                          <h3 className="text-xl font-display font-bold text-slate-900 group-hover:text-maroon transition-colors">{album.name}</h3>
+                          <p className="text-slate-500 font-light text-xs mt-2 line-clamp-2">{album.description || 'View collection'}</p>
+                        </div>
+                        <div className="mt-4 pt-4 border-t border-slate-50 flex justify-between items-center text-xs font-bold uppercase tracking-wider text-maroon">
+                          <span>Browse Album</span>
+                          <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
                 </div>
               )}
-            </motion.div>
-          )}
-        </AnimatePresence>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Full-Screen Viewer Modal */}
+      {/* Lightbox / Modal Image Viewer */}
       <AnimatePresence>
-        {/* Full-Screen Viewer Modal */}
-        {selectedImageIndex !== null && (
+        {selectedImageIndex !== null && currentAlbumItems[selectedImageIndex] && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-slate-950/98 backdrop-blur-3xl flex flex-col items-center justify-center p-2 sm:p-4 md:p-6"
             onClick={closeViewer}
+            className="fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-4 sm:p-8 select-none"
           >
-            <div className="absolute top-0 left-0 right-0 p-4 sm:p-6 md:p-8 flex justify-between items-center z-50 bg-gradient-to-b from-black/80 to-transparent">
-              <div className="text-white pr-4">
-                <h3 className="text-sm sm:text-base md:text-lg font-display font-bold truncate max-w-[200px] sm:max-w-md">{selectedAlbum?.name}</h3>
-                <p className="text-white/60 text-[10px] sm:text-xs font-bold uppercase tracking-widest">{selectedImageIndex + 1} / {currentAlbumItems.length}</p>
-              </div>
-              <button
-                onClick={closeViewer}
-                className="p-2 sm:p-3 md:p-4 bg-white/10 hover:bg-white/20 text-white rounded-xl sm:rounded-2xl transition-all border border-white/10"
+            <button 
+              onClick={closeViewer}
+              className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 text-white rounded-full transition-colors z-50 cursor-pointer"
+            >
+              <X className="h-6 w-6" />
+            </button>
+
+            {/* Left Prev Arrow */}
+            {currentAlbumItems.length > 1 && (
+              <button 
+                onClick={showPrev}
+                className="absolute left-4 sm:left-8 top-1/2 -translate-y-1/2 p-3 sm:p-4 bg-white/10 hover:bg-white/20 text-white rounded-full transition-all hover:scale-110 z-50 cursor-pointer"
               >
-                <X className="h-5 w-5 sm:h-6 sm:w-6" />
+                <ChevronLeft className="h-6 w-6" />
               </button>
-            </div>
+            )}
 
-            {/* Navigation Buttons */}
-            <button
-              onClick={showPrev}
-              className="absolute left-2 sm:left-4 md:left-8 top-1/2 -translate-y-1/2 p-3 sm:p-4 md:p-5 bg-black/50 hover:bg-black/70 sm:bg-white/10 sm:hover:bg-white/20 text-white rounded-2xl sm:rounded-3xl transition-all z-50 border border-white/10 group"
+            {/* Main Lightbox Image */}
+            <div 
+              onClick={(e) => e.stopPropagation()} 
+              className="relative max-w-5xl max-h-[85vh] flex flex-col items-center"
             >
-              <ChevronLeft className="h-5 w-5 sm:h-7 sm:w-7 group-hover:-translate-x-1 transition-transform" />
-            </button>
-            <button
-              onClick={showNext}
-              className="absolute right-2 sm:right-4 md:right-8 top-1/2 -translate-y-1/2 p-3 sm:p-4 md:p-5 bg-black/50 hover:bg-black/70 sm:bg-white/10 sm:hover:bg-white/20 text-white rounded-2xl sm:rounded-3xl transition-all z-50 border border-white/10 group"
-            >
-              <ChevronRight className="h-5 w-5 sm:h-7 sm:w-7 group-hover:translate-x-1 transition-transform" />
-            </button>
-
-            {/* Image Container */}
-            <motion.div
-              key={selectedImageIndex}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              className="relative max-w-full max-h-[calc(100dvh-5rem)] sm:max-h-[85vh] flex items-center justify-center my-auto"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <img
-                src={currentAlbumItems[selectedImageIndex]?.imageUrl || ''}
-                alt={currentAlbumItems[selectedImageIndex]?.album || ''}
-                className="max-w-[88vw] sm:max-w-[90vw] max-h-[calc(100dvh-6rem)] sm:max-h-[82vh] object-contain rounded-xl sm:rounded-2xl md:rounded-[2.5rem] shadow-[0_0_100px_rgba(0,0,0,0.5)]"
+              <motion.img 
+                key={selectedImageIndex}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                src={currentAlbumItems[selectedImageIndex].imageUrl} 
+                alt="Enlarged" 
+                className="max-h-[75vh] w-auto max-w-full rounded-2xl shadow-2xl object-contain"
                 referrerPolicy="no-referrer"
               />
-            </motion.div>
+              <div className="mt-4 text-center text-white space-y-1">
+                <p className="text-xs uppercase tracking-widest text-slate-400">
+                  {selectedImageIndex + 1} of {currentAlbumItems.length}
+                </p>
+                {currentAlbumItems[selectedImageIndex].title && (
+                  <p className="font-display font-medium text-lg">{currentAlbumItems[selectedImageIndex].title}</p>
+                )}
+              </div>
+            </div>
+
+            {/* Right Next Arrow */}
+            {currentAlbumItems.length > 1 && (
+              <button 
+                onClick={showNext}
+                className="absolute right-4 sm:right-8 top-1/2 -translate-y-1/2 p-3 sm:p-4 bg-white/10 hover:bg-white/20 text-white rounded-full transition-all hover:scale-110 z-50 cursor-pointer"
+              >
+                <ChevronRight className="h-6 w-6" />
+              </button>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
     </div>
-  );
-}
-
-function FeaturedAlbumCard({ album, index, items, onSelect }: { album: GalleryAlbum, index: number, items: GalleryItem[], onSelect: () => void }) {
-  const photoCount = items.filter(i => i.albumId === album.id).length;
-  
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 40 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ delay: index * 0.2 }}
-      onClick={onSelect}
-      className="group cursor-pointer relative aspect-[16/9] md:aspect-auto md:h-[450px] rounded-[3.5rem] overflow-hidden shadow-2xl border-4 border-white"
-    >
-      <img 
-        src={album.coverImageUrl || 'https://images.unsplash.com/photo-1438232992991-995b7058bbb3?auto=format&fit=crop&q=80&w=1200'} 
-        alt={album.name}
-        className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/40 to-transparent"></div>
-      
-      <div className="absolute top-8 left-8">
-        <div className="flex items-center gap-2 px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-[9px] font-black text-white uppercase tracking-widest border border-white/20 shadow-xl">
-          <Star className="h-3 w-3 text-yellow-400 fill-yellow-400" />
-          Featured Album
-        </div>
-      </div>
-
-      <div className="absolute bottom-10 left-10 right-10">
-        <div className="flex items-center gap-3 text-white/60 text-[10px] font-black uppercase tracking-[0.25em] mb-3">
-          <ImageIcon className="h-4 w-4" />
-          <span>{photoCount} Historical Captures</span>
-        </div>
-        <h3 className="text-3xl md:text-5xl font-display font-bold text-white tracking-tighter mb-4 group-hover:translate-x-2 transition-transform duration-500">
-          {album.name}
-        </h3>
-        <p className="text-white/60 text-sm md:text-base font-light italic line-clamp-2 max-w-xl group-hover:text-white/90 transition-colors">
-          "{album.description}"
-        </p>
-      </div>
-
-      <div className="absolute bottom-10 right-10">
-        <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center text-maroon shadow-2xl scale-90 group-hover:scale-100 transition-transform duration-500 hover:bg-maroon hover:text-white">
-          <ChevronRight className="h-8 w-8" />
-        </div>
-      </div>
-    </motion.div>
-  );
-}
-
-function AlbumCard({ album, index, items, onSelect }: { album: GalleryAlbum, index: number, items: GalleryItem[], onSelect: () => void }) {
-  const photoCount = items.filter(i => i.albumId === album.id).length;
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ delay: index * 0.1 }}
-      onClick={onSelect}
-      className="group cursor-pointer bg-white rounded-[3rem] overflow-hidden border border-slate-100 shadow-sm hover:shadow-2xl transition-all duration-500 flex flex-col"
-    >
-      <div className="aspect-[4/5] bg-slate-100 relative overflow-hidden">
-        {album.coverImageUrl ? (
-          <img 
-            src={album.coverImageUrl} 
-            alt={album.name} 
-            className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-slate-200">
-            <Folder className="h-24 w-24" />
-          </div>
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent opacity-60 group-hover:opacity-90 transition-opacity"></div>
-        <div className="absolute bottom-8 left-8 right-8 text-white">
-          <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.2em] opacity-80 mb-1">
-            <ImageIcon className="h-3 w-3" />
-            <span>{photoCount} Photos</span>
-          </div>
-          <h3 className="text-2xl font-display font-bold tracking-tight">{album.name}</h3>
-        </div>
-      </div>
-      <div className="p-8 pb-10 flex-1 flex flex-col justify-between">
-        <p className="text-slate-500 text-sm font-light leading-relaxed line-clamp-2 italic mb-6">
-          "{album.description}"
-        </p>
-        <div className="flex justify-between items-center">
-          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-maroon group-hover:translate-x-2 transition-transform duration-300">Open Gallery</span>
-          <div className="p-3 bg-slate-50 rounded-2xl text-maroon group-hover:bg-maroon group-hover:text-white transition-all">
-            <ChevronRight className="h-4 w-4" />
-          </div>
-        </div>
-      </div>
-    </motion.div>
   );
 }

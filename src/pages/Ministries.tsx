@@ -1,9 +1,12 @@
-import React from 'react';
 import { motion } from 'motion/react';
-import { Users, Heart, BookOpen, Music, Video, Star, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Users, Heart, Star, ArrowRight, ShieldCheck, Music, Video, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useCMS } from '../hooks/useCMS';
+import VisualCMSBar from '../components/cms/VisualCMSBar';
 
 export default function Ministries() {
+  const { pageData } = useCMS('ministries');
+
   const ministries = [
     {
       id: 'superbook-kids-sbk',
@@ -64,43 +67,61 @@ export default function Ministries() {
     {
       id: 'discipleship-groups',
       title: 'Discipleship Groups',
-      description: 'Small groups dedicated to studying God\'s Word, prayer, and mutual spiritual accountability for mature Christian living.',
+      description: "Small groups dedicated to studying God's Word, prayer, and mutual spiritual accountability for mature Christian living.",
       icon: Users,
       image: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&q=80&w=800'
     }
   ];
 
+  const heroImage = pageData?.hero?.imageUrl || "https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&q=80&w=1920";
+  const ctaSection = pageData?.sections?.find(s => s.id === 'ministries-cta') || pageData?.sections?.[0];
+
   return (
-    <div className="pb-20">
+    <div className="pb-20 relative">
+      {/* Super Admin Visual CMS Toolbar */}
+      <VisualCMSBar pageId="ministries" pageName="Ministries Page" />
+
       {/* Hero Section */}
-      <section className="relative py-20 bg-slate-900 overflow-hidden">
-        <div className="absolute inset-0 opacity-20">
-          <img 
-            src="https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&q=80&w=1920" 
-            alt="Ministries Background" 
-            className="w-full h-full object-cover"
-            referrerPolicy="no-referrer"
-          />
-          <div className="absolute inset-0 bg-slate-900/60" />
-        </div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative text-center">
-          <motion.h1 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-4xl md:text-6xl font-display font-bold text-white mb-6 tracking-tight"
-          >
-            Life Together in <span className="italic font-light">Ministry</span>
-          </motion.h1>
-          <motion.p 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="text-xl text-slate-300 max-w-2xl mx-auto font-light leading-relaxed"
-          >
-            We believe faith is best lived out in community. Discover the many ways you can connect, grow, and serve at Bethesda Community Church.
-          </motion.p>
-        </div>
-      </section>
+      {pageData?.hero?.visible !== false && (
+        <section className="relative py-20 bg-slate-900 overflow-hidden">
+          <div className="absolute inset-0 opacity-20">
+            <img 
+              src={heroImage} 
+              alt="Ministries Background" 
+              className="w-full h-full object-cover"
+              referrerPolicy="no-referrer"
+            />
+            <div className="absolute inset-0 bg-slate-900/60" />
+          </div>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative text-center">
+            {pageData?.hero?.badge && (
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-maroon/20 border border-maroon/40 rounded-full text-[10px] font-bold text-white uppercase tracking-[0.2em] mb-6">
+                <Sparkles className="h-3.5 w-3.5 text-maroon" /> {pageData.hero.badge}
+              </div>
+            )}
+            <motion.h1 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-4xl md:text-6xl font-display font-bold text-white mb-6 tracking-tight"
+            >
+              {pageData?.hero?.title || 'Life Together in Ministry'}
+            </motion.h1>
+            {pageData?.hero?.subtitle && (
+              <p className="text-lg text-amber-400 font-medium mb-3">
+                {pageData.hero.subtitle}
+              </p>
+            )}
+            <motion.p 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="text-xl text-slate-300 max-w-2xl mx-auto font-light leading-relaxed"
+            >
+              {pageData?.hero?.description || 'We believe faith is best lived out in community. Discover the many ways you can connect, grow, and serve at Bethesda Community Church.'}
+            </motion.p>
+          </div>
+        </section>
+      )}
 
       {/* Ministries Grid */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
@@ -140,25 +161,31 @@ export default function Ministries() {
       </section>
 
       {/* Call to Action */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-maroon rounded-[4rem] p-12 md:p-20 text-center text-white relative overflow-hidden shadow-2xl">
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute inset-0 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:20px_20px]"></div>
+      {ctaSection?.visible !== false && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-maroon rounded-[4rem] p-12 md:p-20 text-center text-white relative overflow-hidden shadow-2xl">
+            <div className="absolute inset-0 opacity-10">
+              <div className="absolute inset-0 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:20px_20px]"></div>
+            </div>
+            <div className="relative z-10 max-w-2xl mx-auto">
+              <h2 className="text-4xl md:text-5xl font-display font-bold mb-6 leading-tight">
+                {ctaSection?.title || 'Ready to Serve?'}
+              </h2>
+              <p className="text-xl text-white/80 mb-10 font-light leading-relaxed">
+                {ctaSection?.content || "God has given each of us unique gifts to build up His church. We'd love to help you find the perfect place to serve."}
+              </p>
+              {ctaSection?.primaryButton?.visible !== false && (
+                <Link 
+                  to={ctaSection?.primaryButton?.url || "/contact"} 
+                  className="inline-flex items-center px-10 py-4 bg-white text-maroon rounded-full font-bold hover:bg-slate-100 transition-all shadow-xl text-xs uppercase tracking-widest"
+                >
+                  {ctaSection?.primaryButton?.label || 'Contact Ministry Leaders'} <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              )}
+            </div>
           </div>
-          <div className="relative z-10 max-w-2xl mx-auto">
-            <h2 className="text-4xl md:text-5xl font-display font-bold mb-8 leading-tight">Ready to Serve?</h2>
-            <p className="text-xl text-white/80 mb-10 font-light leading-relaxed">
-              God has given each of us unique gifts to build up His church. We'd love to help you find the perfect place to serve.
-            </p>
-            <Link 
-              to="/contact" 
-              className="inline-flex items-center px-10 py-4 bg-white text-maroon rounded-full font-bold hover:bg-slate-100 transition-all shadow-xl"
-            >
-              Contact Ministry Leaders <ArrowRight className="ml-2 h-5 w-5" />
-            </Link>
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
     </div>
   );
 }

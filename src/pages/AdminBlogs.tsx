@@ -6,7 +6,8 @@ import {
   deleteBlogPost, 
   getUsers, 
   updateUserProfile,
-  updateBlogPost 
+  updateBlogPost,
+  toggleBlogHeroFeature 
 } from '../services/db';
 import { BlogPost, UserProfile } from '../types';
 import { 
@@ -20,7 +21,8 @@ import {
   Search,
   Loader2,
   AlertCircle,
-  FileText
+  FileText,
+  Star
 } from 'lucide-react';
 import { formatDate, cn } from '../lib/utils';
 import { Link } from 'react-router-dom';
@@ -79,6 +81,16 @@ export default function AdminBlogs() {
       fetchData();
     } catch (error) {
       console.error('Error rejecting blog:', error);
+    }
+  };
+
+  const handleToggleHero = async (post: BlogPost) => {
+    try {
+      await toggleBlogHeroFeature(post.id, !!post.featuredInHero);
+      setPosts(prev => prev.map(p => p.id === post.id ? { ...p, featuredInHero: !p.featuredInHero } : p));
+    } catch (error) {
+      console.error('Error toggling blog hero feature:', error);
+      alert('Could not update hero tag.');
     }
   };
 
@@ -274,6 +286,22 @@ export default function AdminBlogs() {
               </div>
 
               <div className="flex items-center gap-2">
+                {post.status === 'published' && (
+                  <button
+                    onClick={() => handleToggleHero(post)}
+                    className={cn(
+                      "p-3 rounded-xl transition-all flex items-center gap-1.5 text-xs font-bold",
+                      post.featuredInHero 
+                        ? "bg-amber-500 text-white shadow-sm hover:bg-amber-600" 
+                        : "text-slate-400 hover:text-amber-600 hover:bg-amber-50"
+                    )}
+                    title={post.featuredInHero ? "Remove from Hero Carousel" : "Tag to display on Hero Carousel"}
+                  >
+                    <Star className={cn("h-4 w-4", post.featuredInHero && "fill-current")} />
+                    <span className="hidden sm:inline text-[11px]">{post.featuredInHero ? 'In Hero' : 'Hero Tag'}</span>
+                  </button>
+                )}
+
                 <Link 
                   to={`/blogs/${post.slug || post.id}`}
                   className="p-3 text-slate-400 hover:text-maroon hover:bg-slate-50 rounded-xl transition-all"

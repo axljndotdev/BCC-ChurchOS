@@ -256,12 +256,33 @@
         "lastUpdated": { "type": "string", "format": "date-time" }
       },
       "required": ["title", "description", "category", "type", "url", "uploadedBy", "uploadedByName"]
+    },
+    "PageContent": {
+      "title": "Page Content",
+      "description": "Dynamic CMS content for church pages including texts, photos, buttons, and sections.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "slug": { "type": "string" },
+        "hero": { "type": "object" },
+        "sections": { "type": "array" },
+        "customBlocks": { "type": "array" },
+        "lastUpdated": { "type": "string", "format": "date-time" },
+        "updatedBy": { "type": "string" },
+        "updatedByName": { "type": "string" }
+      },
+      "required": ["id", "title", "hero", "sections"]
     }
   },
   "firestore": {
     "/users/{userId}": {
       "schema": "UserProfile",
       "description": "User profiles"
+    },
+    "/page_contents/{pageId}": {
+      "schema": "PageContent",
+      "description": "CMS page content for all customizable church web pages"
     },
     "/sermons/{sermonId}": {
       "schema": "Sermon",

@@ -53,6 +53,7 @@ export interface BlogPost {
   authorName: string;
   coverImage?: string;
   status: 'draft' | 'pending' | 'published' | 'rejected';
+  featuredInHero?: boolean;
   createdAt: any;
   updatedAt: any;
   publishedAt?: any;
@@ -76,7 +77,16 @@ export interface SystemSettings {
   isLive?: boolean;
   welcomeTitle?: string;
   welcomeSubtitle?: string;
+  pastorQuote?: string;
+  pastorQuoteAuthor?: string;
   heroImageUrl?: string;
+  givingBannerUrl?: string;
+  aboutStoryImageUrl?: string;
+  kidsMinistryImageUrl?: string;
+  youthMinistryImageUrl?: string;
+  communityMinistryImageUrl?: string;
+  inactivityTimeoutMinutes?: number;
+  heroAutoplayInterval?: number;
   serviceTimes?: { day: string; time: string }[];
   lastUpdated: any;
   updatedBy: string;
@@ -149,6 +159,7 @@ export interface ChurchEvent {
   endDate?: any; // Added for date selection range
   location: string;
   imageUrl: string;
+  featuredInHero?: boolean;
   media?: EventMedia[];
 }
 
@@ -159,6 +170,7 @@ export interface Announcement {
   date: any;
   category?: string;
   imageUrl?: string;
+  featuredInHero?: boolean;
 }
 
 export interface WeeklyActivity {
@@ -227,6 +239,8 @@ export interface GalleryItem {
   id: string;
   album: string; // This remains as name or ID, but I'll treat it as ID now if possible
   albumId?: string;
+  title?: string;
+  category?: string;
   imageUrl: string;
   uploadedBy: string;
   createdAt: any;
@@ -278,4 +292,63 @@ export interface ResourceItem {
   createdAt: any;
   lastUpdated?: any;
 }
+
+export interface CMSButton {
+  label: string;
+  url: string;
+  visible: boolean;
+  style?: 'primary' | 'secondary' | 'amber' | 'outline' | 'ghost';
+  openInNewTab?: boolean;
+}
+
+export interface CMSCard {
+  id: string;
+  title: string;
+  subtitle?: string;
+  description?: string;
+  imageUrl?: string;
+  iconName?: string;
+  badge?: string;
+  buttonLabel?: string;
+  buttonUrl?: string;
+  buttonVisible?: boolean;
+}
+
+export interface CMSSection {
+  id: string;
+  name: string;
+  title?: string;
+  subtitle?: string;
+  content?: string;
+  badge?: string;
+  imageUrl?: string;
+  quote?: { text: string; author?: string };
+  primaryButton?: CMSButton;
+  secondaryButton?: CMSButton;
+  cards?: CMSCard[];
+  visible: boolean;
+  type?: 'hero' | 'story' | 'values' | 'features' | 'quote' | 'banner' | 'cta' | 'cards' | 'contact' | 'custom' | 'info' | 'giving' | 'schedule' | 'grid';
+}
+
+export interface CMSPageData {
+  id: string;
+  title: string;
+  slug: string;
+  hero: {
+    badge?: string;
+    title: string;
+    subtitle?: string;
+    description: string;
+    imageUrl: string;
+    primaryButton?: CMSButton;
+    secondaryButton?: CMSButton;
+    visible?: boolean;
+  };
+  sections: CMSSection[];
+  customBlocks?: CMSSection[];
+  lastUpdated?: any;
+  updatedBy?: string;
+  updatedByName?: string;
+}
+
 
