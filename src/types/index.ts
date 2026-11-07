@@ -301,6 +301,8 @@ export interface CMSButton {
   openInNewTab?: boolean;
 }
 
+export type CMSButtonConfig = CMSButton;
+
 export interface CMSCard {
   id: string;
   title: string;
@@ -346,9 +348,56 @@ export interface CMSPageData {
   };
   sections: CMSSection[];
   customBlocks?: CMSSection[];
+  galleryImages?: string[];
   lastUpdated?: any;
   updatedBy?: string;
   updatedByName?: string;
 }
+
+export interface CampaignPrayer {
+  id: string;
+  authorName: string;
+  message: string;
+  verse?: string;
+  createdAt: any;
+  userId?: string;
+}
+
+export interface CampaignData {
+  id: string;
+  title: string;
+  targetAmount: number;
+  currentAmount: number;
+  targetDate: string;
+  mission: string;
+  description: string;
+  prayerCount: number;
+  milestones?: { id: string; title: string; amount?: number; date?: string; description?: string }[];
+  updatedAt?: any;
+  updatedBy?: string;
+  updatedByName?: string;
+}
+
+export type ChurchCommentCategory = 
+  | 'General' 
+  | 'Testimony' 
+  | 'Encouragement' 
+  | 'Sunday Service' 
+  | 'Feedback' 
+  | 'Prayer & Praise';
+
+export interface ChurchComment {
+  id: string;
+  authorName: string;
+  isAnonymous: boolean;
+  content: string;
+  category?: ChurchCommentCategory;
+  createdAt: any;
+  userId?: string;
+  userRole?: string;
+  likes?: number;
+  likedBy?: string[];
+}
+
 
 

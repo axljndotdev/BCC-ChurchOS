@@ -12,7 +12,12 @@ import {
   User,
   ShieldCheck,
   ChevronRight,
-  Info
+  Info,
+  Flame,
+  Wind,
+  ArrowRight,
+  Sparkles,
+  Trash2
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
@@ -22,16 +27,21 @@ import {
   addPrayerRequest, 
   prayForRequest, 
   addPrayerComment,
-  getPrayerComments 
+  getPrayerComments,
+  getCampaignData,
+  deletePrayerRequest
 } from '../services/db';
+import { db } from '../firebase/config';
+import { doc, getDoc } from 'firebase/firestore';
 import { PrayerRequest, PrayerComment } from '../types';
 
 export default function MemberPrayer() {
-  const { user, profile } = useAuth();
+  const { user, profile, isSuperAdmin, isAdmin } = useAuth();
   const [requests, setRequests] = useState<PrayerRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'community' | 'personal'>('community');
   const [searchTerm, setSearchTerm] = useState('');
+  const [acCampaign, setAcCampaign] = useState<{ currentAmount: number; targetAmount: number } | null>(null);
   
   // Form State
   const [message, setMessage] = useState('');
@@ -75,9 +85,39 @@ export default function MemberPrayer() {
     }
   };
 
+  const handleDeletePrayer = async (requestId: string) => {
+    if (!window.confirm('Are you sure you want to delete this prayer request? This action cannot be undone.')) return;
+    try {
+      const ok = await deletePrayerRequest(requestId);
+      if (ok) {
+        setRequests(prev => prev.filter(r => r.id !== requestId));
+      }
+    } catch (error) {
+      console.error('Error deleting prayer:', error);
+    }
+  };
+
   useEffect(() => {
     fetchData();
   }, [activeTab]);
+
+  // Fetch Project AC campaign overview for Member Prayer Wall
+  useEffect(() => {
+    const fetchAC = async () => {
+      try {
+        const data = await getCampaignData('project-ac');
+        if (data) {
+          setAcCampaign({
+            currentAmount: Number(data.currentAmount || 0),
+            targetAmount: Number(data.targetAmount || 800000)
+          });
+        }
+      } catch (err) {
+        console.warn('Could not load project AC settings in prayer wall:', err);
+      }
+    };
+    fetchAC();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -151,6 +191,54 @@ export default function MemberPrayer() {
         </div>
       </header>
 
+      {/* Project AC Campaign Feature on Member's Prayer Wall */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-[2rem] p-6 sm:p-8 text-white shadow-xl border border-slate-700/60">
+        <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+          <div className="space-y-3 max-w-2xl">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-600/30 border border-red-500/40 text-red-300 text-[10px] font-bold uppercase tracking-wider">
+                <Flame className="w-3.5 h-3.5 text-red-400" />
+                Church Project
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-cyan-950/70 border border-cyan-500/30 text-cyan-300 text-[10px] font-semibold">
+                <Wind className="w-3 h-3 text-cyan-300" />
+                Sanctuary Air Conditioning
+              </span>
+            </div>
+            
+            <h2 className="text-2xl sm:text-3xl font-display font-bold text-white tracking-tight">
+              Project AC — Prayer & Pledge Campaign
+            </h2>
+            
+            <p className="text-sm text-slate-300 font-light leading-relaxed">
+              Join our church family in lifting up Project AC. Intercede for God's provision, read church member prayers, post your prayer or encouragement, and support the sanctuary air conditioning fund.
+            </p>
+
+            {acCampaign && (
+              <div className="pt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-medium text-slate-300">
+                <span>Raised: <strong className="text-white font-bold">₱{acCampaign.currentAmount.toLocaleString()}</strong></span>
+                <span className="text-slate-500">•</span>
+                <span>Goal: <strong className="text-white font-bold">₱{acCampaign.targetAmount.toLocaleString()}</strong></span>
+                <span className="text-slate-500">•</span>
+                <span className="text-amber-400 font-bold">
+                  {Math.round((acCampaign.currentAmount / acCampaign.targetAmount) * 100)}% Funded
+                </span>
+              </div>
+            )}
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0 w-full md:w-auto">
+            <Link
+              to="/project-ac"
+              className="px-6 py-3.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-lg shadow-red-600/30 hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <span>Go to Project AC</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Main Content Area */}
         <div className="lg:col-span-2 space-y-6">
@@ -179,6 +267,8 @@ export default function MemberPrayer() {
                     currentUserId={user?.uid}
                     onPray={() => handlePray(request.id)}
                     index={i}
+                    canDelete={isSuperAdmin || isAdmin || (!!user && request.userId === user.uid)}
+                    onDelete={() => handleDeletePrayer(request.id)}
                   />
                 ))}
               </AnimatePresence>
@@ -301,13 +391,50 @@ export default function MemberPrayer() {
               </button>
             </form>
           </div>
+
+          {/* Project AC Quick Access Card */}
+          <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-3xl p-6 border border-slate-700 text-white space-y-3 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-red-400 text-xs font-bold uppercase tracking-wider">
+                <Wind className="w-4 h-4 text-cyan-400" />
+                <span>Project AC Sanctuary</span>
+              </div>
+              <span className="px-2 py-0.5 rounded-full bg-red-600/30 text-red-300 text-[9px] font-bold uppercase">
+                Active
+              </span>
+            </div>
+            <p className="text-xs text-slate-300 leading-relaxed font-light">
+              Dedicate a prayer for our Sanctuary AC, read intercessions from members, or make a pledge towards the fund.
+            </p>
+            <Link
+              to="/project-ac"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-red-400 hover:text-red-300 transition-colors uppercase tracking-wider group pt-1"
+            >
+              <span>View Project AC Page</span>
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
-function PrayerCard({ request, currentUserId, onPray, index }: { request: PrayerRequest, currentUserId?: string, onPray: () => void, index: number }) {
+function PrayerCard({ 
+  request, 
+  currentUserId, 
+  onPray, 
+  index,
+  canDelete,
+  onDelete
+}: { 
+  request: PrayerRequest, 
+  currentUserId?: string, 
+  onPray: () => void, 
+  index: number,
+  canDelete?: boolean,
+  onDelete?: () => void
+}) {
   const hasPrayed = currentUserId && request.prayers?.includes(currentUserId);
   const showName = request.isAnonymous ? 'Anonymous' : request.userName;
   const isOwner = currentUserId === request.userId;
@@ -370,6 +497,19 @@ function PrayerCard({ request, currentUserId, onPray, index }: { request: Prayer
             <div className="p-1.5 bg-slate-100 text-slate-400 rounded-xl" title="Private to Elders">
               <ShieldCheck className="h-4 w-4" />
             </div>
+          )}
+          {canDelete && onDelete && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete();
+              }}
+              className="p-1.5 text-slate-300 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
+              title="Delete prayer item"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
           )}
         </div>
       </div>

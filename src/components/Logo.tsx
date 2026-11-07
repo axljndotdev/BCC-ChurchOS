@@ -3,7 +3,7 @@ import { cn } from '../lib/utils';
 interface LogoProps {
   className?: string;
   size?: 'sm' | 'md' | 'lg' | 'xl' | number;
-  variant?: 'full' | 'icon';
+  variant?: 'full' | 'icon' | 'classic' | 'architectural';
 }
 
 export default function Logo({ className, size = 'md', variant = 'icon' }: LogoProps) {
@@ -18,7 +18,7 @@ export default function Logo({ className, size = 'md', variant = 'icon' }: LogoP
   const style = typeof size === 'number' ? { width: size, height: size } : {};
 
   return (
-    <div className={cn("relative flex items-center justify-center", sizeClass, className)} style={style}>
+    <div className={cn("relative flex items-center justify-center shrink-0 select-none", sizeClass, className)} style={style}>
       <svg
         viewBox="0 0 100 100"
         fill="none"

@@ -17,7 +17,13 @@ import {
   AlertCircle,
   Settings,
   Globe,
-  FileText
+  FileText,
+  Wind,
+  Edit3,
+  X,
+  Heart,
+  MessageCircle,
+  FolderDown
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { 
@@ -30,7 +36,12 @@ import {
   getRecentActivity,
   getSystemSettings,
   updateSystemSettings,
-  getBlogPosts
+  getBlogPosts,
+  getCampaignData,
+  saveCampaignData,
+  getChurchComments,
+  getResources,
+  DEFAULT_AC_CAMPAIGN
 } from '../services/db';
 import { formatDate, cn } from '../lib/utils';
 import { 
@@ -56,13 +67,24 @@ export default function AdminDashboard() {
     pendingPrayers: 0,
     inquiries: 0,
     pendingEdits: 0,
-    pendingBlogs: 0
+    pendingBlogs: 0,
+    comments: 0,
+    resources: 0
   });
 
   const [recentActivity, setRecentActivity] = useState<any[]>([]);
   const [settings, setSettings] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [updatingSettings, setUpdatingSettings] = useState(false);
+
+  // Project AC Campaign state for SuperAdmin
+  const [campaign, setCampaign] = useState<any>(DEFAULT_AC_CAMPAIGN);
+  const [isACModalOpen, setIsACModalOpen] = useState(false);
+  const [acGoal, setAcGoal] = useState(800000);
+  const [acRaised, setAcRaised] = useState(150000);
+  const [acMission, setAcMission] = useState('');
+  const [savingAC, setSavingAC] = useState(false);
+  const [acSuccess, setAcSuccess] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -84,8 +106,11 @@ export default function AdminDashboard() {
           inquiries, 
           edits, 
           blogs,
+          churchComments,
+          resourcesList,
           activity,
-          sysSettings
+          sysSettings,
+          acData
         ] = await Promise.all([
           safeFetch(() => getUsers()),
           safeFetch(() => getSermons(100)),
@@ -94,8 +119,11 @@ export default function AdminDashboard() {
           safeFetch(() => getMembershipInquiries()),
           safeFetch(() => getPendingMinistryEdits()),
           safeFetch(() => getBlogPosts('pending', 50)),
+          safeFetch(() => getChurchComments()),
+          safeFetch(() => getResources(true)),
           safeFetch(() => getRecentActivity()),
-          safeFetch(() => getSystemSettings(), { facebookLiveUrl: '', isLive: false })
+          safeFetch(() => getSystemSettings(), { facebookLiveUrl: '', isLive: false }),
+          safeFetch(() => getCampaignData('project-ac'), DEFAULT_AC_CAMPAIGN)
         ]);
 
         setStats({
@@ -105,19 +133,50 @@ export default function AdminDashboard() {
           pendingPrayers: prayers.length,
           inquiries: inquiries.filter((i: any) => i.status === 'new').length,
           pendingEdits: edits.length,
-          pendingBlogs: blogs.length
+          pendingBlogs: blogs.length,
+          comments: churchComments.length,
+          resources: resourcesList.length
         });
         
         setRecentActivity(activity);
         setSettings(sysSettings || { facebookLiveUrl: '', isLive: false });
+        if (acData) {
+          setCampaign(acData);
+          setAcGoal(acData.targetAmount || 800000);
+          setAcRaised(acData.currentAmount || 150000);
+          setAcMission(acData.mission || DEFAULT_AC_CAMPAIGN.mission);
+        }
       } catch (error) {
         console.error('Critical Error fetching admin data:', error);
       } finally {
         setLoading(false);
       }
     };
+
     fetchData();
   }, []);
+
+  const handleSaveAC = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingAC(true);
+    try {
+      const updated = await saveCampaignData('project-ac', {
+        targetAmount: Number(acGoal),
+        currentAmount: Number(acRaised),
+        mission: acMission
+      }, { displayName: user?.displayName || 'Super Admin', email: user?.email || undefined });
+      setCampaign(updated);
+      setAcSuccess(true);
+      setTimeout(() => {
+        setAcSuccess(false);
+        setIsACModalOpen(false);
+      }, 1200);
+    } catch (err) {
+      console.error('Error saving AC settings in Admin:', err);
+    } finally {
+      setSavingAC(false);
+    }
+  };
 
   const handleToggleLive = async () => {
     if (!settings) return;
@@ -157,9 +216,11 @@ export default function AdminDashboard() {
 
   const cards = [
     { label: 'Total Members', value: stats.members, icon: Users, color: 'text-blue-600', bg: 'bg-blue-50', link: '/admin/members' },
+    { label: 'Comments & Feed', value: stats.comments, icon: MessageCircle, color: 'text-rose-600', bg: 'bg-rose-50', link: '/admin/comments' },
+    { label: 'Resources & Files', value: stats.resources, icon: FolderDown, color: 'text-emerald-600', bg: 'bg-emerald-50', link: '/admin/resources' },
     { label: 'New Inquiries', value: stats.inquiries, icon: Globe, color: 'text-indigo-600', bg: 'bg-indigo-50', link: '/admin/members' },
     { label: 'Pending Blogs', value: stats.pendingBlogs, icon: FileText, color: 'text-amber-600', bg: 'bg-amber-50', link: '/admin/blogs' },
-    { label: 'Ministry Edits', value: stats.pendingEdits, icon: Shield, color: 'text-emerald-600', bg: 'bg-emerald-50', link: '/admin/ministries' },
+    { label: 'Ministry Edits', value: stats.pendingEdits, icon: Shield, color: 'text-purple-600', bg: 'bg-purple-50', link: '/admin/ministries' },
   ];
 
   // Mock data for chart
@@ -207,7 +268,7 @@ export default function AdminDashboard() {
       </header>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-4">
             {(isSuperAdmin || isAdmin || isMediaTeam || isCouncil) && (
               <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 hover:shadow-md transition-all group">
                 <div className="flex items-center justify-between mb-4">
@@ -240,6 +301,81 @@ export default function AdminDashboard() {
           </Link>
         ))}
       </div>
+
+      {/* Project AC Campaign SuperAdmin Management Card */}
+      {isSuperAdmin && (
+        <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-[2.5rem] p-6 sm:p-8 text-white shadow-xl border border-slate-700/60 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-80 h-80 bg-red-600/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
+          
+          <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            <div className="space-y-2 max-w-xl">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/20 border border-red-500/30 text-red-400 text-xs font-black uppercase tracking-wider">
+                <Wind className="w-3.5 h-3.5" />
+                <span>Superadmin Feature Control</span>
+              </div>
+              <h2 className="text-2xl font-display font-bold tracking-tight text-white flex items-center gap-3">
+                <span>Project AC Fundraising Campaign</span>
+              </h2>
+              <p className="text-slate-300 text-xs sm:text-sm font-light leading-relaxed">
+                Church Sanctuary Air Conditioning. You can update the live goal budget, total amount raised to date, and mission statement anytime.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+              <button
+                onClick={() => setIsACModalOpen(true)}
+                className="flex-1 md:flex-none px-5 py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs uppercase tracking-wider transition-all shadow-lg shadow-red-600/20 flex items-center justify-center gap-2"
+              >
+                <Edit3 className="w-4 h-4" />
+                <span>Edit AC Figures</span>
+              </button>
+              <Link
+                to="/project-ac"
+                className="flex-1 md:flex-none px-5 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 border border-white/10"
+              >
+                <span>View Live Page</span>
+                <ExternalLink className="w-4 h-4 text-slate-400" />
+              </Link>
+            </div>
+          </div>
+
+          {/* Progress & Live Numbers */}
+          <div className="relative z-10 grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6 pt-6 border-t border-slate-700/60">
+            <div className="bg-white/5 rounded-2xl p-4 border border-white/5">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                Fundraising Goal
+              </span>
+              <p className="text-2xl font-black text-white">
+                ₱{Number(campaign?.targetAmount || 800000).toLocaleString()}
+              </p>
+              <span className="text-[10px] text-slate-400 mt-1 block">Full budget needed</span>
+            </div>
+
+            <div className="bg-white/5 rounded-2xl p-4 border border-white/5">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                Amount Raised To Date
+              </span>
+              <p className="text-2xl font-black text-red-400">
+                ₱{Number(campaign?.currentAmount || 150000).toLocaleString()}
+              </p>
+              <span className="text-[10px] text-emerald-400 font-bold mt-1 flex items-center gap-1">
+                <CheckCircle2 className="w-3 h-3" />
+                {(((campaign?.currentAmount || 150000) / (campaign?.targetAmount || 800000)) * 100).toFixed(1)}% Achieved
+              </span>
+            </div>
+
+            <div className="bg-white/5 rounded-2xl p-4 border border-white/5">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                Remaining Balance
+              </span>
+              <p className="text-2xl font-black text-slate-200">
+                ₱{Math.max(0, (campaign?.targetAmount || 800000) - (campaign?.currentAmount || 150000)).toLocaleString()}
+              </p>
+              <span className="text-[10px] text-slate-400 mt-1 block">By God's grace</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Main Chart Area */}
@@ -359,6 +495,18 @@ export default function AdminDashboard() {
               Quick Actions
             </h3>
             <div className="grid grid-cols-1 gap-3">
+              {isSuperAdmin && (
+                <button 
+                  onClick={() => setIsACModalOpen(true)}
+                  className="w-full p-4 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 rounded-2xl transition-all flex items-center justify-between group text-left"
+                >
+                  <span className="text-sm font-bold text-red-300 group-hover:text-white flex items-center gap-2">
+                    <Wind className="w-4 h-4 text-red-400" />
+                    Edit Project AC Figures
+                  </span>
+                  <Edit3 className="h-4 w-4 text-red-400 group-hover:text-white" />
+                </button>
+              )}
               <Link to="/admin/events" className="p-4 bg-white/5 hover:bg-white/10 rounded-2xl transition-all flex items-center justify-between group">
                 <span className="text-sm font-medium">Create Event</span>
                 <Calendar className="h-4 w-4 text-slate-500 group-hover:text-white" />
@@ -434,6 +582,123 @@ export default function AdminDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Superadmin Project AC Edit Modal */}
+      {isACModalOpen && isSuperAdmin && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-[2rem] max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-100 relative">
+            <button
+              onClick={() => setIsACModalOpen(false)}
+              className="absolute top-6 right-6 p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 transition-all"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-2xl bg-red-100 flex items-center justify-center text-red-600">
+                <Wind className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-xl font-display font-bold text-slate-900">
+                  Update Project AC Settings
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Superadmin Only • Live public sync
+                </p>
+              </div>
+            </div>
+
+            {acSuccess ? (
+              <div className="py-12 text-center space-y-3">
+                <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 mx-auto flex items-center justify-center">
+                  <CheckCircle2 className="w-6 h-6" />
+                </div>
+                <h4 className="text-lg font-bold text-slate-900">Successfully Updated!</h4>
+                <p className="text-xs text-slate-500">Project AC figures and campaign details are saved.</p>
+              </div>
+            ) : (
+              <form onSubmit={handleSaveAC} className="space-y-4">
+                {/* Target Amount */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                    Fundraising Goal / Budget
+                  </label>
+                  <input
+                    type="number"
+                    min="1000"
+                    step="1000"
+                    required
+                    value={acGoal}
+                    onChange={(e) => setAcGoal(Number(e.target.value))}
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-red-600"
+                  />
+                  <p className="text-[10px] text-slate-400 mt-1">Currently: ₱{Number(acGoal).toLocaleString()}</p>
+                </div>
+
+                {/* Raised Amount */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                    Current Amount Raised to Date
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1000"
+                    required
+                    value={acRaised}
+                    onChange={(e) => setAcRaised(Number(e.target.value))}
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-red-600"
+                  />
+                  <p className="text-[10px] text-slate-400 mt-1">
+                    Currently: ₱{Number(acRaised).toLocaleString()} ({((acRaised / (acGoal || 1)) * 100).toFixed(1)}%)
+                  </p>
+                </div>
+
+                {/* Mission Text */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                    Campaign Mission Statement
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={acMission}
+                    onChange={(e) => setAcMission(e.target.value)}
+                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-red-600 resize-none"
+                    placeholder="Brief description of the sanctuary cooling project..."
+                  />
+                </div>
+
+                <div className="pt-2 flex items-center justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsACModalOpen(false)}
+                    className="px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-700 uppercase tracking-wider"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={savingAC}
+                    className="px-6 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs uppercase tracking-wider transition-all shadow-md shadow-red-600/20 flex items-center gap-2 disabled:opacity-50"
+                  >
+                    {savingAC ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        Save Live Figures
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

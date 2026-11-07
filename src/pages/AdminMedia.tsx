@@ -7,6 +7,7 @@ import {
   uploadFile,
   getGalleryAlbums,
   addGalleryAlbum,
+  updateGalleryAlbum,
   deleteGalleryAlbum,
   addGalleryItem,
   deleteGalleryItem
@@ -106,8 +107,6 @@ export default function AdminMedia() {
         coverImageUrl = await uploadFile(newAlbum.coverImageFile, 'albums');
       }
 
-      const { updateGalleryAlbum, addGalleryAlbum } = await import('../services/db');
-
       if (editingAlbumId) {
         await updateGalleryAlbum(editingAlbumId, {
           name: newAlbum.name,
@@ -137,7 +136,6 @@ export default function AdminMedia() {
 
   const handleToggleFeatured = async (album: GalleryAlbum) => {
     try {
-      const { updateGalleryAlbum } = await import('../services/db');
       await updateGalleryAlbum(album.id, { isFeatured: !album.isFeatured });
       setAlbums(prev => prev.map(a => a.id === album.id ? { ...a, isFeatured: !a.isFeatured } : a));
     } catch (error) {

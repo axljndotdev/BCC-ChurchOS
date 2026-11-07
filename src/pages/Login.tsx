@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Mail, Lock, AlertCircle, User, ArrowRight, Loader2 } from 'lucide-react';
 import Logo from '../components/Logo';
 import { cn } from '../lib/utils';
@@ -88,32 +88,28 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-20 bg-[#f8fafc] relative overflow-hidden font-sans">
+    <div className="min-h-screen flex items-center justify-center px-4 py-16 sm:py-24 bg-[#FAF7F2] relative overflow-hidden font-sans">
       {/* Immersive background with subtle depth */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute -top-[10%] -left-[10%] w-[60%] h-[60%] bg-maroon/5 rounded-full blur-[120px] animate-pulse" />
-        <div className="absolute -bottom-[10%] -right-[10%] w-[50%] h-[50%] bg-blue-500/5 rounded-full blur-[100px]" />
-        
-        {/* Subtle grid pattern */}
-        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(#800000 0.5px, transparent 0.5px)', backgroundSize: '24px 24px' }}></div>
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-gradient-to-tr from-[#7A121D]/10 via-[#C99738]/10 to-transparent rounded-full blur-3xl" />
       </div>
 
       <motion.div 
-        initial={{ opacity: 0, y: 30 }}
+        initial={{ opacity: 0, y: 25 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className="max-w-xl w-full relative z-10"
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        className="max-w-lg w-full relative z-10"
       >
-        <div className="bg-white/80 backdrop-blur-xl p-8 sm:p-14 rounded-[3rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.08)] border border-white relative overflow-hidden">
-          {/* Top accent bar */}
-          <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-maroon via-maroon/80 to-maroon/40" />
+        <div className="bg-white p-8 sm:p-12 rounded-3xl sm:rounded-[2.5rem] shadow-xl border border-[#E8D5B5] relative overflow-hidden">
+          {/* Top accent bar in regal crimson and radiant gold */}
+          <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#7A121D] via-[#C99738] to-[#7A121D]" />
 
-          <div className="text-center mb-12">
-            <div className="flex justify-center mb-10">
+          <div className="text-center mb-10">
+            <div className="flex justify-center mb-6">
               <motion.div
-                whileHover={{ rotate: -5, scale: 1.05 }}
+                whileHover={{ rotate: -4, scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="p-5 bg-white shadow-xl shadow-maroon/5 rounded-[2rem] border border-slate-50 cursor-pointer"
+                className="p-4 bg-[#FAF6EE] shadow-md rounded-2xl border border-[#E8D5B5] cursor-pointer"
                 onClick={() => navigate('/')}
               >
                 <Logo size="lg" />
@@ -123,20 +119,20 @@ export default function Login() {
               key={isLogin ? 'login-h' : 'signup-h'}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="text-4xl font-display font-extrabold text-slate-900 tracking-tight mb-4"
+              className="text-3xl sm:text-4xl font-display font-extrabold text-[#1A0B0E] tracking-tight mb-2"
             >
-              {isLogin ? "Member's Login" : 'Create Account'}
+              {isLogin ? "Member & Staff Portal" : 'Create Church Account'}
             </motion.h2>
             <motion.p 
               key={isLogin ? 'login-p' : 'signup-p'}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.1 }}
-              className="text-slate-500 font-light text-base leading-relaxed"
+              className="text-slate-600 font-light text-sm sm:text-base leading-relaxed"
             >
               {isLogin 
-                ? 'Welcome back to your spiritual home dashboard.' 
-                : 'Join our growing digital community today.'}
+                ? 'Welcome back to your Bethesda Community dashboard.' 
+                : 'Join our active church community online.'}
             </motion.p>
           </div>
 
@@ -146,44 +142,44 @@ export default function Login() {
                 initial={{ opacity: 0, scale: 0.95, y: -10 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="mb-8 bg-red-50/50 backdrop-blur-sm border border-red-100 p-5 rounded-3xl group"
+                className="mb-6 bg-red-50 border border-red-200 p-4 rounded-2xl"
               >
-                <div className="flex items-start gap-4">
-                  <div className="p-2 bg-red-100 rounded-xl text-red-600 group-hover:scale-110 transition-transform">
-                    <AlertCircle className="h-5 w-5" />
+                <div className="flex items-start gap-3">
+                  <div className="p-1.5 bg-red-100 rounded-lg text-red-600 shrink-0">
+                    <AlertCircle className="h-4 w-4" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-[10px] font-black text-red-800 uppercase tracking-widest mb-1.5">Notification</p>
-                    <p className="text-sm text-red-600/90 font-medium leading-snug">{error}</p>
+                    <p className="text-[10px] font-bold text-red-800 uppercase tracking-widest mb-0.5">Authentication Note</p>
+                    <p className="text-xs text-red-700 leading-snug">{error}</p>
                   </div>
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
 
-          <div className="space-y-10">
+          <div className="space-y-6">
             <motion.button
-              whileHover={{ y: -2 }}
+              whileHover={{ y: -1 }}
               whileTap={{ scale: 0.98 }}
               onClick={handleGoogleSignIn}
               disabled={loading}
-              className="w-full flex items-center justify-center gap-4 px-6 py-4.5 bg-white border border-slate-200 rounded-[1.5rem] text-slate-700 font-bold hover:bg-slate-50 active:bg-slate-100 shadow-sm transition-all duration-300 disabled:opacity-50"
+              className="w-full flex items-center justify-center gap-3 px-5 py-3.5 bg-white border border-[#E8D5B5] rounded-xl text-slate-800 font-bold hover:bg-[#FAF6EE] shadow-xs transition-all text-xs uppercase tracking-wider disabled:opacity-50"
             >
-              <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="" className="h-6 w-6" />
-              <span className="text-[13px] uppercase tracking-widest">Continue with Google</span>
+              <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="" className="h-5 w-5" />
+              <span>Continue with Google</span>
             </motion.button>
 
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-100" />
+                <div className="w-full border-t border-[#E8D5B5]/60" />
               </div>
               <div className="relative flex justify-center">
-                <span className="px-5 bg-white text-[9px] font-black uppercase tracking-[0.4em] text-slate-300">Auth Portal</span>
+                <span className="px-4 bg-white text-[9px] font-bold uppercase tracking-[0.25em] text-[#9A6F1D]">Or with Account ID</span>
               </div>
             </div>
 
-            <form className="space-y-6" onSubmit={handleAuth}>
-              <div className="space-y-5">
+            <form className="space-y-4" onSubmit={handleAuth}>
+              <div className="space-y-4">
                 <AnimatePresence mode="popLayout">
                   {!isLogin && (
                     <motion.div 
@@ -191,55 +187,55 @@ export default function Login() {
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: 20 }}
-                      className="space-y-2.5"
+                      className="space-y-1.5"
                     >
-                      <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1">Full Name</label>
-                      <div className="relative group">
-                        <div className="absolute left-4 top-1/2 -translate-y-1/2 h-6 w-6 flex items-center justify-center text-slate-300 group-focus-within:text-maroon transition-colors duration-300">
-                          <User className="h-5 w-5" />
+                      <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">Full Name</label>
+                      <div className="relative">
+                        <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+                          <User className="h-4 w-4" />
                         </div>
                         <input
                           type="text"
                           required={!isLogin}
                           value={displayName}
                           onChange={(e) => setDisplayName(e.target.value)}
-                          className="block w-full pl-13 pr-5 py-4.5 bg-slate-50/50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-maroon/5 focus:border-maroon/20 focus:bg-white text-sm font-medium transition-all outline-none placeholder:text-slate-300"
-                          placeholder="Your real name"
+                          className="block w-full pl-10 pr-4 py-3 bg-[#FDFBF7] border border-[#E8D5B5] rounded-xl focus:ring-2 focus:ring-[#7A121D]/20 focus:border-[#7A121D] text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400"
+                          placeholder="Juan Dela Cruz"
                         />
                       </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
 
-                <div className="space-y-2.5">
-                  <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1">Account ID</label>
-                  <div className="relative group">
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2 h-6 w-6 flex items-center justify-center text-slate-300 group-focus-within:text-maroon transition-colors duration-300">
-                      <Mail className="h-5 w-5" />
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">Account ID / Email</label>
+                  <div className="relative">
+                    <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+                      <Mail className="h-4 w-4" />
                     </div>
                     <input
                       type="text"
                       required
                       value={idValue}
                       onChange={(e) => setIdValue(e.target.value)}
-                      className="block w-full pl-13 pr-5 py-4.5 bg-slate-50/50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-maroon/5 focus:border-maroon/20 focus:bg-white text-sm font-medium transition-all outline-none placeholder:text-slate-300"
+                      className="block w-full pl-10 pr-4 py-3 bg-[#FDFBF7] border border-[#E8D5B5] rounded-xl focus:ring-2 focus:ring-[#7A121D]/20 focus:border-[#7A121D] text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400"
                       placeholder="Username or Email"
                     />
                   </div>
                 </div>
 
-                <div className="space-y-2.5">
-                  <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1">Secret Key</label>
-                  <div className="relative group">
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2 h-6 w-6 flex items-center justify-center text-slate-300 group-focus-within:text-maroon transition-colors duration-300">
-                      <Lock className="h-5 w-5" />
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">Password / Secret Key</label>
+                  <div className="relative">
+                    <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+                      <Lock className="h-4 w-4" />
                     </div>
                     <input
                       type="password"
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="block w-full pl-13 pr-5 py-4.5 bg-slate-50/50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-maroon/5 focus:border-maroon/20 focus:bg-white text-sm font-medium transition-all outline-none placeholder:text-slate-300"
+                      className="block w-full pl-10 pr-4 py-3 bg-[#FDFBF7] border border-[#E8D5B5] rounded-xl focus:ring-2 focus:ring-[#7A121D]/20 focus:border-[#7A121D] text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400"
                       placeholder="••••••••"
                     />
                   </div>
@@ -251,21 +247,16 @@ export default function Login() {
                 disabled={loading}
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.98 }}
-                className="w-full relative group"
+                className="w-full mt-2 py-4 bg-[#7A121D] hover:bg-[#5C0612] text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-md flex items-center justify-center gap-2 disabled:opacity-50"
               >
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-maroon to-slate-900 rounded-[1.8rem] blur opacity-20 group-hover:opacity-40 transition duration-500" />
-                <div className="relative flex items-center justify-center gap-4 py-5 bg-slate-900 text-white rounded-[1.5rem] text-[15px] font-extrabold hover:bg-slate-800 transition-all duration-300 disabled:opacity-50">
-                  {loading ? (
-                    <Loader2 className="h-6 w-6 animate-spin text-white/50" />
-                  ) : (
-                    <>
-                      {isLogin ? 'Access Dashboard' : 'Finalize Registration'}
-                      <div className="p-1.5 bg-white/10 rounded-lg group-hover:translate-x-1 transition-transform">
-                        <ArrowRight className="h-4 w-4" />
-                      </div>
-                    </>
-                  )}
-                </div>
+                {loading ? (
+                  <Loader2 className="h-5 w-5 animate-spin text-[#E5B869]" />
+                ) : (
+                  <>
+                    <span>{isLogin ? 'Sign In to Dashboard' : 'Complete Registration'}</span>
+                    <ArrowRight className="h-4 w-4 text-[#E5B869]" />
+                  </>
+                )}
               </motion.button>
             </form>
 
@@ -276,10 +267,10 @@ export default function Login() {
                   setIsLogin(!isLogin);
                   setError('');
                 }}
-                className="group inline-flex items-center gap-3 py-2 px-4 rounded-full hover:bg-slate-50 transition-colors"
+                className="text-xs text-slate-600 hover:text-[#7A121D] font-medium"
               >
-                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{isLogin ? "Need an identity?" : "Have an identity?"}</span>
-                <span className="text-[11px] font-black text-maroon uppercase tracking-widest underline decoration-maroon/30 underline-offset-4 group-hover:decoration-maroon transition-all">
+                <span>{isLogin ? "Need a church account? " : "Already have an account? "}</span>
+                <span className="font-bold underline text-[#7A121D]">
                   {isLogin ? "Register now" : "Sign in here"}
                 </span>
               </button>
@@ -287,17 +278,11 @@ export default function Login() {
           </div>
         </div>
 
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="mt-14 text-center px-10"
-        >
-          <p className="text-[10px] text-slate-400 uppercase tracking-[0.4em] font-black leading-loose opacity-60">
-            Bethesda Community Church <br />
-            Digital Infrastructure • Kabankalan City • Est. 2017
-          </p>
-        </motion.div>
+        <div className="mt-8 text-center">
+          <Link to="/" className="text-xs text-slate-500 hover:text-slate-800 transition-colors">
+            &larr; Return to Church Homepage
+          </Link>
+        </div>
       </motion.div>
     </div>
   );

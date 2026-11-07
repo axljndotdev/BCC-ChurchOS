@@ -25,6 +25,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import LoadingSpinner from '../components/LoadingSpinner';
 import imageCompression from 'browser-image-compression';
 import { EventMedia } from '../types';
+import GalleryBrowserModal from '../components/cms/GalleryBrowserModal';
 
 export default function EventDetail() {
   const { id } = useParams<{ id: string }>();
@@ -40,11 +41,12 @@ export default function EventDetail() {
   const [editedEvent, setEditedEvent] = useState<Partial<ChurchEvent>>({});
   const [mediaInput, setMediaInput] = useState({ 
     url: '', 
-    type: 'photo' as 'photo' | 'video', 
+    type: 'photo' as 'photo' | 'video' | 'gallery', 
     caption: '', 
     thumbnail: '',
     thumbnailPreview: '' 
   });
+  const [showGalleryModal, setShowGalleryModal] = useState(false);
 
   const handleThumbnailUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -89,6 +91,31 @@ export default function EventDetail() {
     fetchEvent();
   }, [id, navigate]);
 
+  // Safely trigger Instagram embed script without crashing React's DOM reconciler
+  useEffect(() => {
+    const isOneEvent = event?.slug === 'one-event' || event?.id === 'NNmd1Beq1iIZFGWh6Kmw' || id === 'one-event' || event?.title?.toLowerCase().includes('one event');
+    if (!isOneEvent) return;
+
+    if ((window as any).instgrm) {
+      (window as any).instgrm.Widgets?.load();
+      return;
+    }
+
+    const scriptId = 'instagram-embed-script';
+    if (!document.getElementById(scriptId)) {
+      const script = document.createElement('script');
+      script.id = scriptId;
+      script.src = 'https://www.instagram.com/embed.js';
+      script.async = true;
+      document.body.appendChild(script);
+      script.onload = () => {
+        if ((window as any).instgrm) {
+          (window as any).instgrm.Widgets?.load();
+        }
+      };
+    }
+  }, [event, id]);
+
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -128,17 +155,15 @@ export default function EventDetail() {
     }
   };
 
-  const addMediaItem = () => {
-    if (!mediaInput.url) return;
+  const addMediaItem = (items?: { type: 'photo' | 'video', url: string, caption?: string }[]) => {
+    if (!items && !mediaInput.url) return;
+    
     const currentMedia = editedEvent.media || [];
+    const newItems = items || [{ type: mediaInput.type as 'photo' | 'video', url: mediaInput.url, caption: mediaInput.caption, thumbnail: mediaInput.thumbnail || mediaInput.thumbnailPreview }];
+    
     setEditedEvent(prev => ({
       ...prev,
-      media: [...currentMedia, { 
-        type: mediaInput.type, 
-        url: mediaInput.url, 
-        caption: mediaInput.caption, 
-        thumbnail: mediaInput.thumbnail || mediaInput.thumbnailPreview 
-      }]
+      media: [...currentMedia, ...newItems]
     }));
     setMediaInput({ url: '', type: 'photo', caption: '', thumbnail: '', thumbnailPreview: '' });
   };
@@ -222,7 +247,7 @@ export default function EventDetail() {
   if (!event) return null;
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-20">
+    <div className="min-h-screen bg-[#FAF7F2] pb-24">
       {/* Hero Header */}
       <section className="relative h-[40vh] md:h-[50vh] overflow-hidden">
         {event.imageUrl ? (
@@ -477,7 +502,23 @@ export default function EventDetail() {
                       >
                         Video URL
                       </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowGalleryModal(true)}
+                        className={cn(
+                          "flex-1 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all",
+                          mediaInput.type === 'gallery' ? "bg-white shadow-sm text-maroon" : "text-slate-400"
+                        )}
+                      >
+                        Select Gallery
+                      </button>
                     </div>
+
+                    <GalleryBrowserModal 
+                      isOpen={showGalleryModal} 
+                      onClose={() => setShowGalleryModal(false)}
+                      onSelectItems={addMediaItem}
+                    />
 
                     <div className="flex gap-2">
                       {mediaInput.type === 'photo' ? (
@@ -510,7 +551,7 @@ export default function EventDetail() {
                       )}
                       <button
                         type="button"
-                        onClick={addMediaItem}
+                        onClick={() => addMediaItem()}
                         disabled={!mediaInput.url}
                         className="px-4 py-2 bg-maroon text-white rounded-xl text-xs font-bold disabled:opacity-30 transition-all"
                       >
@@ -672,6 +713,49 @@ export default function EventDetail() {
                           )}
                         </motion.div>
                       ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* ONE Event Special Social Embeds - only shown on ONE event */}
+                {(event.slug === 'one-event' || event.id === 'NNmd1Beq1iIZFGWh6Kmw' || id === 'one-event' || event.title?.toLowerCase().includes('one event')) && (
+                  <div className="mt-12 space-y-8">
+                    <div className="flex items-center gap-4">
+                      <div className="h-px flex-1 bg-slate-100" />
+                      <h3 className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em]">Live Social Highlights</h3>
+                      <div className="h-px flex-1 bg-slate-100" />
+                    </div>
+
+                    {/* Instagram Embed */}
+                    <div className="flex justify-center w-full overflow-hidden">
+                      <div 
+                        dangerouslySetInnerHTML={{
+                          __html: `
+                            <blockquote 
+                              class="instagram-media" 
+                              data-instgrm-captioned 
+                              data-instgrm-permalink="https://www.instagram.com/p/DdHBOhRNQ1b/?utm_source=ig_embed&amp;utm_campaign=loading" 
+                              data-instgrm-version="14" 
+                              style="background:#FFF; border:0; border-radius:12px; box-shadow:0 0 1px 0 rgba(0,0,0,0.5),0 1px 10px 0 rgba(0,0,0,0.15); margin: 1px; max-width:540px; min-width:320px; padding:0; width:100%;">
+                            </blockquote>
+                          `
+                        }}
+                      />
+                    </div>
+
+                    {/* Facebook Action Button */}
+                    <div className="flex justify-center">
+                      <a 
+                        href="https://www.facebook.com/profile.php?id=61593834660856" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 px-6 py-3 bg-[#1877F2] text-white rounded-full font-bold text-xs uppercase tracking-wider hover:bg-[#166FE5] transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5"
+                      >
+                        <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                          <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                        </svg>
+                        <span>Follow One Event on Facebook</span>
+                      </a>
                     </div>
                   </div>
                 )}

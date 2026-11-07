@@ -5,6 +5,7 @@ import {
   Navigate 
 } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { CMSEditProvider } from './contexts/CMSEditContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import FirebaseSetupGuide from './components/FirebaseSetupGuide';
 import InactivityTimeoutGuard from './components/InactivityTimeoutGuard';
@@ -39,6 +40,11 @@ import AdminSettings from './pages/AdminSettings';
 import Live from './pages/Live';
 import Resources from './pages/Resources';
 import Give from './pages/Give';
+import ProjectAC from './pages/ProjectAC';
+import ChurchComments from './pages/ChurchComments';
+import NewHere from './pages/NewHere';
+import NotFound from './pages/NotFound';
+import PasswordProtected from './pages/PasswordProtected';
 
 // Member Pages
 import MemberDashboard from './pages/MemberDashboard';
@@ -56,6 +62,9 @@ import AdminSermons from './pages/AdminSermons';
 import AdminEvents from './pages/AdminEvents';
 import AdminAnnouncements from './pages/AdminAnnouncements';
 import AdminCMS from './pages/AdminCMS';
+import AdminComments from './pages/AdminComments';
+import AdminResources from './pages/AdminResources';
+import AdminCampaign from './pages/AdminCampaign';
 
 function AppContent() {
   const { isConfigured, loading } = useAuth();
@@ -94,9 +103,17 @@ function AppContent() {
           <Route path="/blogs/:slug" element={<BlogPost />} />
           <Route path="/activities" element={<WeeklyActivities />} />
           <Route path="/prayer" element={<PrayerWall />} />
+          <Route path="/new-here" element={<NewHere />} />
+          <Route path="/visit" element={<NewHere />} />
+          <Route path="/im-new" element={<NewHere />} />
+          <Route path="/project-ac" element={<ProjectAC />} />
           <Route path="/pending-approval" element={<PendingApproval />} />
           <Route path="/resources" element={<Resources />} />
           <Route path="/give" element={<Give />} />
+          <Route path="/comments" element={<ChurchComments />} />
+          <Route path="/church-comments" element={<ChurchComments />} />
+          <Route path="/protected" element={<PasswordProtected />} />
+          <Route path="/password-protected" element={<PasswordProtected />} />
         </Route>
 
         {/* Member Routes */}
@@ -127,12 +144,15 @@ function AppContent() {
             <Route path="ministries" element={<AdminMinistries />} />
             <Route path="prayers" element={<AdminPrayers />} />
             <Route path="blogs" element={<AdminBlogs />} />
+            <Route path="comments" element={<AdminComments />} />
+            <Route path="resources" element={<AdminResources />} />
+            <Route path="campaign" element={<AdminCampaign />} />
             <Route path="settings" element={<AdminSettings />} />
           </Route>
         </Route>
 
-        {/* Fallback */}
-        <Route path="*" element={<Navigate to="/" replace />} />
+        {/* Fallback 404 */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
   );
@@ -141,9 +161,11 @@ function AppContent() {
 export default function App() {
   return (
     <AuthProvider>
-      <InactivityTimeoutGuard>
-        <AppContent />
-      </InactivityTimeoutGuard>
+      <CMSEditProvider>
+        <InactivityTimeoutGuard>
+          <AppContent />
+        </InactivityTimeoutGuard>
+      </CMSEditProvider>
     </AuthProvider>
   );
 }

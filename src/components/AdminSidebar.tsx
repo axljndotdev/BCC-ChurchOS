@@ -9,10 +9,13 @@ import {
   Users,
   BookOpen,
   MessageSquare,
+  MessageCircle,
   ArrowLeft,
   Settings,
   FileText,
   Edit3,
+  Wind,
+  FolderDown,
   X
 } from 'lucide-react';
 import { cn } from '../lib/utils';
@@ -22,6 +25,7 @@ const adminGroups = [
     name: 'General',
     items: [
       { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
+      { name: 'Campaign Manager', href: '/admin/campaign', icon: Wind },
     ]
   },
   {
@@ -30,6 +34,7 @@ const adminGroups = [
       { name: 'Pages CMS', href: '/admin/cms', icon: Edit3 },
       { name: 'Sermons', href: '/admin/sermons', icon: Video },
       { name: 'Blogs', href: '/admin/blogs', icon: FileText },
+      { name: 'Resources Hub', href: '/admin/resources', icon: FolderDown },
       { name: 'Media/Gallery', href: '/admin/media', icon: Image },
     ]
   },
@@ -37,8 +42,9 @@ const adminGroups = [
     name: 'Community',
     items: [
       { name: 'Members', href: '/admin/members', icon: Users },
-      { name: 'Ministries', href: '/admin/ministries', icon: BookOpen },
+      { name: 'Comments & Feed', href: '/admin/comments', icon: MessageCircle },
       { name: 'Prayers', href: '/admin/prayers', icon: MessageSquare },
+      { name: 'Ministries', href: '/admin/ministries', icon: BookOpen },
     ]
   },
   {
@@ -64,13 +70,13 @@ export default function AdminSidebar({ onClose }: AdminSidebarProps) {
     const allowedItems: string[] = ['Dashboard'];
     
     if (isMediaTeam) {
-      allowedItems.push('Media/Gallery', 'Sermons');
+      allowedItems.push('Media/Gallery', 'Sermons', 'Resources Hub');
     }
     if (isCouncil) {
-      allowedItems.push('Members', 'Prayers', 'Announcements', 'Blogs');
+      allowedItems.push('Members', 'Comments & Feed', 'Prayers', 'Announcements', 'Blogs', 'Resources Hub', 'Campaign Manager');
     }
     if (isMinistryLeader) {
-      allowedItems.push('Ministries', 'Media/Gallery');
+      allowedItems.push('Ministries', 'Media/Gallery', 'Resources Hub');
     }
     
     return allowedItems.includes(itemName);
@@ -85,7 +91,11 @@ export default function AdminSidebar({ onClose }: AdminSidebarProps) {
             <span>Back to Site</span>
           </Link>
           {onClose && (
-            <button onClick={onClose} className="lg:hidden p-2 text-slate-400 hover:text-white">
+            <button 
+              onClick={onClose} 
+              className="lg:hidden p-2 text-slate-400 hover:text-white min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg transition-colors"
+              aria-label="Close sidebar"
+            >
               <X className="h-5 w-5" />
             </button>
           )}
@@ -108,13 +118,13 @@ export default function AdminSidebar({ onClose }: AdminSidebarProps) {
                       to={item.href}
                       onClick={onClose}
                       className={cn(
-                        "flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-300",
+                        "flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 min-h-[42px]",
                         location.pathname === item.href
-                          ? "bg-maroon text-white shadow-lg shadow-maroon/20"
+                          ? "bg-[#7A121D] text-white border border-[#C99738]/50 shadow-md"
                           : "hover:bg-slate-800 hover:text-white"
                       )}
                     >
-                      <item.icon className="h-4 w-4" />
+                      <item.icon className="h-4 w-4 text-[#E5B869]" />
                       <span>{item.name}</span>
                     </Link>
                   ))}

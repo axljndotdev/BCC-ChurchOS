@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { cn, formatDate } from '../lib/utils';
 import { SystemSettings, ChurchEvent, Announcement, BlogPost } from '../types';
+import churchAltarHeroImg from '../assets/images/church_altar_candles_hero_1791300645434.jpg';
 
 export interface HeroSlide {
   id: string;
@@ -59,14 +60,14 @@ export default function HomeHeroCarousel({
     type: 'welcome',
     badge: 'Welcome to Bethesda',
     badgeIcon: Sparkles,
-    title: settings?.welcomeTitle || 'Bethesda Community Church',
+    title: settings?.welcomeTitle || 'Find Peace in a Life of Prayer',
     subtitle: 'A Sanctuary for the Soul & A Family for the Heart',
-    description: settings?.welcomeSubtitle || "Bethesda Community Church (BCC) is more than a building—it's a sanctuary for the soul and a family for the heart in Kabankalan City.",
-    imageUrl: settings?.heroImageUrl || "https://images.unsplash.com/photo-1544427920-c49ccfb85579?auto=format&fit=crop&q=80&w=1920",
-    primaryLink: '/about',
-    primaryText: 'Our Story',
+    description: settings?.welcomeSubtitle || "Develop deeper relationships with God and others through spiritual formation in community.",
+    imageUrl: settings?.heroImageUrl || churchAltarHeroImg,
+    primaryLink: '/new-here',
+    primaryText: 'Plan A Visit',
     secondaryLink: '/live',
-    secondaryText: 'Watch Live'
+    secondaryText: 'Watch Online'
   });
 
   // 2. Tagged Events (or closest upcoming event if tagged events are empty)
@@ -215,9 +216,10 @@ export default function HomeHeroCarousel({
           </motion.div>
         </AnimatePresence>
 
-        {/* Cinematic Multi-Layer Gradient Overlays for Peak Legibility */}
-        <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/60 to-stone-900/40" />
-        <div className="absolute inset-0 bg-gradient-to-r from-stone-950/80 via-stone-950/40 to-stone-950/80" />
+        {/* Cinematic Multi-Layer Gradient Overlays for Peak Legibility & Candle Glow */}
+        <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/65 to-stone-950/40 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-r from-stone-950/95 via-stone-950/70 via-40% to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(201,151,56,0.12)_0%,transparent_60%)] pointer-events-none" />
       </div>
 
       {/* Top Live Broadcast Banner */}
@@ -229,14 +231,14 @@ export default function HomeHeroCarousel({
         >
           <Link 
             to="/live" 
-            className="bg-red-600/95 backdrop-blur-md text-white px-5 py-2 sm:px-6 sm:py-2.5 rounded-full text-[11px] sm:text-xs font-bold uppercase tracking-[0.2em] flex items-center gap-2.5 shadow-2xl shadow-red-600/30 hover:bg-red-600 transition-all group border border-red-400/30"
+            className="bg-[#7A121D] border border-[#E5B869] text-white px-5 py-2 sm:px-6 sm:py-2.5 rounded-full text-[11px] sm:text-xs font-bold uppercase tracking-[0.2em] flex items-center gap-2.5 shadow-2xl hover:bg-[#5C0612] transition-all group"
           >
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#E5B869] opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#E5B869]"></span>
             </span>
             Live Now: Join Online Service
-            <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
+            <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform text-[#E5B869]" />
           </Link>
         </motion.div>
       )}
@@ -255,8 +257,8 @@ export default function HomeHeroCarousel({
         </div>
       )}
 
-      {/* Main Slide Content Card */}
-      <div className="relative z-20 w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-28 flex flex-col items-center text-center">
+      {/* Main Slide Content Card - Left Aligned Architecture matching Reference */}
+      <div className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-8 lg:px-14 py-20 sm:py-28 lg:py-36 flex flex-col items-start text-left">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeSlide.id}
@@ -264,16 +266,16 @@ export default function HomeHeroCarousel({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -25 }}
             transition={{ duration: 0.5, ease: "easeOut" }}
-            className="w-full flex flex-col items-center"
+            className="w-full max-w-2xl lg:max-w-3xl flex flex-col items-start text-left"
           >
-            {/* Category / Type Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 sm:px-5 sm:py-2 bg-white/10 backdrop-blur-md text-amber-300 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-[0.25em] mb-4 sm:mb-6 border border-white/15 shadow-inner">
-              <BadgeIcon className="h-3.5 w-3.5 fill-current" />
+            {/* Category / Type Badge / Kicker */}
+            <div className="inline-flex items-center gap-2 text-[#F0CA7D] text-[11px] sm:text-xs font-semibold uppercase tracking-[0.25em] mb-4 sm:mb-6">
+              <BadgeIcon className="h-3.5 w-3.5 text-[#E5B869]" />
               <span>{activeSlide.badge}</span>
             </div>
 
-            {/* Slide Title - Mobile-First Fluid Typography */}
-            <h1 className="text-3xl sm:text-5xl md:text-7xl font-display text-white mb-4 sm:mb-6 leading-[1.05] tracking-tight max-w-4xl drop-shadow-md">
+            {/* Slide Title - Fluid Editorial Serif */}
+            <h1 className="text-4xl xs:text-5xl sm:text-6xl md:text-7xl lg:text-[5.25rem] font-display font-normal text-white mb-4 sm:mb-6 leading-[1.08] tracking-tight text-left drop-shadow-md">
               {activeSlide.title}
             </h1>
 
@@ -282,7 +284,7 @@ export default function HomeHeroCarousel({
               <motion.div 
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 mb-6 px-4 py-2.5 bg-black/40 backdrop-blur-md rounded-2xl border border-white/10 text-xs sm:text-sm text-slate-200"
+                className="flex flex-wrap items-center justify-start gap-3 sm:gap-6 mb-6 px-4 py-2.5 bg-black/40 backdrop-blur-md rounded-2xl border border-white/10 text-xs sm:text-sm text-slate-200"
               >
                 {activeSlide.dateStr && (
                   <span className="flex items-center gap-1.5 font-bold text-amber-300">
@@ -311,29 +313,24 @@ export default function HomeHeroCarousel({
             )}
 
             {/* Description / Subtitle */}
-            <p className="text-sm sm:text-base md:text-lg text-slate-200 mb-8 sm:mb-10 max-w-2xl font-light leading-relaxed drop-shadow line-clamp-3 sm:line-clamp-4">
+            <p className="text-xs sm:text-base md:text-lg text-stone-200 mb-8 sm:mb-10 max-w-xl font-light leading-relaxed drop-shadow text-left">
               {activeSlide.description}
             </p>
 
-            {/* Call to Action Buttons - Mobile Responsive Grid/Stack */}
-            <div className="w-full sm:w-auto flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-5 max-w-md sm:max-w-none">
+            {/* Call to Action Buttons - Dual outline pill styling matching reference */}
+            <div className="w-full sm:w-auto flex flex-col sm:flex-row items-stretch sm:items-center justify-start gap-3 sm:gap-4">
               {activeSlide.type === 'news' && onOpenNewsModal ? (
                 <button
                   type="button"
                   onClick={() => onOpenNewsModal(activeSlide.rawItem)}
-                  className="w-full sm:w-auto px-8 py-3.5 sm:py-4 bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold rounded-full transition-all duration-300 shadow-xl flex items-center justify-center gap-2 text-sm sm:text-base"
+                  className="w-full sm:w-auto px-8 py-3.5 sm:py-4 bg-black/40 text-white border border-[#C99738] hover:bg-[#C99738] hover:text-[#251014] font-bold rounded-full transition-all duration-300 shadow-xl flex items-center justify-center gap-2 text-xs uppercase tracking-[0.2em] min-h-[48px] backdrop-blur-xs"
                 >
                   <Megaphone className="h-4 w-4" /> {activeSlide.primaryText}
                 </button>
               ) : (
                 <Link 
                   to={activeSlide.primaryLink} 
-                  className={cn(
-                    "w-full sm:w-auto px-8 py-3.5 sm:py-4 rounded-full font-bold transition-all duration-300 shadow-xl flex items-center justify-center gap-2 text-sm sm:text-base text-center",
-                    activeSlide.type === 'event'
-                      ? "bg-amber-500 hover:bg-amber-400 text-stone-950"
-                      : "bg-white hover:bg-slate-100 text-slate-900"
-                  )}
+                  className="w-full sm:w-auto px-8 py-3.5 sm:py-4 rounded-full font-bold transition-all duration-300 shadow-xl flex items-center justify-center gap-2 text-xs uppercase tracking-[0.2em] min-h-[48px] bg-black/40 text-white border border-[#C99738] hover:bg-[#C99738] hover:text-[#251014] backdrop-blur-xs text-center"
                 >
                   {activeSlide.type === 'event' && <Calendar className="h-4 w-4" />}
                   {activeSlide.primaryText}
@@ -344,7 +341,7 @@ export default function HomeHeroCarousel({
               {activeSlide.secondaryLink && (
                 <Link 
                   to={activeSlide.secondaryLink} 
-                  className="w-full sm:w-auto px-8 py-3.5 sm:py-4 border border-white/30 text-white rounded-full font-medium hover:bg-white/10 transition-all duration-300 backdrop-blur-sm flex items-center justify-center gap-2 text-sm sm:text-base text-center"
+                  className="w-full sm:w-auto px-8 py-3.5 sm:py-4 border border-[#C99738]/80 text-white bg-black/40 rounded-full font-bold hover:bg-white/10 hover:border-[#E5B869] transition-all duration-300 backdrop-blur-xs flex items-center justify-center gap-2 text-xs uppercase tracking-[0.2em] min-h-[48px] text-center"
                 >
                   {activeSlide.type === 'welcome' && <Play className="h-4 w-4 fill-current text-amber-400" />}
                   {activeSlide.secondaryText}

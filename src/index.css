@@ -1,36 +1,118 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;800;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap');
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
 @theme {
-  --font-sans: "Montserrat", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Montserrat", sans-serif;
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Outfit", "Plus Jakarta Sans", sans-serif;
+  --font-serif: "Cormorant Garamond", Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-outfit: "Outfit", sans-serif;
+  --font-cinzel: "Cinzel", Georgia, serif;
   
-  --color-maroon: #800000;
-  --color-maroon-dark: #600000;
-  --color-maroon-light: #A00000;
+  /* Saffron Crimson / Regal Maroon Palette */
+  --color-maroon: #7A121D;
+  --color-maroon-dark: #580B13;
+  --color-maroon-deep: #3D040A;
+  --color-maroon-light: #9B1D2B;
   
-  --color-brand-primary: var(--color-maroon);
-  --color-brand-bg: #F9FAFB; /* Light grey/white */
+  --color-saffron: #8B1524;
+  --color-saffron-dark: #5C0612;
+  --color-saffron-glow: #A71C2E;
+
+  /* Radiant Gold / Amber / Honey Ochre */
+  --color-gold: #C99738;
+  --color-gold-light: #E5B869;
+  --color-gold-bright: #F0CA7D;
+  --color-gold-dark: #9A6F1D;
+  --color-gold-muted: #D1B88B;
+  --color-gold-pale: #FDF9F0;
+  --color-gold-border: #E8D5B5;
+
+  /* Warm Silk Ivory & Parchment */
+  --color-ivory: #FDFBF7;
+  --color-ivory-dark: #F5EFEB;
+  --color-cream: #FAF6EE;
+  --color-stone-warm: #EFE8DD;
+
+  /* Deep Espresso / Rich Ebony */
+  --color-espresso: #1A0B0E;
+  --color-espresso-card: #251014;
+
+  --color-brand-primary: #7A121D;
+  --color-brand-accent: #C99738;
+  --color-brand-bg: #FAF7F2;
   
   --radius-3xl: 2rem;
   --radius-4xl: 2.5rem;
 }
 
 @layer base {
+  html {
+    font-size: 17px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  @media (min-width: 640px) {
+    html {
+      font-size: 17.5px;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    html {
+      font-size: 18px;
+    }
+  }
+
   body {
-    @apply text-slate-900 antialiased bg-brand-bg;
+    @apply text-slate-800 antialiased bg-[#FAF7F2];
     font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.65;
+    letter-spacing: -0.005em;
   }
   
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
     @apply font-semibold tracking-tight;
+    font-optical-sizing: auto;
+  }
+
+  h1 {
+    font-size: 2.25rem;
+    line-height: 1.15;
+  }
+
+  h2 {
+    font-size: 1.85rem;
+    line-height: 1.2;
+  }
+
+  h3 {
+    font-size: 1.45rem;
+    line-height: 1.25;
   }
 }
 
 .font-display {
   font-family: var(--font-display);
+  font-optical-sizing: auto;
+}
+
+.font-outfit {
+  font-family: var(--font-outfit);
+}
+
+.font-serif {
+  font-family: var(--font-serif);
+  font-optical-sizing: auto;
+}
+
+.font-cinzel {
+  font-family: var(--font-cinzel);
+  letter-spacing: 0.08em;
 }
 
 .tracking-tight {
@@ -38,5 +120,48 @@
 }
 
 .glass {
-  @apply bg-white/70 backdrop-blur-md border border-white/20;
+  @apply bg-white/80 backdrop-blur-md border border-[#E8D5B5]/40;
+}
+
+/* Luxury Gold & Crimson Gradient / Border Effects */
+.border-gold-subtle {
+  border-color: rgba(201, 151, 56, 0.25);
+}
+
+.border-gold-accent {
+  border-color: rgba(201, 151, 56, 0.45);
+}
+
+.bg-crimson-rich {
+  background-color: #5C0612;
+}
+
+.bg-crimson-gradient {
+  background: linear-gradient(135deg, #7A121D 0%, #4A0810 100%);
+}
+
+.bg-gold-gradient {
+  background: linear-gradient(135deg, #E5B869 0%, #C99738 50%, #9A6F1D 100%);
+}
+
+.text-gold-gradient {
+  background: linear-gradient(135deg, #E5B869 0%, #C99738 60%, #9A6F1D 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Safe Area Insets for Mobile First Devices */
+.safe-area-bottom {
+  padding-bottom: max(0.5rem, calc(0.25rem + env(safe-area-inset-bottom, 0px)));
+}
+
+.safe-area-top {
+  padding-top: max(0.5rem, calc(0.25rem + env(safe-area-inset-top, 0px)));
+}
+
+/* Prevent accidental horizontal overflow across all viewports */
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
 }

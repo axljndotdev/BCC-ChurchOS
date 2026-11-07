@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, ChevronLeft, ChevronRight, Maximize2, Folder, ArrowLeft, Image as ImageIcon, Star } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Maximize2, Folder, ArrowLeft, Image as ImageIcon, Star, Sparkles } from 'lucide-react';
 import { getGalleryItems, getGalleryAlbums, getFeaturedAlbums } from '../services/db';
 import { GalleryItem, GalleryAlbum } from '../types';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -24,11 +24,9 @@ export default function Gallery() {
   const fetchInitialData = async () => {
     setLoading(true);
     try {
-      // Fetch featured albums first for immediate feedback
       const featured = await getFeaturedAlbums();
       setFeaturedAlbums(featured);
       
-      // Load everything else in background
       const [itemsData, albumsData] = await Promise.all([
         getGalleryItems(),
         getGalleryAlbums()
@@ -70,40 +68,53 @@ export default function Gallery() {
     }
   };
 
+  // Keyboard navigation for viewer
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (selectedImageIndex === null) return;
+      if (e.key === 'ArrowRight') showNext();
+      if (e.key === 'ArrowLeft') showPrev();
+      if (e.key === 'Escape') closeViewer();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedImageIndex, currentAlbumItems.length]);
+
   const selectedAlbum = albums.find(a => a.id === selectedAlbumId);
   const nonFeaturedAlbums = albums.filter(a => !featuredAlbums.some(f => f.id === a.id));
 
   return (
-    <div className="pb-20 relative">
+    <div className="pb-24 sm:pb-32 relative bg-[#FAF7F2] min-h-screen">
       {/* Super Admin Visual CMS Toolbar */}
       <VisualCMSBar pageId="gallery" pageName="Photo Gallery" />
 
       {/* Header */}
       {pageData?.hero?.visible !== false && (
-        <section className="bg-slate-900 py-20 md:py-32 text-center text-white relative overflow-hidden">
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-repeat"></div>
+        <section className="bg-gradient-to-b from-[#1A0B0E] via-[#2A0D13] to-[#1A0B0E] py-14 sm:py-20 md:py-28 text-center text-white relative overflow-hidden border-b border-[#C99738]/30">
+          <div className="absolute inset-0 opacity-15 pointer-events-none">
+            <div className="absolute inset-0 bg-gradient-to-br from-[#7A121D] to-transparent" />
           </div>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <AnimatePresence mode="wait">
               {!selectedAlbumId ? (
                 <motion.div
                   key="home-header"
-                  initial={{ opacity: 0, y: 30 }}
+                  initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
                 >
-                  <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/5 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] mb-6 border border-white/5 backdrop-blur-sm">
-                    <Star className="h-3 w-3 text-yellow-400 fill-yellow-400" />
-                    {pageData?.hero?.badge || 'Featured Memories'}
+                  <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-black/40 border border-[#C99738]/50 rounded-full text-[#F0CA7D] text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] mb-4 sm:mb-6 shadow-2xl">
+                    <span className="text-[#E5B869] font-display">✦</span>
+                    <span>{pageData?.hero?.badge || 'Moments of Fellowship'}</span>
+                    <span className="text-[#E5B869] font-display">✦</span>
                   </div>
-                  <h1 className="text-4xl md:text-7xl font-display font-bold mb-6 tracking-tight">
+                  <h1 className="text-3xl xs:text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-display font-bold mb-3 sm:mb-6 tracking-tight text-white">
                     {pageData?.hero?.title || 'Our Gallery'}
                   </h1>
                   {pageData?.hero?.subtitle && (
-                    <p className="text-amber-400 font-medium mb-3 text-lg">{pageData.hero.subtitle}</p>
+                    <p className="text-base sm:text-xl text-[#E5B869] font-display italic mb-2 sm:mb-3">{pageData.hero.subtitle}</p>
                   )}
-                  <p className="text-slate-400 max-w-2xl mx-auto font-light text-lg">
+                  <p className="text-stone-300 max-w-2xl mx-auto font-light text-xs sm:text-base leading-relaxed">
                     {pageData?.hero?.description || 'Capturing moments of faith, fellowship, and service in our community.'}
                   </p>
                 </motion.div>
@@ -117,14 +128,14 @@ export default function Gallery() {
                 >
                   <button 
                     onClick={() => setSelectedAlbumId(null)}
-                    className="mb-8 flex items-center gap-2 text-white/40 hover:text-white transition-all text-xs font-black uppercase tracking-widest group"
+                    className="mb-6 flex items-center gap-2 text-[#E5B869] hover:text-white transition-all text-xs font-bold uppercase tracking-widest min-h-[40px] px-3 py-1 rounded-full bg-white/10 hover:bg-white/20"
                   >
-                    <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
+                    <ArrowLeft className="h-4 w-4" />
                     Back to All Albums
                   </button>
-                  <h1 className="text-4xl md:text-6xl font-display font-bold mb-4 tracking-tight">{selectedAlbum?.name}</h1>
-                  <div className="w-20 h-1 bg-maroon rounded-full mb-6"></div>
-                  <p className="text-slate-400 max-w-xl mx-auto font-light italic text-lg leading-relaxed">
+                  <h1 className="text-3xl sm:text-5xl font-display font-bold mb-3 tracking-tight text-white">{selectedAlbum?.name}</h1>
+                  <div className="w-16 h-0.5 bg-[#C99738] rounded-full mb-4"></div>
+                  <p className="text-stone-300 max-w-xl mx-auto font-light italic text-xs sm:text-base leading-relaxed">
                     {selectedAlbum?.description}
                   </p>
                 </motion.div>
@@ -135,30 +146,31 @@ export default function Gallery() {
       )}
 
       {/* Content Area */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 sm:mt-12">
         {loading ? (
-          <div className="py-20 flex justify-center">
+          <div className="py-24 flex flex-col items-center justify-center space-y-4">
             <LoadingSpinner size="lg" />
+            <p className="text-stone-500 font-light text-xs sm:text-sm">Loading memories...</p>
           </div>
         ) : selectedAlbumId ? (
           /* Album View (Photos inside album) */
           <div>
             {currentAlbumItems.length === 0 ? (
-              <div className="text-center py-20 bg-slate-50 rounded-[3rem] border border-dashed border-slate-200">
-                <ImageIcon className="h-12 w-12 text-slate-300 mx-auto mb-4" />
-                <p className="text-slate-500 font-medium">No photos found in this album yet.</p>
+              <div className="text-center py-16 sm:py-24 bg-[#FAF6EE] rounded-2xl sm:rounded-3xl border border-dashed border-[#E8D5B5]">
+                <ImageIcon className="h-12 w-12 text-[#C99738]/40 mx-auto mb-3" />
+                <p className="text-stone-600 font-medium text-sm">No photos found in this album yet.</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
                 {currentAlbumItems.map((item, index) => (
                   <motion.div
                     key={item.id}
                     layoutId={`gallery-item-${item.id}`}
-                    initial={{ opacity: 0, scale: 0.9 }}
+                    initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: index * 0.05 }}
+                    transition={{ delay: index * 0.03 }}
                     onClick={() => openViewer(index)}
-                    className="group relative aspect-square bg-slate-100 rounded-3xl overflow-hidden cursor-pointer shadow-sm hover:shadow-xl transition-all duration-300"
+                    className="group relative aspect-square bg-[#FAF6EE] rounded-xl sm:rounded-2xl overflow-hidden cursor-pointer shadow-xs hover:shadow-xl transition-all duration-300 border border-[#E8D5B5]"
                   >
                     <img 
                       src={item.imageUrl} 
@@ -167,11 +179,11 @@ export default function Gallery() {
                       loading="lazy"
                       referrerPolicy="no-referrer"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-6 text-white">
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#1A0B0E]/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-3 sm:p-4 text-white">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold uppercase tracking-wider">{item.category || 'Moments'}</span>
-                        <div className="p-2 bg-white/20 backdrop-blur-md rounded-full">
-                          <Maximize2 className="h-4 w-4" />
+                        <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-stone-200 truncate">{item.category || 'Moments'}</span>
+                        <div className="p-1.5 bg-white/20 backdrop-blur-md rounded-full shrink-0">
+                          <Maximize2 className="h-3.5 w-3.5" />
                         </div>
                       </div>
                     </div>
@@ -182,36 +194,38 @@ export default function Gallery() {
           </div>
         ) : (
           /* Albums Overview */
-          <div className="space-y-16">
+          <div className="space-y-12 sm:space-y-16">
             {/* Featured Albums (Hero-style highlights) */}
             {featuredAlbums.length > 0 && (
-              <div className="space-y-6">
-                <h2 className="text-2xl font-display font-bold text-slate-900 flex items-center gap-3">
-                  <Star className="h-5 w-5 text-maroon fill-maroon" /> Featured Highlights
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-4 sm:space-y-6">
+                <div className="flex items-center gap-2 border-b border-[#E8D5B5] pb-3">
+                  <span className="text-[#C99738]">✦</span>
+                  <h2 className="text-xl sm:text-2xl font-display font-bold text-stone-900">Featured Collections</h2>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-8">
                   {featuredAlbums.map((album) => (
                     <motion.div
                       key={album.id}
                       onClick={() => setSelectedAlbumId(album.id)}
-                      className="group relative aspect-[16/10] rounded-[2.5rem] overflow-hidden cursor-pointer shadow-md hover:shadow-2xl transition-all duration-500"
+                      className="group relative aspect-[16/10] rounded-2xl sm:rounded-3xl overflow-hidden cursor-pointer shadow-sm hover:shadow-2xl transition-all duration-500 border border-[#E8D5B5]"
                     >
                       <img 
                         src={album.coverImageUrl || 'https://images.unsplash.com/photo-1544427920-c49ccfb85579?auto=format&fit=crop&q=80&w=1200'} 
-                        alt={album.name} 
+                        alt={album.name}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                         referrerPolicy="no-referrer"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/30 to-transparent p-8 md:p-10 flex flex-col justify-end text-white">
-                        <div className="space-y-2">
-                          <span className="inline-block px-3 py-1 bg-maroon text-white text-[10px] font-bold uppercase tracking-widest rounded-full">
-                            Featured Album
-                          </span>
-                          <h3 className="text-3xl font-display font-bold group-hover:translate-x-1 transition-transform">{album.name}</h3>
-                          <p className="text-slate-300 text-sm font-light line-clamp-2">{album.description}</p>
-                          <p className="text-xs text-white/60 font-semibold pt-2">
-                            {items.filter(i => i.albumId === album.id).length} Photos
-                          </p>
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#1A0B0E]/90 via-[#1A0B0E]/40 to-transparent" />
+                      <div className="absolute inset-0 p-5 sm:p-8 flex flex-col justify-end text-white">
+                        <span className="text-[10px] font-bold text-[#E5B869] uppercase tracking-[0.2em] mb-1 sm:mb-2 flex items-center gap-1.5">
+                          <Folder className="h-3.5 w-3.5 text-[#C99738]" /> Collection
+                        </span>
+                        <h3 className="text-xl sm:text-2xl font-display font-bold mb-1 group-hover:text-[#E5B869] transition-colors">{album.name}</h3>
+                        <p className="text-stone-300 text-xs sm:text-sm font-light line-clamp-2 max-w-lg mb-3">
+                          {album.description}
+                        </p>
+                        <div className="flex items-center text-xs font-bold uppercase tracking-wider text-[#E5B869] group-hover:translate-x-1 transition-transform">
+                          <span>View Photos</span> &rarr;
                         </div>
                       </div>
                     </motion.div>
@@ -220,44 +234,44 @@ export default function Gallery() {
               </div>
             )}
 
-            {/* Other / Standard Albums */}
-            <div className="space-y-6">
-              <h2 className="text-2xl font-display font-bold text-slate-900 flex items-center gap-3">
-                <Folder className="h-5 w-5 text-slate-400" /> Photo Collections
-              </h2>
+            {/* All / Community Albums */}
+            <div className="space-y-4 sm:space-y-6">
+              <div className="flex items-center gap-2 border-b border-[#E8D5B5] pb-3">
+                <span className="text-[#C99738]">✦</span>
+                <h2 className="text-xl sm:text-2xl font-display font-bold text-stone-900">All Photo Albums</h2>
+              </div>
+              
               {albums.length === 0 ? (
-                <div className="text-center py-20 bg-white rounded-[3rem] border border-slate-100 p-8">
-                  <Folder className="h-12 w-12 text-slate-300 mx-auto mb-4" />
-                  <h3 className="text-lg font-bold text-slate-700">No Albums Created Yet</h3>
-                  <p className="text-slate-400 text-sm mt-1">Check back soon for event and community photos.</p>
+                <div className="text-center py-16 bg-[#FAF6EE] rounded-2xl border border-dashed border-[#E8D5B5]">
+                  <p className="text-stone-500 font-light text-sm">No albums created yet.</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8">
                   {albums.map((album) => (
                     <motion.div
                       key={album.id}
                       onClick={() => setSelectedAlbumId(album.id)}
-                      className="group bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col"
+                      className="group bg-white rounded-2xl sm:rounded-3xl overflow-hidden cursor-pointer shadow-xs hover:shadow-lg transition-all duration-300 border border-[#E8D5B5] flex flex-col justify-between"
                     >
-                      <div className="aspect-[4/3] bg-slate-100 overflow-hidden relative">
+                      <div className="aspect-[16/10] overflow-hidden relative">
                         <img 
-                          src={album.coverImageUrl || 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&q=80&w=800'} 
-                          alt={album.name} 
+                          src={album.coverImageUrl || 'https://images.unsplash.com/photo-1544427920-c49ccfb85579?auto=format&fit=crop&q=80&w=800'} 
+                          alt={album.name}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                           referrerPolicy="no-referrer"
                         />
-                        <div className="absolute top-4 right-4 px-3 py-1 bg-black/60 backdrop-blur-md text-white text-[10px] font-bold uppercase tracking-wider rounded-full">
-                          {items.filter(i => i.albumId === album.id).length} Photos
+                        <div className="absolute top-3 right-3 px-2.5 py-1 bg-black/60 backdrop-blur-sm rounded-full text-white text-[10px] font-bold uppercase tracking-wider">
+                          Photos
                         </div>
                       </div>
-                      <div className="p-6 flex-1 flex flex-col justify-between">
-                        <div>
-                          <h3 className="text-xl font-display font-bold text-slate-900 group-hover:text-maroon transition-colors">{album.name}</h3>
-                          <p className="text-slate-500 font-light text-xs mt-2 line-clamp-2">{album.description || 'View collection'}</p>
-                        </div>
-                        <div className="mt-4 pt-4 border-t border-slate-50 flex justify-between items-center text-xs font-bold uppercase tracking-wider text-maroon">
+                      <div className="p-5 sm:p-6 space-y-2">
+                        <h3 className="text-lg sm:text-xl font-display font-bold text-stone-900 group-hover:text-[#7A121D] transition-colors">{album.name}</h3>
+                        <p className="text-stone-600 font-light text-xs sm:text-sm line-clamp-2 leading-relaxed">
+                          {album.description || "Captured church family memories and celebrations."}
+                        </p>
+                        <div className="pt-3 border-t border-[#E8D5B5]/60 flex items-center justify-between text-xs font-bold text-[#7A121D] uppercase tracking-wider">
                           <span>Browse Album</span>
-                          <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                          <span className="group-hover:translate-x-1 transition-transform">&rarr;</span>
                         </div>
                       </div>
                     </motion.div>
@@ -269,7 +283,7 @@ export default function Gallery() {
         )}
       </div>
 
-      {/* Lightbox / Modal Image Viewer */}
+      {/* Lightbox / Modal Image Viewer (Mobile First & All Screens) */}
       <AnimatePresence>
         {selectedImageIndex !== null && currentAlbumItems[selectedImageIndex] && (
           <motion.div
@@ -277,57 +291,87 @@ export default function Gallery() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={closeViewer}
-            className="fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-4 sm:p-8 select-none"
+            className="fixed inset-0 z-50 bg-[#1A0B0E]/95 backdrop-blur-md flex flex-col items-center justify-between p-3 sm:p-6 select-none"
           >
-            <button 
-              onClick={closeViewer}
-              className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 text-white rounded-full transition-colors z-50 cursor-pointer"
-            >
-              <X className="h-6 w-6" />
-            </button>
-
-            {/* Left Prev Arrow */}
-            {currentAlbumItems.length > 1 && (
+            {/* Top Close Bar */}
+            <div className="w-full flex items-center justify-between z-50 py-2">
+              <span className="text-xs uppercase tracking-widest text-[#E5B869] font-bold">
+                {selectedImageIndex + 1} / {currentAlbumItems.length}
+              </span>
               <button 
-                onClick={showPrev}
-                className="absolute left-4 sm:left-8 top-1/2 -translate-y-1/2 p-3 sm:p-4 bg-white/10 hover:bg-white/20 text-white rounded-full transition-all hover:scale-110 z-50 cursor-pointer"
+                onClick={closeViewer}
+                className="min-h-[44px] min-w-[44px] flex items-center justify-center p-2.5 bg-white/10 hover:bg-white/20 text-white rounded-full transition-colors cursor-pointer"
+                aria-label="Close photo viewer"
               >
-                <ChevronLeft className="h-6 w-6" />
+                <X className="h-6 w-6" />
               </button>
-            )}
-
-            {/* Main Lightbox Image */}
-            <div 
-              onClick={(e) => e.stopPropagation()} 
-              className="relative max-w-5xl max-h-[85vh] flex flex-col items-center"
-            >
-              <motion.img 
-                key={selectedImageIndex}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                src={currentAlbumItems[selectedImageIndex].imageUrl} 
-                alt="Enlarged" 
-                className="max-h-[75vh] w-auto max-w-full rounded-2xl shadow-2xl object-contain"
-                referrerPolicy="no-referrer"
-              />
-              <div className="mt-4 text-center text-white space-y-1">
-                <p className="text-xs uppercase tracking-widest text-slate-400">
-                  {selectedImageIndex + 1} of {currentAlbumItems.length}
-                </p>
-                {currentAlbumItems[selectedImageIndex].title && (
-                  <p className="font-display font-medium text-lg">{currentAlbumItems[selectedImageIndex].title}</p>
-                )}
-              </div>
             </div>
 
-            {/* Right Next Arrow */}
-            {currentAlbumItems.length > 1 && (
-              <button 
-                onClick={showNext}
-                className="absolute right-4 sm:right-8 top-1/2 -translate-y-1/2 p-3 sm:p-4 bg-white/10 hover:bg-white/20 text-white rounded-full transition-all hover:scale-110 z-50 cursor-pointer"
+            {/* Main Stage with Side Arrows on Desktop */}
+            <div className="relative w-full flex-1 flex items-center justify-center min-h-0 py-2">
+              {/* Left Arrow (Desktop / Tablet) */}
+              {currentAlbumItems.length > 1 && (
+                <button 
+                  onClick={showPrev}
+                  className="hidden md:flex absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 min-h-[48px] min-w-[48px] items-center justify-center bg-white/10 hover:bg-white/25 text-white rounded-full transition-all hover:scale-105 z-50 cursor-pointer"
+                  aria-label="Previous photo"
+                >
+                  <ChevronLeft className="h-6 w-6" />
+                </button>
+              )}
+
+              {/* Main Image */}
+              <div 
+                onClick={(e) => e.stopPropagation()} 
+                className="relative max-w-5xl max-h-full flex flex-col items-center justify-center"
               >
-                <ChevronRight className="h-6 w-6" />
-              </button>
+                <motion.img 
+                  key={selectedImageIndex}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  src={currentAlbumItems[selectedImageIndex].imageUrl} 
+                  alt={currentAlbumItems[selectedImageIndex].title || "Enlarged photo"} 
+                  className="max-h-[68svh] sm:max-h-[75vh] w-auto max-w-full rounded-xl sm:rounded-2xl shadow-2xl object-contain border border-[#C99738]/30"
+                  referrerPolicy="no-referrer"
+                />
+                {currentAlbumItems[selectedImageIndex].title && (
+                  <p className="mt-3 text-center text-white font-display text-sm sm:text-base font-medium max-w-md px-4 truncate">
+                    {currentAlbumItems[selectedImageIndex].title}
+                  </p>
+                )}
+              </div>
+
+              {/* Right Arrow (Desktop / Tablet) */}
+              {currentAlbumItems.length > 1 && (
+                <button 
+                  onClick={showNext}
+                  className="hidden md:flex absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 min-h-[48px] min-w-[48px] items-center justify-center bg-white/10 hover:bg-white/25 text-white rounded-full transition-all hover:scale-105 z-50 cursor-pointer"
+                  aria-label="Next photo"
+                >
+                  <ChevronRight className="h-6 w-6" />
+                </button>
+              )}
+            </div>
+
+            {/* Mobile Thumb Navigation Bar */}
+            {currentAlbumItems.length > 1 && (
+              <div 
+                onClick={(e) => e.stopPropagation()}
+                className="w-full max-w-xs flex items-center justify-between gap-3 py-3 z-50"
+              >
+                <button
+                  onClick={showPrev}
+                  className="flex-1 py-3 px-4 bg-white/10 hover:bg-white/20 active:bg-white/30 text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1 min-h-[44px]"
+                >
+                  <ChevronLeft className="h-4 w-4" /> Prev
+                </button>
+                <button
+                  onClick={showNext}
+                  className="flex-1 py-3 px-4 bg-[#7A121D] hover:bg-[#5C0612] text-white border border-[#C99738] rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1 min-h-[44px]"
+                >
+                  Next <ChevronRight className="h-4 w-4" />
+                </button>
+              </div>
             )}
           </motion.div>
         )}

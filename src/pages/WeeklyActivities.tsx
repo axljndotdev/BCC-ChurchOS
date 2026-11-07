@@ -27,7 +27,7 @@ export default function WeeklyActivities() {
     fetchActivities();
   }, []);
 
-  const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   const heroImage = pageData?.hero?.imageUrl || "https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&q=80&w=1920";
 
   return (
@@ -94,8 +94,25 @@ export default function WeeklyActivities() {
                 <div key={day} className="space-y-6">
                   <div className="flex items-center gap-4">
                     <h2 className="text-2xl font-display font-bold text-slate-900">{day}</h2>
+                    {day === 'Sunday' && (
+                      <span className="px-3 py-1 bg-maroon/10 text-maroon text-xs font-bold rounded-full uppercase tracking-wider">
+                        Lord's Day Gathering
+                      </span>
+                    )}
                     <div className="flex-1 h-px bg-slate-200" />
                   </div>
+
+                  {day === 'Sunday' && (
+                    <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-[#FAF6EE] to-[#F5ECE1] border border-[#E8D5B5] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-stone-700">
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-[#C99738] shrink-0" />
+                        <span><strong>Sunday Rhythm:</strong> Quiet countdown begins at <strong>8:40 AM</strong> &bull; Service at <strong>8:45 AM</strong> &bull; Concludes ~<strong>10:45 AM</strong></span>
+                      </div>
+                      <Link to="/new-here" className="font-bold text-[#7A121D] hover:underline shrink-0">
+                        What to Expect &rarr;
+                      </Link>
+                    </div>
+                  )}
 
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {dayActivities.map((act) => (

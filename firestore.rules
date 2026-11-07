@@ -23,6 +23,16 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
     }
 
+    function isSuperAdmin() {
+      return isAuthenticated() && (
+        request.auth.token.email == 'wapdev24@gmail.com' ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && (
+          (getUserData().role is string && getUserData().role == 'super_admin') ||
+          (getUserData().role is list && getUserData().role.hasAny(['super_admin']))
+        ))
+      );
+    }
+
     function hasAdminRole(userData) {
       return (userData.role is string && userData.role in ['super_admin', 'church_admin']) ||
              (userData.role is list && userData.role.hasAny(['super_admin', 'church_admin']));
@@ -309,16 +319,36 @@ service cloud.firestore {
     }
 
     function isValidPageContent(data) {
-      return data.keys().hasAll(['id', 'title', 'hero', 'sections']) &&
-             data.id is string && data.id.size() > 0 && data.id.size() <= 100 &&
-             data.title is string && data.title.size() > 0 && data.title.size() <= 200 &&
-             data.hero is map &&
-             data.sections is list &&
+      return (!('id' in data) || (data.id is string && data.id.size() > 0)) &&
+             (!('title' in data) || data.title is string) &&
+             (!('hero' in data) || data.hero is map) &&
+             (!('sections' in data) || data.sections is list) &&
              (!('customBlocks' in data) || data.customBlocks is list) &&
              (!('slug' in data) || data.slug is string) &&
              (!('updatedBy' in data) || data.updatedBy is string) &&
              (!('updatedByName' in data) || data.updatedByName is string) &&
              (!('lastUpdated' in data) || data.lastUpdated is timestamp);
+    }
+
+    function isValidCampaign(data) {
+      return (!('id' in data) || (data.id is string && data.id.size() > 0)) &&
+             (!('title' in data) || data.title is string) &&
+             (!('targetAmount' in data) || (data.targetAmount is number && data.targetAmount >= 0)) &&
+             (!('currentAmount' in data) || (data.currentAmount is number && data.currentAmount >= 0)) &&
+             (!('prayerCount' in data) || (data.prayerCount is number && data.prayerCount >= 0));
+    }
+
+    function isValidChurchComment(data) {
+      return data.keys().hasAll(['authorName', 'isAnonymous', 'content', 'createdAt']) &&
+             data.authorName is string && data.authorName.size() > 0 && data.authorName.size() <= 100 &&
+             data.isAnonymous is bool &&
+             data.content is string && data.content.size() > 0 && data.content.size() <= 3000 &&
+             data.createdAt is timestamp &&
+             (!('userId' in data) || data.userId == null || data.userId is string) &&
+             (!('userRole' in data) || data.userRole == null || data.userRole is string) &&
+             (!('category' in data) || data.category == null || data.category in ['General', 'Testimony', 'Encouragement', 'Sunday Service', 'Feedback', 'Prayer & Praise']) &&
+             (!('likes' in data) || data.likes is number) &&
+             (!('likedBy' in data) || data.likedBy is list);
     }
 
     // ===============================================================
@@ -373,27 +403,26 @@ service cloud.firestore {
     }
 
     match /prayer_requests/{requestId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && isValidPrayerRequest(request.resource.data) && 
-                      request.resource.data.userId == request.auth.uid;
+      allow read: if true;
+      allow create: if isValidPrayerRequest(request.resource.data) && 
+                      (!('userId' in request.resource.data) || request.resource.data.userId == 'guest' || (isAuthenticated() && request.resource.data.userId == request.auth.uid));
       allow update: if isValidPrayerRequest(request.resource.data) && (
                       isAdmin() || 
-                      (resource.data.userId == request.auth.uid) ||
+                      isCouncil() ||
+                      (isAuthenticated() && resource.data.userId == request.auth.uid) ||
                       (isAuthenticated() && 
                        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['prayCount', 'prayers']) &&
-                       request.resource.data.prayCount == resource.data.get('prayCount', 0) + 1 &&
-                       request.resource.data.prayers.hasAll(resource.data.get('prayers', [])) &&
-                       request.resource.data.prayers.size() == resource.data.get('prayers', []).size() + 1 &&
-                       !(request.auth.uid in resource.data.get('prayers', [])))
+                       request.resource.data.prayCount is number &&
+                       request.resource.data.prayers is list)
                     );
-      allow delete: if isAdmin() || (isAuthenticated() && request.auth.uid == resource.data.userId);
+      allow delete: if isSuperAdmin() || isAdmin() || isCouncil() || (isAuthenticated() && request.auth.uid == resource.data.userId);
 
       match /comments/{commentId} {
-        allow read: if isAuthenticated();
+        allow read: if true;
         allow create: if isAuthenticated() && 
                         request.resource.data.keys().hasAll(['userId', 'userName', 'message', 'createdAt']) &&
                         request.resource.data.userId == request.auth.uid;
-        allow delete: if isAdmin() || (isAuthenticated() && request.auth.uid == resource.data.userId);
+        allow delete: if isSuperAdmin() || isAdmin() || isCouncil() || (isAuthenticated() && request.auth.uid == resource.data.userId);
       }
     }
 
@@ -484,7 +513,35 @@ service cloud.firestore {
 
     match /page_contents/{pageId} {
       allow read: if true;
-      allow write: if isAdmin() && isValidPageContent(request.resource.data);
+      allow write: if (isAuthenticated() || isAdmin() || isCouncil()) && isValidPageContent(request.resource.data);
+    }
+
+    match /campaigns/{campaignId} {
+      allow read: if true;
+      allow create: if isSuperAdmin() && isValidCampaign(request.resource.data);
+      allow update: if (isSuperAdmin() && isValidCampaign(request.resource.data)) ||
+                      (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['prayerCount']));
+      allow delete: if isSuperAdmin();
+
+      match /prayers/{prayerId} {
+        allow read: if true;
+        allow create: if request.resource.data.keys().hasAll(['authorName', 'message', 'createdAt']) &&
+                        request.resource.data.authorName is string && request.resource.data.authorName.size() > 0 &&
+                        request.resource.data.authorName.size() <= 100 &&
+                        request.resource.data.message is string && request.resource.data.message.size() > 0 &&
+                        request.resource.data.message.size() <= 2000;
+        allow delete: if isSuperAdmin() || isAdmin() || isCouncil();
+      }
+    }
+
+    match /church_comments/{commentId} {
+      allow read: if true;
+      allow create: if isValidChurchComment(request.resource.data) &&
+                      (!('userId' in request.resource.data) || request.resource.data.userId == null || (isAuthenticated() && request.resource.data.userId == request.auth.uid));
+      allow update: if (isAdmin() || isCouncil()) ||
+                      (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes', 'likedBy']) &&
+                       request.resource.data.likes is number);
+      allow delete: if isAdmin() || isCouncil() || (isAuthenticated() && 'userId' in resource.data && resource.data.userId == request.auth.uid);
     }
   }
 }

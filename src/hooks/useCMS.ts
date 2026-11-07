@@ -6,18 +6,47 @@ import { getPageContent, updatePageContent, resetPageContent } from '../services
 
 export function useCMS(pageId: string) {
   const { user, profile, isSuperAdmin, isAdmin, isCouncil } = useAuth();
-  const [pageData, setPageData] = useState<CMSPageData>(() => DEFAULT_CMS_PAGES[pageId] || {
-    id: pageId,
-    title: pageId.charAt(0).toUpperCase() + pageId.slice(1),
-    slug: `/${pageId === 'home' ? '' : pageId}`,
-    hero: {
+  
+  const getInitialData = (): CMSPageData => {
+    const fallback = DEFAULT_CMS_PAGES[pageId] || {
+      id: pageId,
       title: pageId.charAt(0).toUpperCase() + pageId.slice(1),
-      description: '',
-      imageUrl: 'https://images.unsplash.com/photo-1544427920-c49ccfb85579?auto=format&fit=crop&q=80&w=1920',
-      visible: true
-    },
-    sections: []
-  });
+      slug: `/${pageId === 'home' ? '' : pageId}`,
+      hero: {
+        title: pageId.charAt(0).toUpperCase() + pageId.slice(1),
+        description: '',
+        imageUrl: 'https://images.unsplash.com/photo-1544427920-c49ccfb85579?auto=format&fit=crop&q=80&w=1920',
+        visible: true
+      },
+      sections: []
+    };
+
+    try {
+      const cached = localStorage.getItem(`bcc_cms_page_${pageId}`);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        return {
+          ...fallback,
+          ...parsed,
+          id: pageId,
+          hero: {
+            ...fallback.hero,
+            ...(parsed.hero || {})
+          },
+          sections: (parsed.sections && Array.isArray(parsed.sections) && parsed.sections.length > 0)
+            ? parsed.sections
+            : fallback.sections,
+          customBlocks: Array.isArray(parsed.customBlocks) ? parsed.customBlocks : []
+        };
+      }
+    } catch (e) {
+      // ignore
+    }
+
+    return fallback;
+  };
+
+  const [pageData, setPageData] = useState<CMSPageData>(getInitialData);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);

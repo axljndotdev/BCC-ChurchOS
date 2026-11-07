@@ -145,7 +145,7 @@ export default function AdminSermons() {
                     <div className="flex items-center gap-4">
                       <div className="h-12 w-20 bg-slate-100 rounded-lg overflow-hidden shrink-0">
                         <img 
-                          src={sermon.thumbnail || 'https://picsum.photos/seed/sermon/200/120'} 
+                          src={sermon.thumbnail || 'https://images.unsplash.com/photo-1438232992991-995b7058bbb3?auto=format&fit=crop&q=80&w=400'} 
                           alt="" 
                           className="w-full h-full object-cover"
                           referrerPolicy="no-referrer"

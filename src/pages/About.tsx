@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { Heart, Users, Shield, Target, Quote, Loader2, Compass, Award, Sparkles } from 'lucide-react';
+import { Heart, Users, Shield, Target, Quote, Loader2, Compass, Award, Sparkles, ArrowRight, BookOpen, CheckCircle } from 'lucide-react';
 import { getLeaders, getSystemSettings } from '../services/db';
 import { UserProfile, SystemSettings } from '../types';
 import { useCMS } from '../hooks/useCMS';
+import { cn } from '../lib/utils';
 import VisualCMSBar from '../components/cms/VisualCMSBar';
+import CMSText from '../components/cms/CMSText';
+import CMSImage from '../components/cms/CMSImage';
+import CMSButton from '../components/cms/CMSButton';
 
 export default function About() {
   const { pageData, loading: cmsLoading } = useCMS('about');
@@ -49,208 +53,344 @@ export default function About() {
     }
   };
 
+  const defaultValues = [
+    {
+      num: '01',
+      title: 'Gospel Centered',
+      desc: 'The finished work of Jesus Christ on the cross is the heartbeat and foundation of our faith, doctrine, and daily life.'
+    },
+    {
+      num: '02',
+      title: 'Authentic Family',
+      desc: 'We are more than a congregation—we are a spiritual family where every generation is welcomed, valued, and loved.'
+    },
+    {
+      num: '03',
+      title: 'Passionate Worship',
+      desc: 'We lift up the name of Jesus through spirit-led praise, uncompromised biblical preaching, and heartfelt devotion.'
+    },
+    {
+      num: '04',
+      title: 'Generous Outreach',
+      desc: 'Committed to serving our neighbors in Kabankalan City and beyond through tangible acts of Christ-like compassion.'
+    }
+  ];
+
   return (
-    <div className="pb-20 relative">
+    <div className="pb-24 sm:pb-32 relative bg-[#FAF7F2]">
       {/* Super Admin Visual CMS Toolbar */}
       <VisualCMSBar pageId="about" pageName="About BCC" />
 
-      {/* Hero Section */}
+      {/* Hero Section - Matching 📝 About .png */}
       {pageData?.hero?.visible !== false && (
-        <section className="relative py-20 bg-slate-900 overflow-hidden">
-          <div className="absolute inset-0 opacity-20">
-            <img 
+        <section className="relative pt-16 sm:pt-24 pb-16 sm:pb-24 bg-gradient-to-b from-[#1A0B0E] via-[#2A0D13] to-[#1A0B0E] overflow-hidden border-b border-[#C99738]/30">
+          <div className="absolute inset-0 opacity-20 pointer-events-none">
+            <CMSImage 
               src={storyImg} 
-              alt="Church Background" 
+              alt="About BCC Banner Photo" 
               className="w-full h-full object-cover"
-              referrerPolicy="no-referrer"
+              pageId="about"
+              target={{ type: 'hero' }}
+              title="Edit About Page Hero Banner"
             />
-            <div className="absolute inset-0 bg-slate-900/60" />
           </div>
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative text-center">
-            {pageData?.hero?.badge && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="inline-flex items-center gap-2 px-4 py-1.5 bg-maroon/20 border border-maroon/40 rounded-full text-[10px] font-bold text-white uppercase tracking-[0.2em] mb-6"
-              >
-                <Sparkles className="h-3.5 w-3.5 text-maroon" /> {pageData.hero.badge}
-              </motion.div>
-            )}
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+            <div className="mb-4 sm:mb-6">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-black/40 border border-[#C99738]/50 rounded-full text-[10px] sm:text-xs font-bold text-[#F0CA7D] uppercase tracking-[0.2em] shadow-xl">
+                <span className="text-[#E5B869] font-display">✦</span>
+                <CMSText
+                  pageId="about"
+                  target={{ type: 'hero', field: 'badge' }}
+                  fallbackText="Our Story & Calling"
+                  label="About Hero Badge"
+                >
+                  {pageData?.hero?.badge || 'Our Story & Calling'}
+                </CMSText>
+                <span className="text-[#E5B869] font-display">✦</span>
+              </div>
+            </div>
+
             <motion.h1 
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              className="text-4xl md:text-6xl font-display font-bold text-white mb-6 tracking-tight"
+              className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-display font-extrabold text-white mb-4 sm:mb-6 tracking-tight leading-tight"
             >
-              {pageData?.hero?.title || 'Our Story & Vision'}
-            </motion.h1>
-            {pageData?.hero?.subtitle && (
-              <motion.p
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="text-lg text-amber-400 font-medium mb-3"
+              <CMSText
+                pageId="about"
+                target={{ type: 'hero', field: 'title' }}
+                fallbackText="About Bethesda"
+                label="About Hero Title"
               >
-                {pageData.hero.subtitle}
-              </motion.p>
-            )}
-            <motion.p 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="text-xl text-slate-300 max-w-2xl mx-auto font-light leading-relaxed"
-            >
-              {pageData?.hero?.description || 'Bethesda Community Church (BCC) was founded in 2017 with a simple mission: to be a sanctuary for the soul and a home for the Bethesda Family in Kabankalan City.'}
-            </motion.p>
+                {pageData?.hero?.title || 'About Bethesda'}
+              </CMSText>
+            </motion.h1>
+
+            <div className="mb-4">
+              <CMSText
+                pageId="about"
+                target={{ type: 'hero', field: 'subtitle' }}
+                fallbackText="A Sanctuary for the Soul, A Family for the Heart"
+                label="About Hero Subtitle"
+                className="text-base sm:text-xl text-[#E5B869] font-display italic"
+              >
+                {pageData?.hero?.subtitle || 'A Sanctuary for the Soul, A Family for the Heart'}
+              </CMSText>
+            </div>
+
+            <div className="max-w-2xl mx-auto mb-8">
+              <CMSText
+                pageId="about"
+                target={{ type: 'hero', field: 'description' }}
+                fallbackText="Bethesda Community Church (BCC) is a Bible-believing, Christ-centered church family located in Kabankalan City, dedicated to sharing God's grace with every generation."
+                label="About Hero Description"
+                multiline={true}
+                className="text-xs sm:text-base text-stone-200 font-light leading-relaxed block"
+              >
+                {pageData?.hero?.description || "Bethesda Community Church (BCC) is a Bible-believing, Christ-centered church family located in Kabankalan City, dedicated to sharing God's grace with every generation."}
+              </CMSText>
+            </div>
 
             {/* Hero CTA Buttons */}
-            <div className="flex flex-wrap items-center justify-center gap-4 mt-8">
-              {pageData?.hero?.primaryButton?.visible && (
-                <a
-                  href={pageData.hero.primaryButton.url || '#leaders'}
-                  target={pageData.hero.primaryButton.openInNewTab ? '_blank' : undefined}
-                  rel="noreferrer"
-                  className="px-6 py-3 bg-maroon text-white font-bold rounded-full text-xs uppercase tracking-widest hover:bg-maroon/90 shadow-lg shadow-maroon/20 transition-all"
-                >
-                  {pageData.hero.primaryButton.label}
-                </a>
-              )}
-              {pageData?.hero?.secondaryButton?.visible && (
-                <Link
-                  to={pageData.hero.secondaryButton.url || '/ministries'}
-                  className="px-6 py-3 bg-slate-800 text-white font-bold rounded-full text-xs uppercase tracking-widest hover:bg-slate-700 transition-all border border-slate-700"
-                >
-                  {pageData.hero.secondaryButton.label}
-                </Link>
-              )}
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <CMSButton
+                pageId="about"
+                target={{ type: 'hero', buttonKey: 'primaryButton' }}
+                buttonConfig={pageData?.hero?.primaryButton}
+                fallbackLabel="Our Leaders"
+                fallbackUrl="#leaders"
+                label="Primary About Button"
+                showArrow={false}
+                className="px-6 py-3 bg-[#7A121D] text-white border border-[#C99738] font-bold rounded-full text-xs uppercase tracking-wider hover:bg-[#5C0612] shadow-lg transition-all min-h-[44px] flex items-center justify-center"
+              />
+
+              <CMSButton
+                pageId="about"
+                target={{ type: 'hero', buttonKey: 'secondaryButton' }}
+                buttonConfig={pageData?.hero?.secondaryButton}
+                fallbackLabel="Plan Your Visit"
+                fallbackUrl="/new-here"
+                label="Secondary About Button"
+                showArrow={false}
+                className="px-6 py-3 bg-white/10 text-white font-bold rounded-full text-xs uppercase tracking-wider hover:bg-white/20 transition-all border border-[#E8D5B5]/40 backdrop-blur-sm min-h-[44px] flex items-center justify-center"
+              />
             </div>
           </div>
         </section>
       )}
 
-      {/* Mission & Vision Section */}
+      {/* Mission & Story Split Section */}
       {storySection && storySection.visible !== false && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <div className="space-y-8">
-              <div className="inline-flex p-3 rounded-2xl bg-maroon/5 text-maroon">
-                <Quote className="h-8 w-8" />
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-center">
+            <div className="lg:col-span-7 space-y-6">
+              <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#7A121D]">
+                <Quote className="h-4 w-4 text-[#C99738]" />
+                <span>Our Heritage & Heart</span>
               </div>
-              <h2 className="text-4xl font-display text-slate-900 leading-tight">
-                {storySection.title || 'A community where everyone is seen, known, and loved.'}
+
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold text-slate-900 leading-tight">
+                <CMSText
+                  pageId="about"
+                  target={{ type: 'section', sectionId: storySection.id, field: 'title' }}
+                  fallbackText="A community where everyone is seen, known, and loved."
+                  label="Mission Section Title"
+                  multiline={true}
+                >
+                  {storySection.title || 'A community where everyone is seen, known, and loved.'}
+                </CMSText>
               </h2>
-              {storySection.content && (
-                <p className="text-lg text-slate-600 leading-relaxed font-light">
-                  {storySection.content}
-                </p>
-              )}
               
-              {/* Mission/Vision/Goal Cards */}
-              <div className="space-y-4">
-                {(storySection.cards || []).map((card) => {
+              <div className="text-sm sm:text-base text-slate-600 leading-relaxed font-light">
+                <CMSText
+                  pageId="about"
+                  target={{ type: 'section', sectionId: storySection.id, field: 'content' }}
+                  fallbackText="At BCC, we exist to bring people into a life-transforming relationship with Jesus Christ and nurture genuine biblical community across Kabankalan City."
+                  label="Mission Section Description"
+                  multiline={true}
+                >
+                  {storySection.content || 'At BCC, we exist to bring people into a life-transforming relationship with Jesus Christ and nurture genuine biblical community across Kabankalan City.'}
+                </CMSText>
+              </div>
+              
+              {/* Mission, Vision & Goal Foundational Pillars */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                {(storySection.cards && storySection.cards.length > 0 
+                  ? storySection.cards 
+                  : [
+                      {
+                        id: 'about-mission',
+                        title: 'Our Mission',
+                        description: 'Equipping disciples making disciples.',
+                        iconName: 'Target'
+                      },
+                      {
+                        id: 'about-goal',
+                        title: 'Our Goal',
+                        description: 'Raise up men and women who will love above all else the God who loves them above all else.',
+                        iconName: 'Award'
+                      },
+                      {
+                        id: 'about-vision',
+                        title: 'Our Vision',
+                        description: 'A dynamic, Spirit-filled Church, passionate about the lost; proactive and proficient in ministry skills numbering thousands upon thousands in kingdom building, impacting our city, nation and the world through leadership development, intentional discipleship, proclaiming and practicing the full importance and authenticity of the Word who are called to live in Christ, equipped to live like Christ, and sent to live for Christ.',
+                        iconName: 'Compass'
+                      }
+                    ]
+                ).map((card) => {
                   const IconComp = getIcon(card.iconName);
+                  const isVision = card.id === 'about-vision' || card.title.toLowerCase().includes('vision');
                   return (
-                    <div key={card.id} className="p-6 bg-white rounded-3xl shadow-sm border border-slate-100 space-y-2">
-                      <div className="flex items-center gap-2.5">
-                        <div className="p-2 bg-maroon/10 text-maroon rounded-xl">
-                          <IconComp className="h-4 w-4" />
+                    <div 
+                      key={card.id} 
+                      className={cn(
+                        "p-5 bg-white rounded-2xl border border-[#E8D5B5] shadow-xs space-y-2 hover:border-[#C99738] transition-all",
+                        isVision ? "sm:col-span-2 bg-gradient-to-br from-white to-[#FAF6EE]" : ""
+                      )}
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className="p-2 bg-[#FAF6EE] text-[#7A121D] rounded-xl border border-[#E8D5B5]">
+                          <IconComp className="h-4 w-4 text-[#C99738]" />
                         </div>
-                        <h3 className="text-xl font-bold text-slate-900">{card.title}</h3>
+                        <h3 className="text-base font-display font-bold text-slate-900">
+                          {card.title}
+                        </h3>
                       </div>
-                      <p className="text-slate-600 font-light leading-relaxed">{card.description}</p>
+                      <p className="text-slate-600 font-light text-xs sm:text-sm leading-relaxed">
+                        {card.description}
+                      </p>
                     </div>
                   );
                 })}
               </div>
             </div>
 
-            <div className="relative">
-              <div className="aspect-[4/5] rounded-[3rem] overflow-hidden shadow-2xl">
-                <img 
+            <div className="lg:col-span-5 relative">
+              <div className="aspect-[4/5] rounded-3xl overflow-hidden shadow-xl border-2 border-[#E8D5B5] bg-stone-100">
+                <CMSImage 
                   src={storySection.imageUrl || "https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&q=80&w=1200"} 
-                  alt="Community" 
+                  alt="Community at BCC" 
                   className="w-full h-full object-cover"
-                  referrerPolicy="no-referrer"
+                  pageId="about"
+                  target={{ type: 'section', sectionId: storySection.id }}
+                  title="Edit Mission Section Photo"
                 />
               </div>
-              <div className="absolute -bottom-10 -left-10 w-64 h-64 bg-maroon rounded-[3rem] -z-10 opacity-10" />
             </div>
           </div>
         </section>
       )}
 
-      {/* Core Values Section */}
-      {valuesSection && valuesSection.visible !== false && (
-        <section className="bg-slate-50 py-24">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center max-w-3xl mx-auto mb-20">
-              {valuesSection.badge && (
-                <span className="text-xs font-bold text-maroon uppercase tracking-widest block mb-2">
-                  {valuesSection.badge}
-                </span>
-              )}
-              <h2 className="text-4xl font-display text-slate-900 mb-6">
-                {valuesSection.title || 'What We Stand For'}
-              </h2>
-              <p className="text-slate-500 font-light leading-relaxed">
-                {valuesSection.content || 'These core values guide everything we do as a church family, from our Sunday worship to our midweek community groups.'}
-              </p>
+      {/* Core Values Section - Clean Numbered Cards Matching Reference */}
+      <section className="bg-[#FAF6EE] py-16 sm:py-24 border-y border-[#E8D5B5]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16">
+            <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#7A121D] mb-2">
+              <span className="text-[#C99738]">✦</span>
+              <span>Our Foundations</span>
+              <span className="text-[#C99738]">✦</span>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {(valuesSection.cards || []).map((value, i) => {
-                const IconComp = getIcon(value.iconName);
-                return (
-                  <motion.div 
-                    key={value.id || i}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: i * 0.1 }}
-                    className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 hover:shadow-xl transition-all duration-500 group"
-                  >
-                    <div className="w-14 h-14 rounded-2xl bg-maroon/5 text-maroon flex items-center justify-center mb-6 group-hover:bg-maroon group-hover:text-white transition-all duration-500">
-                      <IconComp className="h-7 w-7" />
-                    </div>
-                    <h3 className="text-xl font-bold text-slate-900 mb-3">{value.title}</h3>
-                    <p className="text-slate-500 font-light text-sm leading-relaxed">{value.description}</p>
-                  </motion.div>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-      )}
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-display font-bold text-slate-900 mb-3">
+              What We Stand For
+            </h2>
 
-      {/* Leadership */}
-      {!loading && leaders.length > 0 && (
-        <section id="leaders" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-          <div className="text-center max-w-3xl mx-auto mb-20">
-            <h2 className="text-4xl font-display text-slate-900 mb-6">Our Leadership</h2>
-            <p className="text-slate-500 font-light leading-relaxed">
-              BCC is led by a dedicated team of elders and administrators who serve our community with prayer and humility.
+            <p className="text-slate-600 font-light text-sm sm:text-base leading-relaxed">
+              These core biblical values guide everything we do as a church family, from Sunday morning worship to midweek discipleship groups.
             </p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12">
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {defaultValues.map((value, i) => (
+              <motion.div 
+                key={i}
+                initial={{ opacity: 0, y: 15 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.08 }}
+                className="bg-white p-6 sm:p-7 rounded-3xl border border-[#E8D5B5] shadow-xs hover:border-[#C99738] hover:shadow-lg transition-all flex flex-col justify-between group"
+              >
+                <div>
+                  <div className="text-2xl font-display font-extrabold text-[#7A121D]/30 group-hover:text-[#7A121D] transition-colors mb-4">
+                    {value.num}
+                  </div>
+                  <h3 className="text-lg font-display font-bold text-slate-900 group-hover:text-[#7A121D] transition-colors mb-2">
+                    {value.title}
+                  </h3>
+                  <p className="text-slate-600 font-light text-xs sm:text-sm leading-relaxed">
+                    {value.desc}
+                  </p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Leadership Team */}
+      {!loading && leaders.length > 0 && (
+        <section id="leaders" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
+          <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16">
+            <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#7A121D] mb-2">
+              <span className="text-[#C99738]">✦</span> Pastoral Oversight <span className="text-[#C99738]">✦</span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-display font-bold text-slate-900 mb-3">Our Leadership</h2>
+            <p className="text-slate-600 font-light text-sm sm:text-base leading-relaxed">
+              BCC is led by pastors, elders, and leaders who shepherd our church family with biblical fidelity, love, and servant hearts.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-10">
             {leaders.map((leader) => (
-              <div key={leader.uid} className="text-center group">
-                <div className="aspect-square rounded-full overflow-hidden mb-6 max-w-[240px] mx-auto shadow-lg group-hover:shadow-2xl transition-all duration-500 border-4 border-white bg-slate-100">
+              <div key={leader.uid} className="text-center group bg-white p-6 rounded-3xl border border-[#E8D5B5] shadow-xs">
+                <div className="aspect-square rounded-full overflow-hidden mb-4 max-w-[140px] sm:max-w-[180px] mx-auto shadow-md border-3 border-[#E8D5B5] group-hover:border-[#C99738] transition-all">
                   <img 
-                    src={leader.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(leader.displayName)}&background=random&size=400`} 
+                    src={leader.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(leader.displayName)}&background=7A121D&color=fff&size=400`} 
                     alt={leader.displayName} 
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
                     referrerPolicy="no-referrer"
                   />
                 </div>
-                <h3 className="text-2xl font-display text-slate-900 mb-1">{leader.displayName}</h3>
-                <p className="text-maroon font-bold text-xs uppercase tracking-widest">{leader.title}</p>
+                <h3 className="text-lg sm:text-xl font-display font-bold text-slate-900 mb-1 group-hover:text-[#7A121D] transition-colors">{leader.displayName}</h3>
+                <p className="text-[#9A6F1D] font-bold text-[10px] sm:text-xs uppercase tracking-widest">{leader.title || 'Ministry Leader'}</p>
               </div>
             ))}
           </div>
         </section>
       )}
 
+      {/* Plan a Visit CTA Card */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+        <div className="bg-gradient-to-r from-[#5C0612] via-[#7A121D] to-[#3D040A] rounded-3xl p-8 sm:p-12 lg:p-16 text-center text-white relative overflow-hidden shadow-xl border-2 border-[#C99738]/50">
+          <div className="relative z-10 max-w-2xl mx-auto space-y-4">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-[#F0CA7D] block">
+              We'd Love to Welcome You
+            </span>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-display font-bold">
+              Join Us This Sunday in Kabankalan
+            </h2>
+            <p className="text-stone-300 text-sm sm:text-base font-light leading-relaxed">
+              Our Sunday worship service starts at <strong>8:45 AM</strong> (with 5-minute quiet countdown at <strong>8:40 AM</strong>). Come early for fellowship, enjoy great music, and hear God's Word.
+            </p>
+            <div className="pt-4 flex flex-wrap items-center justify-center gap-3">
+              <Link
+                to="/new-here"
+                className="px-8 py-3.5 bg-gradient-to-r from-[#E5B869] to-[#C99738] text-[#3D040A] rounded-full font-bold uppercase tracking-wider text-xs hover:brightness-110 transition-all shadow-md flex items-center justify-center min-h-[44px]"
+              >
+                Plan Your Visit Guide &rarr;
+              </Link>
+              <Link
+                to="/contact"
+                className="px-8 py-3.5 bg-white/10 border border-white/30 text-white rounded-full font-bold uppercase tracking-wider text-xs hover:bg-white/20 transition-all min-h-[44px] flex items-center justify-center"
+              >
+                Get in Touch
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {(loading || cmsLoading) && (
         <div className="flex justify-center py-24">
-          <Loader2 className="h-8 w-8 animate-spin text-maroon" />
+          <Loader2 className="h-8 w-8 animate-spin text-[#7A121D]" />
         </div>
       )}
     </div>

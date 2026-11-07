@@ -7,18 +7,18 @@ export const DEFAULT_CMS_PAGES: Record<string, CMSPageData> = {
     slug: '/',
     hero: {
       badge: 'Welcome to Bethesda',
-      title: 'Bethesda Community Church',
+      title: 'Find Peace in a Life of Prayer',
       subtitle: 'A Sanctuary for the Soul & A Family for the Heart',
-      description: "Bethesda Community Church (BCC) is more than a building—it's a sanctuary for the soul and a family for the heart in Kabankalan City.",
-      imageUrl: 'https://images.unsplash.com/photo-1544427920-c49ccfb85579?auto=format&fit=crop&q=80&w=1920',
+      description: "Develop deeper relationships with God and others through spiritual formation in community.",
+      imageUrl: '/src/assets/images/church_altar_candles_hero_1791300645434.jpg',
       primaryButton: {
-        label: 'Our Story & Vision',
-        url: '/about',
+        label: 'Plan A Visit',
+        url: '/new-here',
         visible: true,
         style: 'primary'
       },
       secondaryButton: {
-        label: 'Watch Live',
+        label: 'Watch Online',
         url: '/live',
         visible: true,
         style: 'secondary'
@@ -99,16 +99,26 @@ export const DEFAULT_CMS_PAGES: Record<string, CMSPageData> = {
         type: 'cards'
       },
       {
+        id: 'home-life-together',
+        name: 'Life Together Ministries Showcase',
+        title: 'Life Together',
+        subtitle: 'Find Your Fellowship',
+        content: 'We believe faith is best lived out in community. Discover the many ways you can connect, grow, and serve at BCC.',
+        badge: 'Ministries',
+        visible: true,
+        type: 'cards'
+      },
+      {
         id: 'home-bottom-cta',
         name: 'Bottom Invitation Banner',
         title: 'Join Us This Sunday Morning',
-        subtitle: 'In-Person Worship at 9:00 AM',
+        subtitle: 'In-Person Worship at 8:45 AM (Countdown 8:40 AM)',
         content: 'Come as you are. Experience heartfelt worship, sound biblical preaching, and warm fellowship in Kabankalan City.',
         badge: 'Sunday Gathering',
         imageUrl: 'https://images.unsplash.com/photo-1519817650390-64a93db51149?auto=format&fit=crop&q=80&w=1920',
         primaryButton: {
           label: 'Plan Your Visit',
-          url: '/contact',
+          url: '/new-here',
           visible: true,
           style: 'amber'
         },
@@ -130,7 +140,7 @@ export const DEFAULT_CMS_PAGES: Record<string, CMSPageData> = {
     slug: '/about',
     hero: {
       badge: 'About Bethesda Community Church',
-      title: 'Our Story & Vision',
+      title: 'About Bethesda',
       subtitle: 'Rooted in Christ, Reaching the Lost, Restoring the Soul',
       description: 'Bethesda Community Church (BCC) was founded in 2017 with a simple mission: to be a sanctuary for the soul and a home for the Bethesda Family in Kabankalan City.',
       imageUrl: 'https://images.unsplash.com/photo-1438232992991-995b7058bbb3?auto=format&fit=crop&q=80&w=1920',
@@ -363,7 +373,7 @@ export const DEFAULT_CMS_PAGES: Record<string, CMSPageData> = {
         name: 'Sunday Worship Service Details',
         title: 'Sunday Service Times & Location',
         subtitle: 'Bethesda Sanctuary in Kabankalan City',
-        content: 'Experience uplifting worship, fervent prayer, and biblical preaching every Sunday at 9:00 AM.',
+        content: 'Experience uplifting worship, fervent prayer, and biblical preaching every Sunday at 8:45 AM (countdown 8:40 AM).',
         badge: 'Sanctuary Worship',
         primaryButton: {
           label: 'Get Directions to BCC',
@@ -448,7 +458,7 @@ export const DEFAULT_CMS_PAGES: Record<string, CMSPageData> = {
           {
             id: 'ci-times',
             title: 'Service Hours',
-            description: 'Sunday Morning Worship: 9:00 AM • Wednesday Prayer: 6:00 PM',
+            description: 'Sunday Morning Worship: 8:45 AM (Countdown 8:40 AM) • Wednesday Prayer: 6:00 PM',
             iconName: 'Clock'
           },
           {
@@ -505,6 +515,98 @@ export const DEFAULT_CMS_PAGES: Record<string, CMSPageData> = {
         imageUrl: 'https://images.unsplash.com/photo-1529070538774-1843cb3265df?auto=format&fit=crop&q=80&w=1200',
         visible: true,
         type: 'banner'
+      },
+      {
+        id: 'ministries-list',
+        name: 'All Church Ministries Grid',
+        title: 'Our Church Fellowships & Teams',
+        subtitle: 'Find Your Fellowship',
+        badge: 'Active Ministries',
+        cards: [
+          {
+            id: 'superbook-kids-sbk',
+            title: 'Superbook Kids (SBK)',
+            description: 'Nurturing the youngest hearts in the love of Jesus through fun, biblically-grounded teaching and activities.',
+            imageUrl: 'https://images.unsplash.com/photo-1489710437720-ebb67ec84dd2?auto=format&fit=crop&q=80&w=800',
+            iconName: 'Star',
+            buttonLabel: 'Know More',
+            buttonUrl: '/ministries/superbook-kids-sbk'
+          },
+          {
+            id: 'ignite-one-youth-fellowship',
+            title: 'Ignite One Youth Fellowship',
+            description: 'A vibrant space for students to find their identity in Christ, build authentic friendships, and grow in faith.',
+            imageUrl: 'https://images.unsplash.com/photo-1523580494863-6f3031224c94?auto=format&fit=crop&q=80&w=800',
+            iconName: 'Users',
+            buttonLabel: 'Know More',
+            buttonUrl: '/ministries/ignite-one-youth-fellowship'
+          },
+          {
+            id: 'yah-young-adults-huddle',
+            title: 'YAH (Young Adults Huddle)',
+            description: 'Connecting young professionals and university students as they navigate life and faith together.',
+            imageUrl: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&q=80&w=800',
+            iconName: 'Heart',
+            buttonLabel: 'Know More',
+            buttonUrl: '/ministries/yah-young-adults-huddle'
+          },
+          {
+            id: 'young-at-hearts',
+            title: 'Young at Hearts',
+            description: 'A community for our seniors to fellowship, share wisdom, and continue growing in their walk with God.',
+            imageUrl: 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&q=80&w=800',
+            iconName: 'Heart',
+            buttonLabel: 'Know More',
+            buttonUrl: '/ministries/young-at-hearts'
+          },
+          {
+            id: 'the-exemplary-husband-sherpas',
+            title: 'The Exemplary Husband (Sherpas)',
+            description: 'Equipping men to lead their families with Christ-like love and integrity.',
+            imageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=800',
+            iconName: 'ShieldCheck',
+            buttonLabel: 'Know More',
+            buttonUrl: '/ministries/the-exemplary-husband-sherpas'
+          },
+          {
+            id: 'circle-of-women',
+            title: 'Circle of Women',
+            description: 'Empowering women of all ages to grow in their spiritual journey and support one another.',
+            imageUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=800',
+            iconName: 'Heart',
+            buttonLabel: 'Know More',
+            buttonUrl: '/ministries/circle-of-women'
+          },
+          {
+            id: 'harkel-music-team',
+            title: 'Harkel (Music Team)',
+            description: 'Leading our community in worship through music, song, and creative expression.',
+            imageUrl: 'https://images.unsplash.com/photo-1514525253344-f814d074358a?auto=format&fit=crop&q=80&w=800',
+            iconName: 'Music',
+            buttonLabel: 'Know More',
+            buttonUrl: '/ministries/harkel-music-team'
+          },
+          {
+            id: 'audio-video-av',
+            title: 'Audio Video (AV)',
+            description: 'Supporting our services and online presence through technical excellence in sound and visuals.',
+            imageUrl: 'https://images.unsplash.com/photo-1478737270239-2f02b77fc618?auto=format&fit=crop&q=80&w=800',
+            iconName: 'Video',
+            buttonLabel: 'Know More',
+            buttonUrl: '/ministries/audio-video-av'
+          },
+          {
+            id: 'discipleship-groups',
+            title: 'Discipleship Groups',
+            description: "Small groups dedicated to studying God's Word, prayer, and mutual spiritual accountability for mature Christian living.",
+            imageUrl: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&q=80&w=800',
+            iconName: 'Users',
+            buttonLabel: 'Know More',
+            buttonUrl: '/ministries/discipleship-groups'
+          }
+        ],
+        visible: true,
+        type: 'cards'
       }
     ]
   },
@@ -517,7 +619,7 @@ export const DEFAULT_CMS_PAGES: Record<string, CMSPageData> = {
       badge: 'Watch Online',
       title: 'Live Worship Broadcast',
       subtitle: 'Worship with the Bethesda Family from Anywhere',
-      description: 'Tune into our live video broadcasts every Sunday at 9:00 AM. Experience the praise, prayer, and life-transforming Word of God wherever you are.',
+      description: 'Tune into our live video broadcasts every Sunday at 8:45 AM (countdown 8:40 AM). Experience the praise, prayer, and life-transforming Word of God wherever you are.',
       imageUrl: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&q=80&w=1920',
       primaryButton: {
         label: 'Watch Sunday Service',
@@ -539,13 +641,13 @@ export const DEFAULT_CMS_PAGES: Record<string, CMSPageData> = {
         name: 'Broadcast Schedule and Guidance',
         title: 'Broadcast Schedule & Online Fellowship',
         subtitle: 'Connecting Hearts Across Distance',
-        content: 'Our live stream starts every Sunday at 9:00 AM Philippine Standard Time (PST). Have your Bible, notebook, and heart ready to worship together.',
+        content: 'Our live stream starts every Sunday at 8:45 AM Philippine Standard Time (PST) with quiet countdown at 8:40 AM. Have your Bible, notebook, and heart ready to worship together.',
         badge: 'Streaming Info',
         cards: [
           {
             id: 'live-time',
             title: 'Sunday Morning Live',
-            subtitle: '9:00 AM PST',
+            subtitle: '8:45 AM PST (Countdown 8:40 AM)',
             description: 'Full Sunday morning service with live worship music and sermon.',
             iconName: 'Clock'
           },
@@ -746,6 +848,33 @@ export const DEFAULT_CMS_PAGES: Record<string, CMSPageData> = {
     sections: []
   },
 
+  'new-here': {
+    id: 'new-here',
+    title: 'New Here / Plan a Visit',
+    slug: '/new-here',
+    hero: {
+      badge: 'WHAT CAN YOU EXPECT WHEN YOU VISIT?',
+      title: 'Welcome to Bethesda Community Church',
+      subtitle: 'Here are answers to some of the questions you may have.',
+      description: "We gathered the answers to some common questions below. If you can't find your question below feel free to contact us, and we'll be happy to help.",
+      imageUrl: 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&q=80&w=1920',
+      primaryButton: {
+        label: 'Plan Your Visit',
+        url: '#plan-visit',
+        visible: true,
+        style: 'primary'
+      },
+      secondaryButton: {
+        label: 'Contact Us',
+        url: '/contact',
+        visible: true,
+        style: 'secondary'
+      },
+      visible: true
+    },
+    sections: []
+  },
+
   footer: {
     id: 'footer',
     title: 'Global Footer',
@@ -761,7 +890,7 @@ export const DEFAULT_CMS_PAGES: Record<string, CMSPageData> = {
         id: 'footer-service-times',
         name: 'Footer Service Times',
         title: 'Sunday Worship Service',
-        content: '9:00 AM • Sanctuary Worship & Preaching',
+        content: '8:45 AM – 10:45 AM (Countdown 8:40 AM) • Sanctuary Worship & Preaching',
         visible: true
       },
       {

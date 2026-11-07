@@ -263,7 +263,7 @@ export default function AdminBlogs() {
               <div className="flex items-start gap-4">
                 <div className="h-16 w-24 rounded-2xl overflow-hidden bg-slate-100 shrink-0">
                   <img 
-                    src={post.coverImage || `https://picsum.photos/seed/${post.id}/200/200`} 
+                    src={post.coverImage || 'https://images.unsplash.com/photo-1544427920-c49ccfb85579?auto=format&fit=crop&q=80&w=400'} 
                     alt="" 
                     className="w-full h-full object-cover"
                     referrerPolicy="no-referrer"

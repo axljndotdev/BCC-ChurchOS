@@ -7,6 +7,7 @@ import {
   addWeeklyActivity, 
   updateWeeklyActivity, 
   deleteWeeklyActivity,
+  seedDefaultWeeklyActivities,
   addEvent,
   uploadFile
 } from '../services/db';
@@ -114,101 +115,12 @@ export default function AdminSettings() {
     },
     {
       key: 'communityMinistryImageUrl',
-      title: 'Community Groups Image',
-      description: 'Visual showcase card for Life Together and home fellowship groups.',
-      defaultUrl: 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&q=80&w=800',
+      title: 'Discipleship & Community Groups Image',
+      description: 'Visual showcase card for Discipleship and home fellowship groups on the home and ministries pages.',
+      defaultUrl: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&q=80&w=800',
       aspect: '4/5'
     }
   ];
-
-  const seedEngageEvent = async () => {
-    try {
-      setSaving(true);
-      await addEvent({
-        title: 'Engage',
-        slug: 'engage-the-great-commission',
-        description: 'Join us as we explore the Great Commission and how we can engage our community and the world with the gospel.',
-        content: '# Engage: The Great Commission\n\nJoin us for a powerful time of learning, inspiration, and mobilization as we explore our call to engage the world with the Good News of Jesus Christ.\n\n## Join the Movement\nOur mission is not just a suggestion; it is a command to reach every corner of the world with the message of hope. This event will feature speakers, workshops, and communal prayer focused on both local and global missions.\n\n### Sessions Include:\n- **Narrative Sessions**: Hear direct reports from the mission field.\n- **Mobilization Workshops**: Practical steps for community engagement.\n- **The Global Horizon**: Understanding our role in the Great Commission.\n\nWe look forward to seeing how God moves in our church as we say "YES" to His call.',
-        date: new Date('2026-05-24T18:00:00Z'),
-        location: 'Main Sanctuary',
-        imageUrl: 'https://images.unsplash.com/photo-1544427920-c49ccfb85579?auto=format&fit=crop&q=80&w=1200'
-      });
-      alert('Engage Event created successfully! You can find it in the Event Management section to further customize its details.');
-      setSuccess(true);
-      setTimeout(() => setSuccess(false), 3000);
-    } catch (e) {
-      console.error(e);
-      alert('Failed to create Engage event.');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const seedActivities = async () => {
-    const initialActivities: Omit<WeeklyActivity, 'id'>[] = [
-      { 
-        day: 'Sunday', 
-        time: '9:00 AM', 
-        title: 'Worship Service', 
-        description: 'Join us for our main corporate worship gathering.', 
-        location: 'Main Sanctuary', 
-        category: 'Spiritual', 
-        order: 0 
-      },
-      { 
-        day: 'Tuesday', 
-        time: '6:00 PM', 
-        title: 'YAH (Young Adults Huddle)', 
-        description: 'Regular huddle for young adults to fellowship and grow in faith.', 
-        location: 'Fellowship Hall', 
-        category: 'Fellowship', 
-        order: 1,
-        ministryId: 'yah-young-adults-huddle' 
-      },
-      { 
-        day: 'Wednesday', 
-        time: '6:00 PM', 
-        title: 'Mid-week Prayer Meeting', 
-        description: 'Corporate intercession and prayer for the church and the community.', 
-        location: 'Blue Room', 
-        category: 'Spiritual', 
-        order: 2 
-      },
-      { 
-        day: 'Thursday', 
-        time: '6:00 PM', 
-        title: 'Theology Class', 
-        description: 'In-depth study of Christian doctrine and the Word of God.', 
-        location: 'Library', 
-        category: 'Spiritual', 
-        order: 3 
-      },
-      { 
-        day: 'Friday', 
-        time: '6:00 PM', 
-        title: 'Ignite One Youth Fellowship', 
-        description: 'Dynamic gathering for our youth to build community and encounter God.', 
-        location: 'Main Sanctuary', 
-        category: 'Fellowship', 
-        order: 4,
-        ministryId: 'ignite-one-youth-fellowship' 
-      }
-    ];
-
-    try {
-      setSaving(true);
-      for (const activity of initialActivities) {
-        await addWeeklyActivity(activity);
-      }
-      const updated = await getWeeklyActivities();
-      setActivities(updated);
-      alert('Initial activities seeded successfully!');
-    } catch (error) {
-      console.error('Error seeding activities:', error);
-    } finally {
-      setSaving(false);
-    }
-  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -277,6 +189,21 @@ export default function AdminSettings() {
       setActivities(prev => prev.filter(a => a.id !== id));
     } catch (error) {
       console.error('Error deleting activity:', error);
+    }
+  };
+
+  const [seedingSchedule, setSeedingSchedule] = useState(false);
+  const handleSeedSchedule = async () => {
+    if (!confirm('This will seed the official Sunday worship and weekly activities schedule into the database. Continue?')) return;
+    try {
+      setSeedingSchedule(true);
+      await seedDefaultWeeklyActivities();
+      const updated = await getWeeklyActivities();
+      setActivities(updated);
+    } catch (error) {
+      console.error('Error seeding schedule:', error);
+    } finally {
+      setSeedingSchedule(false);
     }
   };
 
@@ -615,6 +542,88 @@ export default function AdminSettings() {
         {/* ==================== TAB 3: SERVICE TIMES & ACTIVITIES ==================== */}
         {activeTab === 'schedule' && (
           <div className="space-y-8">
+            {/* Sunday Worship Service Overview Card */}
+            <section className="bg-gradient-to-br from-[#3D040A] via-[#5C0612] to-[#200407] p-8 rounded-[2.5rem] border border-[#C99738]/40 shadow-xl text-white relative overflow-hidden">
+              <div className="absolute right-0 top-0 w-96 h-96 bg-[radial-gradient(circle_at_top_right,rgba(201,151,56,0.15),transparent_70%)] pointer-events-none" />
+              <div className="relative z-10 space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 bg-[#C99738]/20 border border-[#C99738]/40 rounded-2xl text-[#E5B869]">
+                      <Calendar className="h-6 w-6" />
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-[#E5B869] block">Official Church Schedule</span>
+                      <h2 className="text-2xl font-display font-bold text-white">Sunday Morning Worship & Flow</h2>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handleSeedSchedule}
+                      disabled={seedingSchedule}
+                      className="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-xl text-xs font-bold uppercase tracking-widest transition-all flex items-center gap-2 disabled:opacity-50"
+                      title="Write standard Sunday & weekly activities to Firestore database"
+                    >
+                      {seedingSchedule ? <Loader2 className="h-4 w-4 animate-spin text-[#E5B869]" /> : <ShieldCheck className="h-4 w-4 text-[#E5B869]" />}
+                      <span>{seedingSchedule ? 'Seeding...' : 'Seed Schedule to Database'}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingActivity({
+                          day: 'Sunday',
+                          category: 'Spiritual',
+                          time: '8:45 AM - 10:45 AM',
+                          title: 'Sunday Morning Worship Service',
+                          description: '5-minute quiet countdown starts promptly at 8:40 AM with opening prayer at 8:45 AM.',
+                          location: 'Main Sanctuary (2nd Level)'
+                        });
+                        setIsModalOpen(true);
+                      }}
+                      className="px-4 py-2.5 bg-gradient-to-r from-[#E5B869] to-[#C99738] text-[#3D040A] font-bold rounded-xl text-xs uppercase tracking-widest hover:brightness-110 transition-all shadow-md flex items-center gap-2"
+                    >
+                      <Plus className="h-4 w-4" /> Add Sunday Service
+                    </button>
+                  </div>
+                </div>
+
+                {/* Sunday Times Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+                  <div className="p-4 rounded-2xl bg-white/10 border border-white/10 backdrop-blur-xs space-y-1">
+                    <div className="flex items-center justify-between text-xs text-[#E5B869]">
+                      <span className="font-bold uppercase tracking-wider">Countdown & Gathering</span>
+                      <Clock className="h-3.5 w-3.5" />
+                    </div>
+                    <p className="text-xl font-bold font-display text-white">8:40 AM Countdown</p>
+                    <p className="text-xs text-stone-300">5-min quiet countdown before service commences.</p>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-white/10 border border-white/10 backdrop-blur-xs space-y-1">
+                    <div className="flex items-center justify-between text-xs text-[#E5B869]">
+                      <span className="font-bold uppercase tracking-wider">Main Worship</span>
+                      <Clock className="h-3.5 w-3.5" />
+                    </div>
+                    <p className="text-xl font-bold font-display text-white">8:45 AM – 10:45 AM</p>
+                    <p className="text-xs text-stone-300">Praise, pastoral prayer, scripture & exposition.</p>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-white/10 border border-white/10 backdrop-blur-xs space-y-1">
+                    <div className="flex items-center justify-between text-xs text-[#E5B869]">
+                      <span className="font-bold uppercase tracking-wider">Kids & Lounge</span>
+                      <Clock className="h-3.5 w-3.5" />
+                    </div>
+                    <p className="text-xl font-bold font-display text-white">8:45 AM Concurrent</p>
+                    <p className="text-xs text-stone-300">Superbook Kids (2nd Lvl) + Nursing Moms Lounge.</p>
+                  </div>
+                </div>
+
+                <div className="text-xs text-stone-300 bg-black/25 p-3.5 rounded-xl border border-white/10 flex items-center justify-between flex-wrap gap-2">
+                  <span><strong>Sunday Morning Service Flow:</strong> 8:40 Countdown &rarr; 8:45 Prayer &rarr; 9:00 Hymns &rarr; 9:20 Welcome &rarr; 9:25 Scripture &rarr; 9:30 Special &rarr; 9:35 Message &rarr; 10:25 Song &rarr; 10:30 Benediction &rarr; 10:45 Fellowship</span>
+                  <a href="/new-here" target="_blank" rel="noopener noreferrer" className="text-[#E5B869] font-bold hover:underline shrink-0">View Guest Guide &rarr;</a>
+                </div>
+              </div>
+            </section>
+
             {/* Weekly Activities Section */}
             <section className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
@@ -624,36 +633,20 @@ export default function AdminSettings() {
                   </div>
                   <div>
                     <h2 className="text-xl font-display font-bold text-slate-900">Weekly Activities & Prayer</h2>
-                    <p className="text-xs text-slate-400">Wednesday Night is at 6:00 PM; Sunday is at 9:00 AM.</p>
+                    <p className="text-xs text-slate-400">Sunday Worship is at 8:45 AM (Countdown 8:40 AM); Wednesday Prayer is at 6:00 PM.</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button 
-                    type="button"
-                    onClick={seedEngageEvent}
-                    className="px-3.5 py-2 bg-maroon/10 text-maroon rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-maroon/20 transition-all flex items-center gap-1.5"
-                  >
-                    <Calendar className="h-3 w-3" /> Initialize Engage
-                  </button>
-                  {activities.length === 0 && (
-                    <button 
-                      type="button"
-                      onClick={seedActivities}
-                      className="px-3.5 py-2 bg-slate-100 text-slate-600 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-slate-200 transition-all"
-                    >
-                      Seed Defaults
-                    </button>
-                  )}
                   <button 
                     type="button"
                     onClick={() => {
                       setEditingActivity({
                         day: 'Wednesday',
                         category: 'Spiritual',
-                        time: '6:00 PM',
+                        time: '6:00 PM - 7:30 PM',
                         title: 'Mid-week Prayer Meeting',
-                        description: 'Corporate intercession and prayer for the church and the community.',
-                        location: 'Blue Room'
+                        description: 'Corporate intercession, devotional reflection, and dedicated prayer.',
+                        location: 'Blue Room / Fellowship Area'
                       });
                       setIsModalOpen(true);
                     }}
@@ -666,13 +659,32 @@ export default function AdminSettings() {
 
               <div className="space-y-3">
                 {activities.length === 0 ? (
-                  <p className="text-slate-400 text-sm text-center py-8 border-2 border-dashed border-slate-100 rounded-3xl">No weekly activities added yet.</p>
+                  <div className="text-center py-12 border-2 border-dashed border-slate-200 rounded-3xl p-6 space-y-3">
+                    <p className="text-slate-500 font-medium text-sm">No custom weekly activities in database yet.</p>
+                    <p className="text-slate-400 text-xs max-w-md mx-auto">
+                      Click below to seed the church's official Sunday worship and midweek schedule into the database so they appear across all public views.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={handleSeedSchedule}
+                      disabled={seedingSchedule}
+                      className="px-5 py-2.5 bg-maroon text-white rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-maroon-dark transition-all inline-flex items-center gap-2 shadow-sm"
+                    >
+                      {seedingSchedule ? <Loader2 className="h-4 w-4 animate-spin text-white" /> : <Calendar className="h-4 w-4" />}
+                      <span>{seedingSchedule ? 'Writing to Database...' : 'Seed Standard Schedule to Database'}</span>
+                    </button>
+                  </div>
                 ) : (
                   activities.map((activity) => (
                     <div key={activity.id} className="flex items-center justify-between p-4 bg-slate-50 hover:bg-slate-100/70 transition-colors rounded-2xl border border-slate-100">
                       <div>
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="text-[10px] font-bold text-maroon uppercase">{activity.day}</span>
+                          <span className={cn(
+                            "text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider",
+                            activity.day === 'Sunday' ? "bg-maroon/10 text-maroon font-black" : "text-slate-600 bg-slate-200/80"
+                          )}>
+                            {activity.day}
+                          </span>
                           <span className="h-1 w-1 bg-slate-300 rounded-full"></span>
                           <h3 className="text-sm font-bold text-slate-800">{activity.title}</h3>
                           <span className="text-[10px] px-2 py-0.5 bg-slate-200/80 rounded text-slate-600 font-medium">{activity.category}</span>
@@ -795,6 +807,7 @@ export default function AdminSettings() {
                       name="phone"
                       value={settings?.phone || ''}
                       onChange={handleChange}
+                      placeholder="09399179611"
                       className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-maroon/20 focus:border-maroon outline-none transition-all"
                     />
                   </div>
@@ -808,6 +821,7 @@ export default function AdminSettings() {
                       name="email"
                       value={settings?.email || ''}
                       onChange={handleChange}
+                      placeholder="blgministries214@gmail.com"
                       className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-maroon/20 focus:border-maroon outline-none transition-all"
                     />
                   </div>
@@ -1094,6 +1108,58 @@ export default function AdminSettings() {
                       <option key={m.id} value={m.id}>{m.title}</option>
                     ))}
                   </select>
+                </div>
+
+                {/* Quick Presets */}
+                <div className="space-y-1">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Quick Suggestions</span>
+                  <div className="flex flex-wrap gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setEditingActivity({
+                        ...editingActivity!,
+                        day: 'Sunday',
+                        category: 'Spiritual',
+                        title: 'Sunday Morning Worship Service',
+                        time: '8:45 AM - 10:45 AM',
+                        description: '5-minute quiet countdown starts promptly at 8:40 AM.',
+                        location: 'Main Sanctuary (2nd Level)'
+                      })}
+                      className="px-2.5 py-1 text-[11px] font-medium bg-maroon/10 text-maroon hover:bg-maroon hover:text-white rounded-lg transition-all"
+                    >
+                      Sunday Worship (8:45 AM)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEditingActivity({
+                        ...editingActivity!,
+                        day: 'Sunday',
+                        category: 'Fellowship',
+                        title: 'Superbook Kids Worship (SBK)',
+                        time: '8:45 AM - 10:45 AM',
+                        description: 'Interactive kids praise, biblical lessons, and crafts for children.',
+                        location: '2nd Level Kids Zone'
+                      })}
+                      className="px-2.5 py-1 text-[11px] font-medium bg-amber-100 text-amber-900 hover:bg-amber-500 hover:text-white rounded-lg transition-all"
+                    >
+                      Superbook Kids (8:45 AM)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEditingActivity({
+                        ...editingActivity!,
+                        day: 'Wednesday',
+                        category: 'Spiritual',
+                        title: 'Mid-week Prayer Meeting',
+                        time: '6:00 PM - 7:30 PM',
+                        description: 'Corporate intercession, devotional reflection, and dedicated prayer.',
+                        location: 'Blue Room / Fellowship Area'
+                      })}
+                      className="px-2.5 py-1 text-[11px] font-medium bg-purple-100 text-purple-900 hover:bg-purple-600 hover:text-white rounded-lg transition-all"
+                    >
+                      Mid-week Prayer (Wed 6 PM)
+                    </button>
+                  </div>
                 </div>
 
                 <div className="space-y-1.5">

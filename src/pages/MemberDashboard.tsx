@@ -18,14 +18,26 @@ import {
   Heart,
   CheckCircle2,
   ChevronRight,
-  X
+  X,
+  Wind,
+  Sparkles,
+  Flame
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { formatDate, cn } from '../lib/utils';
-import { applyForMembership, getAnnouncements, getEvents, getPrayerRequests, getSermons, prayForRequest } from '../services/db';
+import { 
+  applyForMembership, 
+  getAnnouncements, 
+  getEvents, 
+  getPrayerRequests, 
+  getSermons, 
+  prayForRequest,
+  getCampaignData,
+  DEFAULT_AC_CAMPAIGN
+} from '../services/db';
 import { useState, useEffect } from 'react';
 import { ROLE_INFO } from '../constants';
-import { Announcement, PrayerRequest } from '../types';
+import { Announcement, PrayerRequest, CampaignData } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
 
 export default function MemberDashboard() {
@@ -38,6 +50,7 @@ export default function MemberDashboard() {
     sermons: 0,
     announcements: 0
   });
+  const [campaign, setCampaign] = useState<CampaignData | null>(null);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [prayers, setPrayers] = useState<PrayerRequest[]>([]);
   const [activePrayerTab, setActivePrayerTab] = useState<'all' | 'mine'>('all');
@@ -45,11 +58,12 @@ export default function MemberDashboard() {
 
   const fetchData = async () => {
     try {
-      const [pr, ev, sr, an] = await Promise.all([
+      const [pr, ev, sr, an, acData] = await Promise.all([
         getPrayerRequests('approved'),
         getEvents(),
         getSermons(10),
-        getAnnouncements(5)
+        getAnnouncements(5),
+        getCampaignData('project-ac').catch(() => DEFAULT_AC_CAMPAIGN)
       ]);
 
       setStats({
@@ -58,6 +72,7 @@ export default function MemberDashboard() {
         sermons: sr.length,
         announcements: an.length
       });
+      setCampaign(acData || DEFAULT_AC_CAMPAIGN);
       setAnnouncements(an);
       setPrayers(pr.slice(0, 4));
     } catch (error) {
@@ -189,6 +204,122 @@ export default function MemberDashboard() {
           </div>
         ))}
       </div>
+
+      {/* Project AC Campaign Feature on Member Dashboard - Inherited from Project AC */}
+      {campaign && (
+        <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-[2.5rem] p-6 sm:p-8 text-white shadow-xl border border-slate-700/60">
+          <div className="absolute top-0 right-0 w-80 h-80 bg-red-600/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
+
+          <div className="relative z-10 flex flex-col xl:flex-row xl:items-center justify-between gap-8">
+            <div className="space-y-4 max-w-2xl">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-600/30 border border-red-500/40 text-red-300 text-[10px] font-bold uppercase tracking-wider">
+                  <Wind className="w-3.5 h-3.5 text-cyan-300" />
+                  Sanctuary Project
+                </span>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-cyan-950/70 border border-cyan-500/30 text-cyan-300 text-[10px] font-semibold">
+                  <Sparkles className="w-3 h-3 text-amber-300" />
+                  Target: {campaign.targetDate || 'December 2026'}
+                </span>
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/10 text-slate-300 text-[10px]">
+                  <span>Live Campaign Sync</span>
+                </span>
+              </div>
+
+              <div>
+                <h2 className="text-2xl sm:text-3xl font-display font-bold text-white tracking-tight">
+                  {campaign.title || 'Church Sanctuary Air Conditioning (Project AC)'}
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-300 font-light leading-relaxed mt-2">
+                  {campaign.mission || "To install heavy-duty inverter air conditioning for our sanctuary, providing comfort for worshipers, children, and visitors while focusing on God's Word."}
+                </p>
+              </div>
+
+              {/* Live Progress Bar */}
+              <div className="space-y-2 pt-1">
+                <div className="flex justify-between items-center text-xs font-bold">
+                  <span className="text-slate-300 uppercase tracking-wider text-[10px]">Fundraising Progress</span>
+                  <span className="text-amber-400 font-black">
+                    {Math.min(100, Math.round((Number(campaign.currentAmount) / Number(campaign.targetAmount)) * 100))}% Achieved
+                  </span>
+                </div>
+                <div className="w-full h-3.5 bg-slate-950/80 rounded-full overflow-hidden p-0.5 border border-slate-700">
+                  <div
+                    className="h-full bg-gradient-to-r from-red-600 via-red-500 to-amber-400 rounded-full transition-all duration-1000"
+                    style={{
+                      width: `${Math.min(100, Math.max(0, (Number(campaign.currentAmount) / Number(campaign.targetAmount)) * 100))}%`
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Inherited Amounts Grid */}
+            <div className="flex flex-col gap-4 xl:w-96 shrink-0">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-white/5 rounded-2xl p-4 border border-white/5">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                    Amount Raised
+                  </span>
+                  <p className="text-xl sm:text-2xl font-black text-red-400 leading-tight">
+                    ₱{Number(campaign.currentAmount).toLocaleString()}
+                  </p>
+                  <span className="text-[9px] text-emerald-400 font-bold block mt-1">
+                    Inherited from Project AC
+                  </span>
+                </div>
+
+                <div className="bg-white/5 rounded-2xl p-4 border border-white/5">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                    Goal Budget
+                  </span>
+                  <p className="text-xl sm:text-2xl font-black text-white leading-tight">
+                    ₱{Number(campaign.targetAmount).toLocaleString()}
+                  </p>
+                  <span className="text-[9px] text-slate-400 block mt-1">Full budget target</span>
+                </div>
+
+                <div className="bg-white/5 rounded-2xl p-4 border border-white/5">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                    Remaining
+                  </span>
+                  <p className="text-xl sm:text-2xl font-black text-slate-200 leading-tight">
+                    ₱{Math.max(0, Number(campaign.targetAmount) - Number(campaign.currentAmount)).toLocaleString()}
+                  </p>
+                  <span className="text-[9px] text-slate-400 block mt-1">To completion</span>
+                </div>
+
+                <div className="bg-white/5 rounded-2xl p-4 border border-white/5">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                    Prayers Count
+                  </span>
+                  <p className="text-xl sm:text-2xl font-black text-amber-300 leading-tight">
+                    {campaign.prayerCount || 0}
+                  </p>
+                  <span className="text-[9px] text-slate-400 block mt-1">Intercessions</span>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2.5">
+                <Link
+                  to="/project-ac"
+                  className="flex-1 py-3 px-4 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-lg shadow-red-600/30 hover:scale-[1.02] active:scale-[0.98]"
+                >
+                  <span>View Project AC</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+                <Link
+                  to="/member/prayer"
+                  className="py-3 px-4 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 border border-white/10"
+                >
+                  <Heart className="w-3.5 h-3.5 text-red-400" />
+                  <span>Prayer Wall</span>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Announcements */}
@@ -385,6 +516,7 @@ export default function MemberDashboard() {
           <h2 className="text-xl font-bold text-slate-900">Quick Actions</h2>
           <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
             {[
+              { label: 'Project AC Sanctuary Fund', href: '/project-ac', icon: Wind },
               { label: 'Submit Prayer Request', href: '/member/prayer', icon: MessageSquare },
               { label: 'Watch Live', href: '/live', icon: Video },
               { label: 'Profile Settings', href: '/member/profile', icon: User },

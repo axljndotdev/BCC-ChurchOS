@@ -237,6 +237,23 @@
       },
       "required": ["participantIds", "participantNames", "lastMessage", "lastMessageAt", "lastSenderId"]
     },
+    "ChurchComment": {
+      "title": "Church Comment",
+      "description": "Public comments, feedback, encouragement, and testimonies from church members and visitors.",
+      "type": "object",
+      "properties": {
+        "authorName": { "type": "string" },
+        "isAnonymous": { "type": "boolean" },
+        "content": { "type": "string" },
+        "category": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "userId": { "type": "string" },
+        "userRole": { "type": "string" },
+        "likes": { "type": "number" },
+        "likedBy": { "type": "array" }
+      },
+      "required": ["authorName", "isAnonymous", "content", "createdAt"]
+    },
     "ResourceItem": {
       "title": "Resource Item",
       "description": "Church resources, downloadable files or links.",
@@ -273,9 +290,31 @@
         "updatedByName": { "type": "string" }
       },
       "required": ["id", "title", "hero", "sections"]
+    },
+    "Campaign": {
+      "title": "Campaign",
+      "description": "Church fundraising and prayer campaign details.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "targetAmount": { "type": "number" },
+        "currentAmount": { "type": "number" },
+        "targetDate": { "type": "string" },
+        "mission": { "type": "string" },
+        "description": { "type": "string" },
+        "prayerCount": { "type": "number" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "updatedBy": { "type": "string" }
+      },
+      "required": ["id", "title", "targetAmount", "currentAmount"]
     }
   },
   "firestore": {
+    "/campaigns/{campaignId}": {
+      "schema": "Campaign",
+      "description": "Church fundraising and prayer campaigns"
+    },
     "/users/{userId}": {
       "schema": "UserProfile",
       "description": "User profiles"
@@ -339,6 +378,10 @@
     "/resources/{resourceId}": {
       "schema": "ResourceItem",
       "description": "Church dynamic resources"
+    },
+    "/church_comments/{commentId}": {
+      "schema": "ChurchComment",
+      "description": "Church public and member comments, testimonials and feedback"
     }
   }
 }

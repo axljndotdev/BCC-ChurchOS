@@ -51,7 +51,11 @@ export default function MemberSidebar({ onClose }: MemberSidebarProps) {
             <span>Back to Site</span>
           </Link>
           {onClose && (
-            <button onClick={onClose} className="lg:hidden p-2 text-slate-400 hover:text-maroon">
+            <button 
+              onClick={onClose} 
+              className="lg:hidden p-2 text-slate-400 hover:text-[#7A121D] min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg transition-colors"
+              aria-label="Close sidebar"
+            >
               <X className="h-5 w-5" />
             </button>
           )}
@@ -78,13 +82,13 @@ export default function MemberSidebar({ onClose }: MemberSidebarProps) {
               to={item.href}
               onClick={onClose}
               className={cn(
-                "flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-300",
+                "flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 min-h-[42px]",
                 location.pathname === item.href
-                  ? "bg-maroon text-white shadow-lg shadow-maroon/20"
-                  : "text-slate-600 hover:bg-slate-50 hover:text-maroon"
+                  ? "bg-[#7A121D] text-white shadow-md border border-[#C99738]/50"
+                  : "text-stone-600 hover:bg-[#FAF6EE] hover:text-[#7A121D]"
               )}
             >
-              <item.icon className="h-5 w-5" />
+              <item.icon className="h-5 w-5 text-[#C99738]" />
               <span>{item.name}</span>
             </Link>
           ))}
@@ -93,24 +97,24 @@ export default function MemberSidebar({ onClose }: MemberSidebarProps) {
             <Link
               to="/admin/dashboard"
               onClick={onClose}
-              className="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium text-maroon hover:bg-maroon/5 transition-all duration-300 mt-4 border border-maroon/10"
+              className="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium text-[#7A121D] hover:bg-[#7A121D]/10 transition-all duration-300 mt-4 border border-[#C99738]/40 min-h-[42px]"
             >
-              <Settings className="h-5 w-5" />
+              <Settings className="h-5 w-5 text-[#C99738]" />
               <span>Admin Panel</span>
             </Link>
           )}
         </nav>
       </div>
       
-      <div className="mt-auto p-6 border-t border-slate-100">
+      <div className="mt-auto p-6 border-t border-[#E8D5B5]">
         <Link
           to="/member/profile"
           className={cn(
-            "flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-            location.pathname === '/member/profile' ? "text-maroon bg-maroon/5" : "text-slate-600 hover:bg-slate-50 hover:text-maroon"
+            "flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors min-h-[42px]",
+            location.pathname === '/member/profile' ? "text-[#7A121D] bg-[#FAF6EE] font-bold" : "text-stone-600 hover:bg-[#FAF6EE] hover:text-[#7A121D]"
           )}
         >
-          <Settings className="h-5 w-5" />
+          <Settings className="h-5 w-5 text-[#C99738]" />
           <span>Account Settings</span>
         </Link>
       </div>
